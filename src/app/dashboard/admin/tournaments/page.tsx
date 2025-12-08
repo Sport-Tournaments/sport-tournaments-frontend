@@ -1,0 +1,269 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { DashboardLayout } from '@/components/layout';
+import { Card, CardContent, Button, Badge, Loading, Input, Select, Pagination, Alert } from '@/components/ui';
+import { useAuthStore } from '@/store';
+import { tournamentService } from '@/services';
+import type { Tournament, TournamentStatus } from '@/types';
+import { formatDate } from '@/utils/date';
+
+export default function AdminTournamentsPage() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const [loading, setLoading] = useState(true);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN') {
+      router.push('/dashboard/dashboard');
+      return;
+    }
+    fetchTournaments();
+  }, [user, router, currentPage, statusFilter]);
+
+  const fetchTournaments = async () => {
+    setLoading(true);
+    try {
+      const params: any = { page: currentPage, pageSize: 10 };
+      if (statusFilter !== 'all') params.status = statusFilter;
+      if (search) params.search = search;
+      
+      const response = await tournamentService.getTournaments(params);
+      const resData = response.data as any;
+      
+      // Handle different response structures
+      let tournamentData: Tournament[] = [];
+      let pages = 1;
+      
+      if (Array.isArray(resData)) {
+        tournamentData = resData;
+      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+        tournamentData = resData.data.items;
+        pages = resData.data.totalPages || 1;
+      } else if (resData?.items && Array.isArray(resData.items)) {
+        tournamentData = resData.items;
+        pages = resData.totalPages || 1;
+      } else if (resData?.data && Array.isArray(resData.data)) {
+        tournamentData = resData.data;
+        pages = resData.totalPages || 1;
+      }
+      
+      setTournaments(tournamentData);
+      setTotalPages(pages);
+    } catch (err: any) {
+      setError('Failed to load tournaments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchTournaments();
+  };
+
+  const handleStatusChange = async (tournamentId: string, newStatus: TournamentStatus) => {
+    try {
+      await tournamentService.adminUpdateTournament(tournamentId, { status: newStatus });
+      setSuccess('Tournament status updated');
+      fetchTournaments();
+    } catch (err: any) {
+      setError('Failed to update tournament status');
+    }
+  };
+
+  const handleDelete = async (tournamentId: string) => {
+    if (!confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) return;
+    
+    try {
+      await tournamentService.deleteTournament(tournamentId);
+      setSuccess('Tournament deleted successfully');
+      fetchTournaments();
+    } catch (err: any) {
+      setError('Failed to delete tournament');
+    }
+  };
+
+  const getStatusBadge = (status: TournamentStatus) => {
+    const variants: Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+      DRAFT: 'default',
+      PUBLISHED: 'info',
+      ONGOING: 'success',
+      COMPLETED: 'success',
+      CANCELLED: 'danger',
+    };
+    return variants[status] || 'default';
+  };
+
+  const statusOptions = [
+    { value: 'all', label: 'All Statuses' },
+    { value: 'DRAFT', label: t('tournament.status.DRAFT') },
+    { value: 'PUBLISHED', label: t('tournament.status.PUBLISHED') },
+    { value: 'ONGOING', label: t('tournament.status.ONGOING') },
+    { value: 'COMPLETED', label: t('tournament.status.COMPLETED') },
+    { value: 'CANCELLED', label: t('tournament.status.CANCELLED') },
+  ];
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {error && <Alert variant="error" onClose={() => setError(null)}>{error}</Alert>}
+        {success && <Alert variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Tournament Management
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Manage all platform tournaments
+            </p>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search tournaments..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                />
+              </div>
+              <div className="w-full md:w-48">
+                <Select
+                  options={statusOptions}
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+              <Button variant="primary" onClick={handleSearch}>
+                Search
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tournaments List */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loading size="lg" />
+          </div>
+        ) : tournaments.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <p className="text-gray-500">No tournaments found</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="space-y-4">
+              {tournaments.map((tournament) => (
+                <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        {tournament.logo ? (
+                          <img src={tournament.logo} alt={tournament.name} className="w-16 h-16 rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Link
+                              href={`/tournaments/${tournament.id}`}
+                              className="font-semibold text-lg text-gray-900 dark:text-white hover:text-primary"
+                            >
+                              {tournament.name}
+                            </Link>
+                            <Badge variant={getStatusBadge(tournament.status)}>
+                              {t(`tournament.status.${tournament.status}`)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            {tournament.city}, {tournament.country}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
+                            <span>{formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</span>
+                            <span>{tournament.registeredTeams || 0} / {tournament.maxTeams} teams</span>
+                            {tournament.organizer && (
+                              <span>by {tournament.organizer.firstName} {tournament.organizer.lastName}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Link href={`/tournaments/${tournament.id}`}>
+                          <Button variant="outline" size="sm">View</Button>
+                        </Link>
+                        <Link href={`/dashboard/tournaments/${tournament.id}/edit`}>
+                          <Button variant="outline" size="sm">Edit</Button>
+                        </Link>
+                        {tournament.status === ('DRAFT' as TournamentStatus) && (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleStatusChange(tournament.id, 'PUBLISHED' as TournamentStatus)}
+                          >
+                            Publish
+                          </Button>
+                        )}
+                        {tournament.status === ('PUBLISHED' as TournamentStatus) && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleStatusChange(tournament.id, 'REGISTRATION_OPEN' as TournamentStatus)}
+                          >
+                            Open Registration
+                          </Button>
+                        )}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDelete(tournament.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex justify-center">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}

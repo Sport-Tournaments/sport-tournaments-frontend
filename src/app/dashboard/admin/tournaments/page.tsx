@@ -96,9 +96,12 @@ export default function AdminTournamentsPage() {
   };
 
   const getStatusBadge = (status: TournamentStatus) => {
-    const variants: Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+    const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       DRAFT: 'default',
       PUBLISHED: 'info',
+      REGISTRATION_OPEN: 'success',
+      REGISTRATION_CLOSED: 'warning',
+      IN_PROGRESS: 'info',
       ONGOING: 'success',
       COMPLETED: 'success',
       CANCELLED: 'danger',
@@ -180,8 +183,8 @@ export default function AdminTournamentsPage() {
                   <CardContent className="p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div className="flex items-start gap-4">
-                        {tournament.logo ? (
-                          <img src={tournament.logo} alt={tournament.name} className="w-16 h-16 rounded-lg object-cover" />
+                        {tournament.bannerImage ? (
+                          <img src={tournament.bannerImage} alt={tournament.name} className="w-16 h-16 rounded-lg object-cover" />
                         ) : (
                           <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
                             <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,13 +205,13 @@ export default function AdminTournamentsPage() {
                             </Badge>
                           </div>
                           <p className="text-sm text-gray-500">
-                            {tournament.city}, {tournament.country}
+                            {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
                           </p>
                           <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
                             <span>{formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</span>
                             <span>{tournament.registeredTeams || 0} / {tournament.maxTeams} teams</span>
-                            {tournament.organizer && (
-                              <span>by {tournament.organizer.firstName} {tournament.organizer.lastName}</span>
+                            {(tournament as any).organizer && (
+                              <span>by {(tournament as any).organizer.firstName} {(tournament as any).organizer.lastName}</span>
                             )}
                           </div>
                         </div>

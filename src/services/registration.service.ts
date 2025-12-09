@@ -43,8 +43,9 @@ export async function getRegistrationStatistics(
 }
 
 // Get all registrations for current user's clubs
-export async function getMyRegistrations(): Promise<ApiResponse<Registration[]>> {
-  return apiGet<ApiResponse<Registration[]>>('/v1/registrations/my-registrations');
+export async function getMyRegistrations(filters?: RegistrationFilters): Promise<ApiResponse<Registration[]>> {
+  const queryString = filters ? buildQueryString(filters as Record<string, unknown>) : '';
+  return apiGet<ApiResponse<Registration[]>>(`/v1/registrations/my-registrations${queryString ? `?${queryString}` : ''}`);
 }
 
 // Get registration by ID

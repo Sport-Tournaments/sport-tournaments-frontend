@@ -7,9 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs } from '@/components/ui';
 import { tournamentService, registrationService } from '@/services';
-import { Tournament, TournamentStatus, Registration, RegistrationStatus } from '@/types';
+import { Tournament, Registration } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency } from '@/utils/helpers';
+
+type TournamentStatus = 'DRAFT' | 'PUBLISHED' | 'REGISTRATION_OPEN' | 'REGISTRATION_CLOSED' | 'IN_PROGRESS' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+type RegistrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN' | 'WAITLISTED' | 'CANCELLED';
 
 export default function TournamentDetailPage() {
   const { t } = useTranslation();
@@ -86,7 +89,7 @@ export default function TournamentDetailPage() {
 
   const handleRejectRegistration = async (registrationId: string) => {
     try {
-      await registrationService.rejectRegistration(registrationId, 'Rejected by organizer');
+      await registrationService.rejectRegistration(registrationId);
       fetchData();
     } catch (err: any) {
       setError('Failed to reject registration');
@@ -166,16 +169,16 @@ export default function TournamentDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.registrationDeadline')}</p>
-                  <p className="font-medium">{formatDate(tournament.registrationDeadline)}</p>
+                  <p className="font-medium">{tournament.registrationDeadline ? formatDate(tournament.registrationDeadline) : 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.location')}</p>
                   <p className="font-medium">{tournament.location}</p>
-                  {tournament.venue && <p className="text-gray-500">{tournament.venue}</p>}
+                  {(tournament as any).venue && <p className="text-gray-500">{(tournament as any).venue}</p>}
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('common.city')}, {t('common.country')}</p>
-                  <p className="font-medium">{tournament.city}, {tournament.country}</p>
+                  <p className="font-medium">{tournament.location}, {tournament.country || ''}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.ageCategory.label')}</p>
@@ -237,10 +240,10 @@ export default function TournamentDetailPage() {
                       <tr key={registration.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="font-medium text-gray-900 dark:text-white">
-                            {registration.teamName || registration.club?.name || '-'}
+                            {registration.club?.name || registration.coachName || '-'}
                           </div>
-                          {registration.contactEmail && (
-                            <div className="text-sm text-gray-500">{registration.contactEmail}</div>
+                          {registration.coachPhone && (
+                            <div className="text-sm text-gray-500">{registration.coachPhone}</div>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -252,7 +255,7 @@ export default function TournamentDetailPage() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                          {registration.status === RegistrationStatus.PENDING && (
+                          {registration.status === 'PENDING' && (
                             <>
                               <Button
                                 size="sm"
@@ -339,7 +342,7 @@ export default function TournamentDetailPage() {
               </Badge>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {tournament.city}, {tournament.country} • {formatDate(tournament.startDate)}
+              {tournament.location}{tournament.country ? `, ${tournament.country}` : ''} • {formatDate(tournament.startDate)}
             </p>
           </div>
           <div className="flex gap-2">

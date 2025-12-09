@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, Tabs, FileUpload, Avatar } from '@/components/ui';
 import { userService, authService } from '@/services';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore } from '@/store/auth.store';
 import { User } from '@/types';
 
 const profileSchema = z.object({
@@ -67,8 +67,8 @@ export default function SettingsPage() {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        bio: user.bio || '',
-        city: user.city || '',
+        bio: (user as any).bio || '',
+        city: (user as any).city || '',
         country: user.country || '',
       });
     }
@@ -79,14 +79,15 @@ export default function SettingsPage() {
     setError(null);
     setSuccess(null);
     try {
-      const updatedUser = await userService.updateProfile(data);
+      const response = await userService.updateUserProfile(data);
+      const updatedUser = response.data;
       
-      // Upload avatar if provided
-      if (avatarFile) {
-        const formData = new FormData();
-        formData.append('avatar', avatarFile);
-        await userService.uploadAvatar(formData);
-      }
+      // Note: Avatar upload would need a separate API endpoint
+      // if (avatarFile) {
+      //   const formData = new FormData();
+      //   formData.append('avatar', avatarFile);
+      //   await userService.uploadAvatar(formData);
+      // }
       
       setUser(updatedUser);
       setSuccess('Profile updated successfully');
@@ -103,7 +104,10 @@ export default function SettingsPage() {
     setError(null);
     setSuccess(null);
     try {
-      await authService.changePassword(data.currentPassword, data.newPassword);
+      await authService.changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
       setSuccess('Password changed successfully');
       resetPassword();
     } catch (err: any) {
@@ -141,18 +145,22 @@ export default function SettingsPage() {
             <CardContent>
               <div className="flex items-center gap-6">
                 <Avatar
-                  src={avatarFile ? URL.createObjectURL(avatarFile) : user?.avatar}
-                  name={`${user?.firstName} ${user?.lastName}`}
+                  src={avatarFile ? URL.createObjectURL(avatarFile) : user?.profileImageUrl}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
                   size="xl"
                 />
                 <div>
                   <FileUpload
                     accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                     maxSize={2 * 1024 * 1024}
-                    onDrop={(files) => setAvatarFile(files[0])}
-                    label="Upload new photo"
-                    hint="PNG, JPG up to 2MB"
-                  />
+                    onFilesSelected={(files) => setAvatarFile(files[0])}
+                  >
+                    <div className="text-center">
+                      <p className="text-sm font-medium">Upload new photo</p>
+                      <p className="text-xs text-gray-500">PNG, JPG up to 2MB</p>
+                    </div>
+                  </FileUpload>
                 </div>
               </div>
             </CardContent>
@@ -221,7 +229,7 @@ export default function SettingsPage() {
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" variant="primary" loading={loading}>
+            <Button type="submit" variant="primary" isLoading={loading}>
               {t('common.save')}
             </Button>
           </div>
@@ -259,7 +267,7 @@ export default function SettingsPage() {
                   {...registerPassword('confirmPassword')}
                 />
                 <div className="flex justify-end">
-                  <Button type="submit" variant="primary" loading={passwordLoading}>
+                  <Button type="submit" variant="primary" isLoading={passwordLoading}>
                     {t('settings.updatePassword')}
                   </Button>
                 </div>

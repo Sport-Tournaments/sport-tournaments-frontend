@@ -9,8 +9,14 @@ import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, Loading } from '@/components/ui';
 import { tournamentService } from '@/services';
-import { Tournament, TournamentStatus, AgeCategory, TournamentLevel, TournamentFormat } from '@/types';
+import { Tournament } from '@/types';
 import { formatDateForInput } from '@/utils/date';
+
+// Define value arrays for runtime use
+const AGE_CATEGORIES = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'SENIOR', 'VETERANS'] as const;
+const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
+const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
+const TOURNAMENT_STATUSES = ['DRAFT', 'PUBLISHED', 'REGISTRATION_OPEN', 'REGISTRATION_CLOSED', 'IN_PROGRESS', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
 
 const tournamentSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -24,15 +30,15 @@ const tournamentSchema = z.object({
   country: z.string().min(2, 'Country is required'),
   maxTeams: z.number().min(4, 'Minimum 4 teams').max(64, 'Maximum 64 teams'),
   minTeams: z.number().min(2, 'Minimum 2 teams'),
-  ageCategory: z.nativeEnum(AgeCategory),
-  level: z.nativeEnum(TournamentLevel),
-  format: z.nativeEnum(TournamentFormat),
+  ageCategory: z.enum(AGE_CATEGORIES),
+  level: z.enum(TOURNAMENT_LEVELS),
+  format: z.enum(TOURNAMENT_FORMATS),
   entryFee: z.number().min(0, 'Entry fee cannot be negative'),
   prizeMoney: z.number().min(0, 'Prize money cannot be negative').optional(),
   rules: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   contactPhone: z.string().optional(),
-  status: z.nativeEnum(TournamentStatus),
+  status: z.enum(TOURNAMENT_STATUSES),
 });
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
@@ -62,24 +68,25 @@ export default function EditTournamentPage() {
 
   const fetchTournament = async () => {
     try {
-      const data = await tournamentService.getById(params.id as string);
+      const response = await tournamentService.getTournamentById(params.id as string);
+      const data = response.data;
       setTournament(data);
       reset({
         name: data.name,
         description: data.description,
         startDate: formatDateForInput(data.startDate),
         endDate: formatDateForInput(data.endDate),
-        registrationDeadline: formatDateForInput(data.registrationDeadline),
+        registrationDeadline: formatDateForInput(data.registrationDeadline || ''),
         location: data.location,
-        venue: data.venue || '',
-        city: data.city,
-        country: data.country,
+        venue: (data as any).venue || '',
+        city: (data as any).city || '',
+        country: data.country || '',
         maxTeams: data.maxTeams,
-        minTeams: data.minTeams,
+        minTeams: (data as any).minTeams || 2,
         ageCategory: data.ageCategory,
         level: data.level,
-        format: data.format,
-        entryFee: data.entryFee,
+        format: (data.format || 'ROUND_ROBIN') as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE',
+        entryFee: data.entryFee || 0,
         prizeMoney: data.prizeMoney || 0,
         rules: data.rules || '',
         contactEmail: data.contactEmail || '',
@@ -97,7 +104,7 @@ export default function EditTournamentPage() {
     setSaving(true);
     setError(null);
     try {
-      await tournamentService.update(params.id as string, data);
+      await tournamentService.updateTournament(params.id as string, data);
       setSuccess(true);
       setTimeout(() => {
         router.push(`/dashboard/dashboard/tournaments/${params.id}`);
@@ -109,22 +116,22 @@ export default function EditTournamentPage() {
     }
   };
 
-  const ageCategoryOptions = Object.values(AgeCategory).map(cat => ({
+  const ageCategoryOptions = AGE_CATEGORIES.map(cat => ({
     value: cat,
     label: t(`tournament.ageCategory.${cat}`),
   }));
 
-  const levelOptions = Object.values(TournamentLevel).map(level => ({
+  const levelOptions = TOURNAMENT_LEVELS.map(level => ({
     value: level,
     label: t(`tournament.level.${level}`),
   }));
 
-  const formatOptions = Object.values(TournamentFormat).map(format => ({
+  const formatOptions = TOURNAMENT_FORMATS.map(format => ({
     value: format,
     label: format.replace(/_/g, ' '),
   }));
 
-  const statusOptions = Object.values(TournamentStatus).map(status => ({
+  const statusOptions = TOURNAMENT_STATUSES.map(status => ({
     value: status,
     label: t(`tournament.status.${status}`),
   }));
@@ -345,7 +352,7 @@ export default function EditTournamentPage() {
             <Button type="button" variant="outline" onClick={() => router.back()}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" variant="primary" loading={saving}>
+            <Button type="submit" variant="primary" isLoading={saving}>
               {t('common.save')}
             </Button>
           </div>

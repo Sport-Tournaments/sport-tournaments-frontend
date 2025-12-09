@@ -195,8 +195,8 @@ export default function ClubDetailPage() {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         {/* Back button */}
-        <Link href=\"/main/clubs\">
-          <Button variant=\"ghost\" className=\"mb-4\">
+        <Link href="/main/clubs">
+          <Button variant="ghost" className="mb-4">
             ← {t('common.back')}
           </Button>
         </Link>

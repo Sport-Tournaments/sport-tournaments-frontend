@@ -1,6 +1,8 @@
 // Registration types
 export type RegistrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
-export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+
+// Import PaymentStatus from payment.ts to avoid duplicate exports
+import type { PaymentStatus } from './payment';
 
 export interface Registration {
   id: string;

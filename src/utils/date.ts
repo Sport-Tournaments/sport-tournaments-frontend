@@ -104,3 +104,9 @@ export function getDeadlineStatus(
 export function toISODateString(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }
+
+export function formatDateForInput(date: string | Date): string {
+  const d = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(d)) return '';
+  return format(d, 'yyyy-MM-dd');
+}

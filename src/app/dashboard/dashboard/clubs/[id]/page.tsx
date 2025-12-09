@@ -6,8 +6,19 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, Input } from '@/components/ui';
-import { clubService, playerService } from '@/services';
-import { Club, Player } from '@/types';
+import { clubService } from '@/services';
+import { Club } from '@/types';
+
+// Player interface for local use until playerService is implemented
+interface Player {
+  id: string;
+  firstName: string;
+  lastName: string;
+  position?: string;
+  jerseyNumber?: number;
+  dateOfBirth?: string;
+  clubId: string;
+}
 
 export default function ClubDetailPage() {
   const { t } = useTranslation();
@@ -33,12 +44,11 @@ export default function ClubDetailPage() {
 
   const fetchData = async () => {
     try {
-      const [clubData, playersData] = await Promise.all([
-        clubService.getById(params.id as string),
-        playerService.getByClub(params.id as string),
-      ]);
-      setClub(clubData);
-      setPlayers(playersData.data || []);
+      const clubData = await clubService.getClubById(params.id as string);
+      const responseData = (clubData as any)?.data || clubData;
+      setClub(responseData);
+      // Players functionality disabled until playerService is implemented
+      setPlayers([]);
     } catch (err: any) {
       setError('Failed to load club');
     } finally {
@@ -51,14 +61,10 @@ export default function ClubDetailPage() {
     
     setAddingPlayer(true);
     try {
-      await playerService.create({
-        ...newPlayer,
-        clubId: params.id as string,
-        jerseyNumber: newPlayer.jerseyNumber ? parseInt(newPlayer.jerseyNumber) : undefined,
-      });
+      // playerService.create disabled until implemented
+      setError('Player management is not yet available');
       setShowAddPlayer(false);
       setNewPlayer({ firstName: '', lastName: '', position: '', jerseyNumber: '', dateOfBirth: '' });
-      fetchData();
     } catch (err: any) {
       setError('Failed to add player');
     } finally {
@@ -70,8 +76,8 @@ export default function ClubDetailPage() {
     if (!confirm('Are you sure you want to remove this player?')) return;
     
     try {
-      await playerService.delete(playerId);
-      fetchData();
+      // playerService.delete disabled until implemented
+      setError('Player management is not yet available');
     } catch (err: any) {
       setError('Failed to remove player');
     }
@@ -117,8 +123,8 @@ export default function ClubDetailPage() {
             </Card>
             <Card>
               <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">Tournaments</p>
-                <p className="text-2xl font-bold">{club.tournamentsCount || 0}</p>
+                <p className="text-sm text-gray-500">{t('common.teams')}</p>
+                <p className="text-2xl font-bold">{club.teamCount || 0}</p>
               </CardContent>
             </Card>
             <Card>
@@ -146,12 +152,6 @@ export default function ClubDetailPage() {
                   <p className="font-medium">{club.city}, {club.country}</p>
                   {club.address && <p className="text-gray-500">{club.address}</p>}
                 </div>
-                {club.colors && (
-                  <div>
-                    <p className="text-sm text-gray-500">{t('clubs.colors')}</p>
-                    <p className="font-medium">{club.colors}</p>
-                  </div>
-                )}
                 {club.email && (
                   <div>
                     <p className="text-sm text-gray-500">{t('common.email')}</p>
@@ -408,7 +408,7 @@ export default function ClubDetailPage() {
               <Button
                 variant="primary"
                 onClick={handleAddPlayer}
-                loading={addingPlayer}
+                isLoading={addingPlayer}
                 disabled={!newPlayer.firstName || !newPlayer.lastName}
               >
                 Add Player

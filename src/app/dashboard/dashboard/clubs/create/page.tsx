@@ -48,14 +48,15 @@ export default function CreateClubPage() {
     setLoading(true);
     setError(null);
     try {
-      const club = await clubService.create(data);
+      const response = await clubService.createClub(data);
+      const club = (response as any)?.data || response;
       
-      // Upload logo if provided
-      if (logoFile && club.id) {
-        const formData = new FormData();
-        formData.append('logo', logoFile);
-        await clubService.uploadLogo(club.id, formData);
-      }
+      // TODO: Upload logo functionality to be implemented
+      // if (logoFile && club.id) {
+      //   const formData = new FormData();
+      //   formData.append('logo', logoFile);
+      //   await clubService.uploadLogo(club.id, formData);
+      // }
       
       router.push(`/dashboard/dashboard/clubs/${club.id}`);
     } catch (err: any) {
@@ -107,10 +108,9 @@ export default function CreateClubPage() {
               <FileUpload
                 accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                 maxSize={5 * 1024 * 1024}
-                onDrop={(files) => setLogoFile(files[0])}
-                label="Upload club logo"
-                hint="PNG, JPG up to 5MB"
+                onFilesSelected={(files) => setLogoFile(files[0])}
               />
+              <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
             </CardContent>
           </Card>
 
@@ -225,7 +225,7 @@ export default function CreateClubPage() {
             <Button type="button" variant="outline" onClick={() => router.back()}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" variant="primary" loading={loading}>
+            <Button type="submit" variant="primary" isLoading={loading}>
               {t('clubs.create')}
             </Button>
           </div>

@@ -22,10 +22,7 @@ export default function DashboardClubsPage() {
   const fetchClubs = async () => {
     setLoading(true);
     try {
-      const response = await clubService.getMyClubs({
-        page: currentPage,
-        pageSize: 10,
-      });
+      const response = await clubService.getMyClubs();
       const resData = response.data as any;
       
       // Handle different response structures
@@ -127,9 +124,9 @@ export default function DashboardClubsPage() {
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                           <Badge variant="info">
-                            {club.playersCount || 0} {t('common.players')}
+                            {club.memberCount || 0} {t('common.members')}
                           </Badge>
-                          {club.verified && (
+                          {(club.verified || club.isVerified) && (
                             <Badge variant="success">
                               <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

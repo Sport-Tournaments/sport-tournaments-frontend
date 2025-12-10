@@ -8,23 +8,23 @@
   --color-secondary-hover: #4a4133;
 }
 
-/* Base styles */
+/* Base styles - Light mode (default) */
 * {
   @apply border-gray-200;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-gray-50 text-gray-900 transition-colors duration-200;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    @apply bg-gray-900 text-gray-100;
-  }
-  
-  * {
-    @apply border-gray-700;
-  }
+/* Dark mode - class-based */
+.dark * {
+  @apply border-gray-700;
+}
+
+.dark body,
+html.dark body {
+  @apply bg-gray-900 text-gray-100;
 }
 
 /* Basic animations */
@@ -87,17 +87,19 @@ body {
   background-color: rgb(229 231 235);
 }
 
-@media (prefers-color-scheme: dark) {
-  .dropdown {
-    border-color: rgb(55 65 81);
-    background-color: rgb(31 41 55);
-  }
-  
-  .dropdown-item:hover:not(:disabled) {
-    background-color: rgb(55 65 81);
-  }
-  
-  .divider {
-    background-color: rgb(55 65 81);
-  }
+/* Dark mode dropdown styles */
+.dark .dropdown,
+html.dark .dropdown {
+  border-color: rgb(55 65 81);
+  background-color: rgb(31 41 55);
+}
+
+.dark .dropdown-item:hover:not(:disabled),
+html.dark .dropdown-item:hover:not(:disabled) {
+  background-color: rgb(55 65 81);
+}
+
+.dark .divider,
+html.dark .divider {
+  background-color: rgb(55 65 81);
 }

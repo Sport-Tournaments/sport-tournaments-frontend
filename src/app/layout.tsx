@@ -37,8 +37,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Script to prevent flash of incorrect theme
+  const themeScript = `
+    (function() {
+      try {
+        const stored = localStorage.getItem('ui-storage');
+        if (stored) {
+          const { state } = JSON.parse(stored);
+          const theme = state?.theme || 'system';
+          const root = document.documentElement;
+          
+          if (theme === 'system') {
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            root.classList.add(systemTheme);
+          } else {
+            root.classList.add(theme);
+          }
+        }
+      } catch (e) {}
+    })();
+  `;
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

@@ -295,8 +295,8 @@ describe('Club Service', () => {
   describe('clubService object', () => {
     it('should export all methods', async () => {
       // Dynamic import to get around mocking issues
-      const module = await import('../club.service');
-      const service = module.clubService;
+      const clubModule = await import('../club.service');
+      const service = clubModule.clubService;
       
       expect(service.getClubs).toBeDefined();
       expect(service.getMyClubs).toBeDefined();

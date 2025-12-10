@@ -28,6 +28,18 @@ export default [
     },
   },
   {
-    ignores: [".next/**", "out/**", "build/**", "node_modules/**"],
+    ignores: [
+      ".next/**",
+      "out/**",
+      "build/**",
+      "node_modules/**",
+      "*.config.js",
+      "*.config.mjs",
+      "next.config.js",
+      "jest.config.js",
+      "tailwind.config.js",
+      "postcss.config.mjs",
+      "tailwind_plus/**",
+    ],
   },
 ];

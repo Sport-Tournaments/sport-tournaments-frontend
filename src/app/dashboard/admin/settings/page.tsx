@@ -45,7 +45,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
-      router.push('/dashboard/dashboard');
+      router.push('/dashboard');
       return;
     }
     // fetchSettings();

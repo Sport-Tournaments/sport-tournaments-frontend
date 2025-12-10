@@ -31,7 +31,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     // Check admin access
     if (user && user.role !== 'ADMIN') {
-      router.push('/dashboard/dashboard');
+      router.push('/dashboard');
       return;
     }
     fetchStats();

@@ -24,7 +24,7 @@ export default function AdminClubsPage() {
 
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
-      router.push('/dashboard/dashboard');
+      router.push('/dashboard');
       return;
     }
     fetchClubs();

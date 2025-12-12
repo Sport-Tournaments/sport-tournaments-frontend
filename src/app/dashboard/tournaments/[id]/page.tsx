@@ -113,11 +113,11 @@ export default function TournamentDetailPage() {
       content: (
         <div className="space-y-6">
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('common.teams')}</p>
-                <p className="text-2xl font-bold text-primary">
+              <CardContent className="p-3 sm:p-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">
                   {tournament.registeredTeams || 0} / {tournament.maxTeams}
                 </p>
               </CardContent>

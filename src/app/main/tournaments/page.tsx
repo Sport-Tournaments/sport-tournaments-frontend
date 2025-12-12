@@ -91,12 +91,12 @@ export default function TournamentsPage() {
     <MainLayout>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {t('tournament.title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {t('tournament.subtitle')}
             </p>
           </div>
@@ -111,7 +111,7 @@ export default function TournamentsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex-1">
             <Input
               placeholder={t('common.search')}
@@ -124,7 +124,7 @@ export default function TournamentsPage() {
               }
             />
           </div>
-          <div className="w-full md:w-48">
+          <div className="w-full sm:w-48">
             <Select
               options={statusOptions}
               value={status}
@@ -155,7 +155,7 @@ export default function TournamentsPage() {
         ) : (
           /* Tournament grid */
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {tournaments.map((tournament) => (
                 <Link key={tournament.id} href={`/main/tournaments/${tournament.id}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">

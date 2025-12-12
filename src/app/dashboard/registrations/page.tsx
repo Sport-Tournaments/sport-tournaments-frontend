@@ -95,18 +95,18 @@ export default function RegistrationsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {t('registration.myRegistrations')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               View and manage your tournament registrations
             </p>
           </div>
-          <Link href="/main/tournaments">
+          <Link href="/main/tournaments" className="self-start sm:self-auto">
             <Button variant="primary">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               Browse Tournaments
@@ -115,7 +115,7 @@ export default function RegistrationsPage() {
         </div>
 
         {/* Status Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -123,7 +123,7 @@ export default function RegistrationsPage() {
                 setStatusFilter(tab.id as any);
                 setCurrentPage(1);
               }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                 statusFilter === tab.id
                   ? 'bg-primary text-white'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'

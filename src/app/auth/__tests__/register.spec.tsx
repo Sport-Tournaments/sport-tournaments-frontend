@@ -10,6 +10,7 @@ vi.mock('next/navigation', () => ({
     push: mockPush,
     replace: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock i18next
@@ -44,9 +45,16 @@ vi.mock('react-i18next', () => ({
 // Mock auth store
 const mockRegister = vi.fn();
 vi.mock('@/store', () => ({
-  useAuthStore: () => ({
-    register: mockRegister,
-  }),
+  useAuthStore: Object.assign(
+    () => ({
+      register: mockRegister,
+    }),
+    {
+      getState: () => ({
+        register: mockRegister,
+      }),
+    }
+  ),
 }));
 
 // Mock AuthLayout

@@ -114,11 +114,11 @@ export default function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Welcome header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <div className="text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             {t('dashboard.welcome')}, {user?.firstName}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             {t('dashboard.overview')}
           </p>
         </div>
@@ -283,15 +283,15 @@ export default function DashboardPage() {
             <CardTitle>{t('dashboard.quickActions')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
               <Link
                 href="/dashboard/tournaments/create"
-                className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-colors"
+                className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary hover:bg-primary/5 transition-colors"
               >
-                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span className="text-sm font-medium">{t('dashboard.createTournament')}</span>
+                <span className="text-xs sm:text-sm font-medium text-center">{t('dashboard.createTournament')}</span>
               </Link>
               <Link
                 href="/dashboard/clubs/create"

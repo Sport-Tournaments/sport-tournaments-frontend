@@ -202,16 +202,16 @@ export default function ClubDetailPage() {
         </Link>
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 sm:mb-8 text-center sm:text-left">
           <Avatar
             src={club.logo}
             alt={club.name}
             size="xl"
-            className="w-24 h-24"
+            className="w-20 h-20 sm:w-24 sm:h-24"
           />
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {club.name}
               </h1>
               {club.verified && (

@@ -120,10 +120,10 @@ export default function GroupsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {t('groups.title')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               {t('groups.subtitle', 'Manage tournament groups and draw')}
             </p>
           </div>
@@ -133,8 +133,8 @@ export default function GroupsPage() {
         {tournaments.length > 0 ? (
           <Card>
             <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1 max-w-md">
+              <div className="flex flex-col gap-4">
+                <div className="w-full sm:max-w-md">
                   <Select
                     label={t('groups.selectTournament', 'Select Tournament')}
                     options={tournamentOptions}
@@ -142,7 +142,7 @@ export default function GroupsPage() {
                     onChange={(e) => setSelectedTournament(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-2 sm:self-end">
+                <div className="flex flex-col xs:flex-row gap-2">
                   <Button
                     variant="primary"
                     onClick={handleExecuteDraw}
@@ -190,7 +190,7 @@ export default function GroupsPage() {
             <Loading size="lg" />
           </div>
         ) : groups.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {groups.map((group) => (
               <Card key={group.id}>
                 <CardHeader>

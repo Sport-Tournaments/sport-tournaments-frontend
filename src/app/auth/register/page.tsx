@@ -53,7 +53,7 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      await registerUser({
+      const success = await registerUser({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -61,7 +61,18 @@ export default function RegisterPage() {
         country: data.country,
         role: data.role as 'ORGANIZER' | 'PARTICIPANT',
       });
-      router.push('/auth/verify-email');
+      
+      if (success) {
+        // Check if user is auto-verified (email verification disabled)
+        const { user } = useAuthStore.getState();
+        if (user?.isVerified) {
+          // User is already verified, redirect to login
+          router.push('/auth/login?registered=true');
+        } else {
+          // User needs to verify email
+          router.push('/auth/verify-email');
+        }
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
       setError(errorMessage);
@@ -87,7 +98,7 @@ export default function RegisterPage() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label={t('auth.firstName')}
             placeholder="John"

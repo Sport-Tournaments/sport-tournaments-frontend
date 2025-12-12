@@ -114,23 +114,23 @@ export default function ClubDetailPage() {
       label: t('common.overview'),
       content: (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('common.players')}</p>
-                <p className="text-2xl font-bold text-primary">{players.length}</p>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500">{t('common.players')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">{players.length}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('common.teams')}</p>
-                <p className="text-2xl font-bold">{club.teamCount || 0}</p>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
+                <p className="text-xl sm:text-2xl font-bold">{club.teamCount || 0}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">Founded</p>
-                <p className="text-2xl font-bold">{club.foundedYear || '-'}</p>
+              <CardContent className="p-3 sm:p-4 text-center">
+                <p className="text-xs sm:text-sm text-gray-500">Founded</p>
+                <p className="text-xl sm:text-2xl font-bold">{club.foundedYear || '-'}</p>
               </CardContent>
             </Card>
           </div>

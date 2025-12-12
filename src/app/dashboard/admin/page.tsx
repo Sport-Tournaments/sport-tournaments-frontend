@@ -122,23 +122,23 @@ export default function AdminDashboardPage() {
         {error && <Alert variant="warning">{error}</Alert>}
 
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             Admin Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             Platform overview and management
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {statCards.map((stat, index) => (
             <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm text-gray-500">{stat.title}</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500">{stat.title}</p>
+                    <p className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1">
                       {stat.value.toLocaleString()}
                     </p>
                     <p className={`text-sm mt-1 text-${stat.color}-600`}>{stat.change}</p>

@@ -163,17 +163,17 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {t('notifications.title')}
             </h1>
             {unreadCount > 0 && (
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
                 {t('notifications.unread', { count: unreadCount })}
               </p>
             )}
           </div>
           {unreadCount > 0 && (
-            <Button variant="outline" onClick={handleMarkAllAsRead}>
+            <Button variant="outline" onClick={handleMarkAllAsRead} className="self-start sm:self-auto">
               {t('notifications.markAllRead')}
             </Button>
           )}

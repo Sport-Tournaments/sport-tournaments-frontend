@@ -82,16 +82,16 @@ export default function CreateClubPage() {
   return (
     <DashboardLayout>
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               {t('clubs.create')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               Create a new club to manage players and register for tournaments
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.back()}>
+          <Button variant="outline" onClick={() => router.back()} className="self-start sm:self-auto">
             {t('common.cancel')}
           </Button>
         </div>

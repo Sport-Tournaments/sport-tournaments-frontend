@@ -70,10 +70,10 @@ export default function HomePage() {
       <div className="min-h-screen bg-white dark:bg-gray-900">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-[#e0f2f4] via-white to-[#e0f2f4] dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
+        <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
                 {t('home.hero.title')}
               </h1>
               <p className="mt-6 text-xl text-gray-600 dark:text-gray-300">
@@ -91,18 +91,18 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </div>
-              <div className="mt-12 flex items-center gap-8">
-                <div>
-                  <p className="text-3xl font-bold text-[#208090]">1000+</p>
-                  <p className="text-gray-600 dark:text-gray-400">{t('home.stats.tournaments')}</p>
+              <div className="mt-8 lg:mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 lg:gap-8">
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-[#208090]">1000+</p>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('home.stats.tournaments')}</p>
                 </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#208090]">5000+</p>
-                  <p className="text-gray-600 dark:text-gray-400">{t('home.stats.clubs')}</p>
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-[#208090]">5000+</p>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('home.stats.clubs')}</p>
                 </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#208090]">50K+</p>
-                  <p className="text-gray-600 dark:text-gray-400">{t('home.stats.players')}</p>
+                <div className="text-center">
+                  <p className="text-2xl sm:text-3xl font-bold text-[#208090]">50K+</p>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{t('home.stats.players')}</p>
                 </div>
               </div>
             </div>
@@ -124,10 +124,10 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-gray-900 dark:text-white">
               {t('home.features.title')}
             </h2>
             <p className="mt-4 text-xl text-gray-600 dark:text-gray-300">
@@ -153,10 +153,10 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-[#208090] text-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-[#208090] text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">{t('home.cta.title')}</h2>
-          <p className="text-xl mb-8 opacity-90">{t('home.cta.subtitle')}</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold mb-4 sm:mb-6">{t('home.cta.title')}</h2>
+          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?role=ORGANIZER">
               <Button variant="secondary" className="bg-white text-[#208090] hover:bg-gray-100 px-8 py-3 text-lg font-semibold">

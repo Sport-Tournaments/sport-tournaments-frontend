@@ -47,7 +47,11 @@ export async function login(data: LoginDto): Promise<ApiResponse<AuthResponse>> 
 // Logout and invalidate refresh token
 export async function logout(): Promise<void> {
   try {
-    await apiPost(`${AUTH_BASE}/logout`);
+    const refreshToken = getTokenFromCookie('refreshToken');
+    await apiPost(`${AUTH_BASE}/logout`, { refreshToken });
+  } catch (error) {
+    // Ignore logout errors - we'll clear tokens anyway
+    console.warn('Logout API call failed, clearing local tokens:', error);
   } finally {
     clearAllTokens();
   }

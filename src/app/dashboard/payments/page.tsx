@@ -66,10 +66,10 @@ export default function PaymentsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
             {t('nav.payments')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             View and manage your tournament payments
           </p>
         </div>
@@ -99,11 +99,11 @@ export default function PaymentsPage() {
           <div className="space-y-4">
             {registrations.map((registration) => (
               <Card key={registration.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                           {registration.tournament?.name || 'Tournament'}
                         </h3>
                         <Badge variant={getPaymentStatusBadge(registration.paymentStatus)}>
@@ -140,8 +140,8 @@ export default function PaymentsPage() {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Payment Summary
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {registrations.length}
                   </p>

@@ -160,12 +160,12 @@ export default function AdminUsersPage() {
         {error && <Alert variant="error" onClose={() => setError(null)}>{error}</Alert>}
         {success && <Alert variant="success" onClose={() => setSuccess(null)}>{success}</Alert>}
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               User Management
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
               Manage all platform users
             </p>
           </div>
@@ -173,8 +173,8 @@ export default function AdminUsersPage() {
 
         {/* Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <div className="flex-1">
                 <Input
                   placeholder="Search by name or email..."
@@ -183,19 +183,21 @@ export default function AdminUsersPage() {
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
               </div>
-              <div className="w-full md:w-48">
-                <Select
-                  options={roleOptions}
-                  value={roleFilter}
-                  onChange={(e) => {
-                    setRoleFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="w-full sm:w-48">
+                  <Select
+                    options={roleOptions}
+                    value={roleFilter}
+                    onChange={(e) => {
+                      setRoleFilter(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+                <Button variant="primary" onClick={handleSearch}>
+                  Search
+                </Button>
               </div>
-              <Button variant="primary" onClick={handleSearch}>
-                Search
-              </Button>
             </div>
           </CardContent>
         </Card>

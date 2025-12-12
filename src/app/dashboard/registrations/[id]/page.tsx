@@ -99,7 +99,7 @@ export default function RegistrationDetailPage() {
         {error && <Alert variant="error">{error}</Alert>}
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <button
               onClick={() => router.back()}
@@ -110,12 +110,12 @@ export default function RegistrationDetailPage() {
               </svg>
               Back
             </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Registration Details
             </h1>
           </div>
           {registration.status === 'PENDING' && (
-            <Button variant="danger" onClick={handleWithdraw}>
+            <Button variant="danger" onClick={handleWithdraw} className="self-start sm:self-auto">
               Withdraw Registration
             </Button>
           )}

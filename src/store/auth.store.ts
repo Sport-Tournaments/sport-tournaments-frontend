@@ -90,6 +90,9 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           await authService.logout();
+        } catch (error) {
+          // Logout should never fail from user perspective
+          console.warn('Logout error (ignored):', error);
         } finally {
           clearAllTokens();
           set({ user: null, isAuthenticated: false, isLoading: false, error: null });

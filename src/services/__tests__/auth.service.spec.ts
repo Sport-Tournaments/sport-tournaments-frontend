@@ -151,7 +151,7 @@ describe('Auth Service', () => {
 
       await authService.logout();
 
-      expect(mockApiPost).toHaveBeenCalledWith('/v1/auth/logout');
+      expect(mockApiPost).toHaveBeenCalledWith('/v1/auth/logout', { refreshToken: undefined });
     });
 
     it('should clear tokens', async () => {

@@ -71,9 +71,7 @@ export default function TournamentsPage() {
     { value: '', label: t('common.all') },
     { value: 'DRAFT' as TournamentStatus, label: t('tournament.status.draft') },
     { value: 'PUBLISHED' as TournamentStatus, label: t('tournament.status.published') },
-    { value: 'REGISTRATION_OPEN' as TournamentStatus, label: t('tournament.status.registrationOpen') },
-    { value: 'REGISTRATION_CLOSED' as TournamentStatus, label: t('tournament.status.registrationClosed') },
-    { value: 'IN_PROGRESS' as TournamentStatus, label: t('tournament.status.inProgress') },
+    { value: 'ONGOING' as TournamentStatus, label: t('tournament.status.ongoing') },
     { value: 'COMPLETED' as TournamentStatus, label: t('tournament.status.completed') },
     { value: 'CANCELLED' as TournamentStatus, label: t('tournament.status.cancelled') },
   ];
@@ -82,9 +80,6 @@ export default function TournamentsPage() {
     const variants: Partial<Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'>> = {
       'DRAFT': 'default',
       'PUBLISHED': 'info',
-      'REGISTRATION_OPEN': 'success',
-      'REGISTRATION_CLOSED': 'warning',
-      'IN_PROGRESS': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
@@ -105,7 +100,7 @@ export default function TournamentsPage() {
               {t('tournament.subtitle')}
             </p>
           </div>
-          <Link href="/dashboard/dashboard/tournaments/create">
+          <Link href="/dashboard/tournaments/create">
             <Button variant="primary">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -153,7 +148,7 @@ export default function TournamentsPage() {
               {t('tournament.noTournaments')}
             </h3>
             <p className="text-gray-500 mb-4">{t('tournament.noTournamentsDesc')}</p>
-            <Link href="/dashboard/dashboard/tournaments/create">
+            <Link href="/dashboard/tournaments/create">
               <Button variant="primary">{t('tournament.createFirst')}</Button>
             </Link>
           </div>

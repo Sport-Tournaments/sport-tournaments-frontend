@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, Fragment } from 'react';
 import { cn } from '@/utils/helpers';
 
 export interface ModalProps {
@@ -14,6 +14,9 @@ export interface ModalProps {
   closeOnOverlayClick?: boolean;
   closeOnEsc?: boolean;
   className?: string;
+  icon?: React.ReactNode;
+  iconColor?: 'success' | 'error' | 'warning' | 'info';
+  footer?: React.ReactNode;
 }
 
 export default function Modal({
@@ -27,16 +30,26 @@ export default function Modal({
   closeOnOverlayClick = true,
   closeOnEsc = true,
   className,
+  icon,
+  iconColor,
+  footer,
 }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const sizeStyles = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-full mx-4',
+    sm: 'sm:max-w-sm',
+    md: 'sm:max-w-lg',
+    lg: 'sm:max-w-2xl',
+    xl: 'sm:max-w-4xl',
+    full: 'sm:max-w-full sm:mx-4',
+  };
+
+  const iconColorStyles = {
+    success: 'bg-green-100 text-green-600 dark:bg-green-600/20 dark:text-green-400',
+    error: 'bg-red-100 text-red-600 dark:bg-red-600/20 dark:text-red-400',
+    warning: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-600/20 dark:text-yellow-400',
+    info: 'bg-blue-100 text-blue-600 dark:bg-blue-600/20 dark:text-blue-400',
   };
 
   const handleEscKey = useCallback(
@@ -69,67 +82,95 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div
-      ref={overlayRef}
-      className="modal-overlay animate-fadeIn"
-      onClick={handleOverlayClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
-      aria-describedby={description ? 'modal-description' : undefined}
-    >
-      <div
-        ref={contentRef}
-        className={cn(
-          'modal-content animate-scaleIn',
-          sizeStyles[size],
-          className
-        )}
+    <div className="relative z-50">
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 transition-opacity"
+        aria-hidden="true"
+      />
+      
+      {/* Modal container */}
+      <div 
+        ref={overlayRef}
+        className="fixed inset-0 z-10 w-screen overflow-y-auto"
+        onClick={handleOverlayClick}
       >
-        {(title || showCloseButton) && (
-          <div className="mb-4 flex items-start justify-between">
-            <div>
-              {title && (
-                <h2
-                  id="modal-title"
-                  className="text-lg font-semibold text-[var(--color-text)]"
-                >
-                  {title}
-                </h2>
-              )}
-              {description && (
-                <p
-                  id="modal-description"
-                  className="mt-1 text-sm text-[var(--color-text-muted)]"
-                >
-                  {description}
-                </p>
-              )}
-            </div>
+        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div
+            ref={contentRef}
+            className={cn(
+              'relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full',
+              'dark:bg-gray-800 dark:ring-1 dark:ring-inset dark:ring-white/10',
+              sizeStyles[size],
+              className
+            )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? 'modal-title' : undefined}
+            aria-describedby={description ? 'modal-description' : undefined}
+          >
+            {/* Close button */}
             {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="rounded-lg p-1 text-[var(--color-text-muted)] hover:bg-[var(--color-background-alt)] hover:text-[var(--color-text)] transition-colors"
-                aria-label="Close modal"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-transparent dark:text-gray-400 dark:hover:text-gray-300 dark:focus:ring-offset-gray-800"
+                  aria-label="Close modal"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <span className="sr-only">Close</span>
+                  <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 dark:bg-gray-800">
+              <div className={cn(icon ? 'sm:flex sm:items-start' : '')}>
+                {icon && iconColor && (
+                  <div className={cn(
+                    'mx-auto flex size-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:size-10',
+                    iconColorStyles[iconColor]
+                  )}>
+                    {icon}
+                  </div>
+                )}
+                <div className={cn(icon ? 'mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left' : '', 'flex-1')}>
+                  {title && (
+                    <h3
+                      id="modal-title"
+                      className="text-base font-semibold text-gray-900 dark:text-white"
+                    >
+                      {title}
+                    </h3>
+                  )}
+                  {description && (
+                    <p
+                      id="modal-description"
+                      className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+                    >
+                      {description}
+                    </p>
+                  )}
+                  {children && (
+                    <div className={cn((title || description) && 'mt-4')}>
+                      {children}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            {footer && (
+              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 dark:bg-gray-700/25">
+                {footer}
+              </div>
             )}
           </div>
-        )}
-        {children}
+        </div>
       </div>
     </div>
   );

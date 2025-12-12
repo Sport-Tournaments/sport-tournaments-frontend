@@ -26,7 +26,7 @@ export default function AdminTournamentsPage() {
 
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
-      router.push('/dashboard/dashboard');
+      router.push('/dashboard');
       return;
     }
     fetchTournaments();
@@ -99,9 +99,6 @@ export default function AdminTournamentsPage() {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       DRAFT: 'default',
       PUBLISHED: 'info',
-      REGISTRATION_OPEN: 'success',
-      REGISTRATION_CLOSED: 'warning',
-      IN_PROGRESS: 'info',
       ONGOING: 'success',
       COMPLETED: 'success',
       CANCELLED: 'danger',
@@ -232,13 +229,13 @@ export default function AdminTournamentsPage() {
                             Publish
                           </Button>
                         )}
-                        {tournament.status === ('PUBLISHED' as TournamentStatus) && (
+                        {tournament.status === 'PUBLISHED' && (
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => handleStatusChange(tournament.id, 'REGISTRATION_OPEN' as TournamentStatus)}
+                            onClick={() => handleStatusChange(tournament.id, 'ONGOING')}
                           >
-                            Open Registration
+                            Start Tournament
                           </Button>
                         )}
                         <Button

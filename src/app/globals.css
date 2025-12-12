@@ -2,15 +2,13 @@
 
 /* CSS Variables */
 :root {
-  --color-primary: #208090;
-  --color-primary-hover: #1a6575;
+  --color-primary: #4f46e5; /* indigo-600 */
+  --color-primary-hover: #4338ca; /* indigo-700 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary: #32b8c6;
-    --color-primary-hover: #2da4b2;
-  }
+.dark {
+  --color-primary: #6366f1; /* indigo-500 */
+  --color-primary-hover: #818cf8; /* indigo-400 */
 }
 
 /* Basic animations */
@@ -30,12 +28,27 @@
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
 
 .animate-slideDown {
   animation: slideDown 0.3s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
 }
 
 /* Dropdown styles */
@@ -45,11 +58,18 @@
   margin-top: 0.5rem;
   min-width: 12rem;
   border-radius: 0.5rem;
-  border: 1px solid rgb(229 231 235);
   background-color: white;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  padding: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  padding: 0.25rem;
   z-index: 50;
+  outline: 1px solid rgb(229 231 235);
+  outline-offset: -1px;
+}
+
+.dark .dropdown {
+  background-color: rgb(31 41 55);
+  outline-color: rgb(55 65 81);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.25);
 }
 
 .dropdown-item {
@@ -61,29 +81,38 @@
   padding: 0.5rem 0.75rem;
   text-align: left;
   font-size: 0.875rem;
+  color: rgb(17 24 39);
   transition: background-color 0.15s;
 }
 
+.dark .dropdown-item {
+  color: rgb(229 231 235);
+}
+
 .dropdown-item:hover:not(:disabled) {
+  background-color: rgb(249 250 251);
+}
+
+.dark .dropdown-item:hover:not(:disabled) {
+  background-color: rgb(55 65 81);
+}
+
+.dropdown-item:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   background-color: rgb(243 244 246);
+}
+
+.dark .dropdown-item:focus {
+  background-color: rgb(55 65 81);
 }
 
 .divider {
   height: 1px;
   background-color: rgb(229 231 235);
+  margin: 0.25rem 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  .dropdown {
-    border-color: rgb(55 65 81);
-    background-color: rgb(31 41 55);
-  }
-  
-  .dropdown-item:hover:not(:disabled) {
-    background-color: rgb(55 65 81);
-  }
-  
-  .divider {
-    background-color: rgb(55 65 81);
-  }
+.dark .divider {
+  background-color: rgb(55 65 81);
 }

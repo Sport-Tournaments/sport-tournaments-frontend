@@ -28,12 +28,33 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mounted) {
       const root = document.documentElement;
-      if (theme === 'dark') {
-        root.classList.add('dark');
+      root.classList.remove('light', 'dark');
+      
+      if (theme === 'system') {
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+          ? 'dark'
+          : 'light';
+        root.classList.add(systemTheme);
       } else {
-        root.classList.remove('dark');
+        root.classList.add(theme);
       }
     }
+  }, [theme, mounted]);
+
+  // Listen for system theme changes when using 'system' theme
+  useEffect(() => {
+    if (mounted && theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        const root = document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(e.matches ? 'dark' : 'light');
+      };
+      
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    return undefined;
   }, [theme, mounted]);
 
   if (!mounted) {

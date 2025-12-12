@@ -16,15 +16,15 @@ export function Card({
   ...props
 }: CardProps) {
   const variantStyles = {
-    default: 'rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:bg-gray-800 dark:border-gray-700',
-    hover: 'rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md hover:border-[#208090]/50 cursor-pointer dark:bg-gray-800 dark:border-gray-700',
-    flat: 'rounded-xl bg-white dark:bg-gray-800',
+    default: 'overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-800/50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10',
+    hover: 'overflow-hidden rounded-lg bg-white shadow-sm transition-all hover:shadow-md cursor-pointer dark:bg-gray-800/50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20',
+    flat: 'overflow-hidden rounded-lg bg-white dark:bg-gray-800/50',
   };
 
   const paddingStyles = {
-    none: 'p-0',
+    none: '',
     sm: 'p-4',
-    md: 'p-6',
+    md: 'px-4 py-5 sm:p-6',
     lg: 'p-8',
   };
 
@@ -32,7 +32,7 @@ export function Card({
     <div
       className={cn(
         variantStyles[variant],
-        padding !== 'md' && paddingStyles[padding],
+        paddingStyles[padding],
         className
       )}
       {...props}
@@ -42,11 +42,11 @@ export function Card({
   );
 }
 
-export interface CardHeaderProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardHeaderProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardHeader({ className, children, ...props }: CardHeaderProps) {
   return (
-    <div className={cn('mb-4', className)} {...props}>
+    <div className={cn('border-b border-gray-200 px-4 py-5 sm:px-6 dark:border-white/10', className)} {...props}>
       {children}
     </div>
   );
@@ -64,7 +64,7 @@ export function CardTitle({
 }: CardTitleProps) {
   return (
     <Component
-      className={cn('text-lg font-semibold text-[var(--color-text)]', className)}
+      className={cn('text-base font-semibold text-gray-900 dark:text-white', className)}
       {...props}
     >
       {children}
@@ -72,7 +72,7 @@ export function CardTitle({
   );
 }
 
-export interface CardDescriptionProps extends HTMLAttributes<HTMLParagraphElement> {}
+export type CardDescriptionProps = HTMLAttributes<HTMLParagraphElement>;
 
 export function CardDescription({
   className,
@@ -81,7 +81,7 @@ export function CardDescription({
 }: CardDescriptionProps) {
   return (
     <p
-      className={cn('mt-1 text-sm text-[var(--color-text-muted)]', className)}
+      className={cn('mt-1 text-sm text-gray-500 dark:text-gray-400', className)}
       {...props}
     >
       {children}
@@ -89,23 +89,23 @@ export function CardDescription({
   );
 }
 
-export interface CardContentProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardContentProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardContent({ className, children, ...props }: CardContentProps) {
   return (
-    <div className={cn('', className)} {...props}>
+    <div className={cn('px-4 py-5 sm:p-6', className)} {...props}>
       {children}
     </div>
   );
 }
 
-export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardFooterProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardFooter({ className, children, ...props }: CardFooterProps) {
   return (
     <div
       className={cn(
-        'mt-4 flex items-center gap-4 border-t border-[var(--color-border)] pt-4',
+        'flex items-center gap-4 border-t border-gray-200 bg-gray-50 px-4 py-4 sm:px-6 dark:border-white/10 dark:bg-gray-700/25',
         className
       )}
       {...props}

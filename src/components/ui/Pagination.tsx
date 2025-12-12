@@ -15,7 +15,7 @@ export default function Pagination({
   currentPage,
   totalPages,
   onPageChange,
-  showFirstLast = true,
+  showFirstLast = false,
   maxVisiblePages = 5,
   className,
 }: PaginationProps) {
@@ -62,20 +62,30 @@ export default function Pagination({
 
   const visiblePages = getVisiblePages();
 
+  const buttonBase = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-white/10';
+  const buttonInactive = 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/10';
+  const buttonActive = 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500';
+  const buttonDisabled = 'text-gray-400 cursor-not-allowed dark:text-gray-500';
+
   return (
     <nav
-      className={cn('pagination', className)}
+      className={cn('isolate inline-flex -space-x-px rounded-md shadow-sm', className)}
       aria-label="Pagination"
     >
       {showFirstLast && (
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="pagination-button"
+          className={cn(
+            buttonBase,
+            'rounded-l-md',
+            currentPage === 1 ? buttonDisabled : buttonInactive
+          )}
           aria-label="First page"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          <span className="sr-only">First</span>
+          <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fillRule="evenodd" d="M15.79 14.77a.75.75 0 0 1-1.06.02l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 1 1 1.04 1.08L11.832 10l3.938 3.71a.75.75 0 0 1 .02 1.06Zm-6 0a.75.75 0 0 1-1.06.02l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 1 1 1.04 1.08L5.832 10l3.938 3.71a.75.75 0 0 1 .02 1.06Z" clipRule="evenodd" />
           </svg>
         </button>
       )}
@@ -83,44 +93,64 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="pagination-button"
+        className={cn(
+          buttonBase,
+          !showFirstLast && 'rounded-l-md',
+          currentPage === 1 ? buttonDisabled : buttonInactive
+        )}
         aria-label="Previous page"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <span className="sr-only">Previous</span>
+        <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
         </svg>
       </button>
 
-      {visiblePages.map((page, index) =>
-        page === 'ellipsis' ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-[var(--color-text-muted)]">
-            ...
-          </span>
-        ) : (
-          <button
-            key={page}
-            onClick={() => onPageChange(page)}
-            className={
-              page === currentPage
-                ? 'pagination-button-active'
-                : 'pagination-button'
-            }
-            aria-label={`Page ${page}`}
-            aria-current={page === currentPage ? 'page' : undefined}
-          >
-            {page}
-          </button>
-        )
-      )}
+      {/* Page numbers - hidden on mobile, shown on sm+ */}
+      <span className="hidden sm:inline-flex">
+        {visiblePages.map((page, index) =>
+          page === 'ellipsis' ? (
+            <span 
+              key={`ellipsis-${index}`} 
+              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 dark:text-gray-400 dark:ring-white/10"
+            >
+              ...
+            </span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => onPageChange(page)}
+              className={cn(
+                buttonBase,
+                page === currentPage ? buttonActive : buttonInactive
+              )}
+              aria-label={`Page ${page}`}
+              aria-current={page === currentPage ? 'page' : undefined}
+            >
+              {page}
+            </button>
+          )
+        )}
+      </span>
+
+      {/* Mobile: show current page indicator */}
+      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 sm:hidden dark:text-gray-300 dark:ring-white/10">
+        {currentPage} / {totalPages}
+      </span>
 
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="pagination-button"
+        className={cn(
+          buttonBase,
+          !showFirstLast && 'rounded-r-md',
+          currentPage === totalPages ? buttonDisabled : buttonInactive
+        )}
         aria-label="Next page"
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        <span className="sr-only">Next</span>
+        <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
         </svg>
       </button>
 
@@ -128,11 +158,16 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="pagination-button"
+          className={cn(
+            buttonBase,
+            'rounded-r-md',
+            currentPage === totalPages ? buttonDisabled : buttonInactive
+          )}
           aria-label="Last page"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          <span className="sr-only">Last</span>
+          <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fillRule="evenodd" d="M4.21 5.23a.75.75 0 0 1 1.06-.02l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.04-1.08L8.168 10 4.23 6.29a.75.75 0 0 1-.02-1.06Zm6 0a.75.75 0 0 1 1.06-.02l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.04-1.08L14.168 10 10.23 6.29a.75.75 0 0 1-.02-1.06Z" clipRule="evenodd" />
           </svg>
         </button>
       )}

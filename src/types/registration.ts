@@ -14,6 +14,7 @@ export interface Registration {
     endDate: string;
     location: string;
     status: string;
+    participationFee?: number;
   };
   clubId: string;
   club?: {

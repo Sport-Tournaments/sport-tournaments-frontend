@@ -45,7 +45,7 @@ export interface CreateClubDto {
   contactPhone?: string;
 }
 
-export interface UpdateClubDto extends Partial<CreateClubDto> {}
+export type UpdateClubDto = Partial<CreateClubDto>;
 
 export interface AdminUpdateClubDto extends UpdateClubDto {
   isVerified?: boolean;

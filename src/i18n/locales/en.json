@@ -260,6 +260,7 @@
   "clubs": {
     "title": "Clubs",
     "searchPlaceholder": "Search clubs...",
+    "create": "Create Club",
     "createClub": "Create Club",
     "editClub": "Edit Club",
     "viewClub": "View Club",
@@ -268,6 +269,11 @@
     "allClubs": "All Clubs",
     "noClubs": "No clubs found",
     "noClubsDescription": "There are no clubs matching your criteria.",
+    "info": "Club Information",
+    "name": "Club Name",
+    "shortName": "Short Name",
+    "foundedYear": "Founded Year",
+    "colors": "Club Colors",
     "fields": {
       "name": "Club Name",
       "country": "Country",
@@ -307,8 +313,16 @@
   },
   "groups": {
     "title": "Groups & Draw",
+    "subtitle": "Manage tournament groups and draw",
+    "selectTournament": "Select Tournament",
     "executeDraw": "Execute Draw",
     "resetDraw": "Reset Draw",
+    "confirmReset": "Are you sure you want to reset the draw? All group assignments will be lost.",
+    "noTournaments": "No Tournaments Found",
+    "noTournamentsDesc": "Create a tournament first to manage groups",
+    "noGroups": "No Groups Yet",
+    "noGroupsDesc": "Execute a draw to create groups for this tournament",
+    "noTeams": "No teams in this group",
     "numberOfGroups": "Number of Groups",
     "manualAssignment": "Manual Assignment",
     "randomDraw": "Random Draw",
@@ -326,8 +340,20 @@
   "notifications": {
     "title": "Notifications",
     "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
     "noNotifications": "No notifications",
-    "unread": "{{count}} unread"
+    "noNotificationsDesc": "You're all caught up!",
+    "unread": "{{count}} unread",
+    "new": "New",
+    "type": {
+      "INFO": "Info",
+      "SUCCESS": "Success",
+      "WARNING": "Warning",
+      "ERROR": "Error",
+      "TOURNAMENT": "Tournament",
+      "REGISTRATION": "Registration",
+      "INVITATION": "Invitation"
+    }
   },
   "payments": {
     "title": "Payments",
@@ -515,6 +541,23 @@
     "rulesOptional": "Rules (Optional)",
     "rulesPlaceholder": "Enter the rules and regulations for your tournament...",
     "createTournament": "Create Tournament",
+    "format": {
+      "SINGLE_ELIMINATION": "Single Elimination",
+      "DOUBLE_ELIMINATION": "Double Elimination",
+      "ROUND_ROBIN": "Round Robin",
+      "GROUPS_PLUS_KNOCKOUT": "Groups + Knockout"
+    },
+    "ageCategory": {
+      "U8": "Under 8",
+      "U10": "Under 10",
+      "U12": "Under 12",
+      "U14": "Under 14",
+      "U16": "Under 16",
+      "U18": "Under 18",
+      "U21": "Under 21",
+      "SENIOR": "Senior",
+      "VETERANS": "Veterans"
+    },
     "status": {
       "draft": "Draft",
       "DRAFT": "Draft",

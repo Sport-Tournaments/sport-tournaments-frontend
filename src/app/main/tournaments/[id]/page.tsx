@@ -5,9 +5,9 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert } from '@/components/ui';
-import { tournamentService, registrationService } from '@/services';
-import { Tournament, TournamentStatus, Registration } from '@/types';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal } from '@/components/ui';
+import { tournamentService, registrationService, clubService } from '@/services';
+import { Tournament, TournamentStatus, Registration, Club } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { useAuthStore } from '@/store';
 
@@ -20,6 +20,10 @@ export default function TournamentDetailPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [registering, setRegistering] = useState(false);
+  const [userClubs, setUserClubs] = useState<Club[]>([]);
+  const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [showClubModal, setShowClubModal] = useState(false);
+  const [loadingClubs, setLoadingClubs] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -48,31 +52,74 @@ export default function TournamentDetailPage() {
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      window.location.href = '/auth/login';
       return;
     }
 
+    // Fetch user's clubs if not already loaded
+    if (userClubs.length === 0) {
+      setLoadingClubs(true);
+      try {
+        const response = await clubService.getMyClubs();
+        const clubs = response.data || [];
+        setUserClubs(clubs);
+        
+        if (clubs.length === 0) {
+          setError(t('tournament.noClubsToRegister', 'You need to be part of a club to register for tournaments.'));
+          return;
+        } else if (clubs.length === 1) {
+          // Auto-select if user has only one club
+          setSelectedClubId(clubs[0].id);
+          await performRegistration(clubs[0].id);
+        } else {
+          // Show modal for club selection
+          setShowClubModal(true);
+        }
+      } catch (err) {
+        console.error('Failed to fetch clubs:', err);
+        setError(t('tournament.fetchClubsError', 'Failed to load your clubs. Please try again.'));
+      } finally {
+        setLoadingClubs(false);
+      }
+      return;
+    }
+
+    // If clubs already loaded
+    if (userClubs.length === 1) {
+      await performRegistration(userClubs[0].id);
+    } else {
+      setShowClubModal(true);
+    }
+  };
+
+  const performRegistration = async (clubId: string) => {
     setRegistering(true);
+    setShowClubModal(false);
     try {
-      await registrationService.registerForTournament(id as string, {
-        // clubId would be selected from user's clubs
-      } as any);
+      await registrationService.registerForTournament(id as string, { clubId });
+      setError(null);
       fetchTournament();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration failed:', err);
-      setError('Registration failed. Please try again.');
+      const message = err.response?.data?.message || t('tournament.registrationFailed', 'Registration failed. Please try again.');
+      setError(message);
     } finally {
       setRegistering(false);
     }
+  };
+
+  const handleClubSelect = async () => {
+    if (!selectedClubId) {
+      setError(t('tournament.selectClub', 'Please select a club to register with.'));
+      return;
+    }
+    await performRegistration(selectedClubId);
   };
 
   const getStatusBadge = (status: TournamentStatus) => {
     const variants: Partial<Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'>> = {
       'DRAFT': 'default',
       'PUBLISHED': 'info',
-      'REGISTRATION_OPEN': 'success',
-      'REGISTRATION_CLOSED': 'warning',
-      'IN_PROGRESS': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
@@ -217,8 +264,7 @@ export default function TournamentDetailPage() {
           </CardHeader>
           <CardContent>
             <p className="text-center text-gray-500 py-8">
-              {tournament.status === ('REGISTRATION_OPEN' as TournamentStatus) ||
-              tournament.status === ('PUBLISHED' as TournamentStatus)
+              {tournament.status === 'PUBLISHED'
                 ? t('tournament.groupsNotDrawn')
                 : t('tournament.noGroups')}
             </p>
@@ -329,24 +375,24 @@ export default function TournamentDetailPage() {
                   </div>
                 </div>
 
-                {tournament.status === ('REGISTRATION_OPEN' as TournamentStatus) ? (
+                {tournament.status === 'PUBLISHED' ? (
                   <Button
                     variant="primary"
                     fullWidth
                     onClick={handleRegister}
-                    isLoading={registering}
+                    isLoading={registering || loadingClubs}
                   >
                     {t('tournament.register')}
                   </Button>
                 ) : (
                   <Button variant="secondary" fullWidth disabled>
-                    {tournament.status === ('REGISTRATION_CLOSED' as TournamentStatus)
+                    {tournament.status === 'ONGOING' || tournament.status === 'COMPLETED'
                       ? t('tournament.registrationClosed')
                       : t('tournament.registrationNotOpen')}
                   </Button>
                 )}
 
-                {!isAuthenticated && tournament.status === ('REGISTRATION_OPEN' as TournamentStatus) && (
+                {!isAuthenticated && tournament.status === 'PUBLISHED' && (
                   <p className="text-xs text-center text-gray-500 mt-2">
                     {t('tournament.loginToRegister')}
                   </p>
@@ -361,6 +407,67 @@ export default function TournamentDetailPage() {
           <Tabs tabs={tabs} />
         </div>
       </div>
+
+      {/* Club Selection Modal */}
+      <Modal
+        isOpen={showClubModal}
+        onClose={() => setShowClubModal(false)}
+        title={t('tournament.selectClubTitle', 'Select a Club')}
+        description={t('tournament.selectClubDescription', 'Choose which club you want to register for this tournament.')}
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowClubModal(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleClubSelect}
+              isLoading={registering}
+              disabled={!selectedClubId}
+            >
+              {t('tournament.register')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          {userClubs.map((club) => (
+            <label
+              key={club.id}
+              className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                selectedClubId === club.id
+                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              <input
+                type="radio"
+                name="club"
+                value={club.id}
+                checked={selectedClubId === club.id}
+                onChange={(e) => setSelectedClubId(e.target.value)}
+                className="w-4 h-4 text-primary"
+              />
+              <div className="flex-1">
+                <div className="font-medium text-gray-900 dark:text-white">
+                  {club.name}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {club.city}, {club.country}
+                </div>
+              </div>
+              {club.logo && (
+                <img
+                  src={club.logo}
+                  alt={club.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              )}
+            </label>
+          ))}
+        </div>
+      </Modal>
     </MainLayout>
   );
 }

@@ -37,9 +37,6 @@ vi.mock('react-i18next', () => ({
 // Mock auth store
 const mockLogin = vi.fn();
 vi.mock('@/store', () => ({
-  useAuthStore: () => ({
-    login: mockLogin,
-  }),
   useAuthStore: Object.assign(
     () => ({
       login: mockLogin,

@@ -116,7 +116,7 @@ describe('Alert Component', () => {
       const onClose = vi.fn();
       render(<Alert onClose={onClose}>Message</Alert>);
       const button = screen.getByRole('button');
-      expect(button).toHaveAttribute('aria-label', 'Close');
+      expect(button).toHaveAttribute('aria-label', 'Dismiss');
     });
   });
 

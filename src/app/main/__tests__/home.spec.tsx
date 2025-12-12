@@ -125,7 +125,7 @@ describe('Home Page', () => {
     it('should render player count', () => {
       render(<HomePage />);
 
-      expect(screen.getByText('50k+')).toBeInTheDocument();
+      expect(screen.getByText('50K+')).toBeInTheDocument();
       expect(screen.getByText('Players')).toBeInTheDocument();
     });
   });
@@ -182,22 +182,22 @@ describe('Home Page', () => {
   });
 
   describe('Platform Branding', () => {
-    it('should render platform name', () => {
+    it('should render page title', () => {
       render(<HomePage />);
 
-      expect(screen.getByText('Football EU')).toBeInTheDocument();
+      expect(screen.getByText('Youth Football Tournament Management')).toBeInTheDocument();
     });
 
-    it('should render platform tagline', () => {
+    it('should render page subtitle', () => {
       render(<HomePage />);
 
-      expect(screen.getByText('Your Tournament Platform')).toBeInTheDocument();
+      expect(screen.getByText(/complete platform for organizing/i)).toBeInTheDocument();
     });
 
-    it('should render football emoji', () => {
+    it('should render hero image', () => {
       render(<HomePage />);
 
-      expect(screen.getByText('⚽')).toBeInTheDocument();
+      expect(screen.getByAltText('Football Tournament')).toBeInTheDocument();
     });
   });
 
@@ -217,8 +217,8 @@ describe('Home Page', () => {
     it('should render register button in CTA', () => {
       render(<HomePage />);
 
-      // CTA uses "createAccount" translation key
-      expect(screen.getByRole('button', { name: /create account|home\.cta\.createAccount/i })).toBeInTheDocument();
+      // CTA section has organizer and participant buttons
+      expect(screen.getByRole('button', { name: /home\.cta\.organizer/i })).toBeInTheDocument();
     });
   });
 

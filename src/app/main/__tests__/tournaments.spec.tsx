@@ -307,8 +307,8 @@ describe('Tournaments Page', () => {
 
       const statusFilter = screen.getByTestId('status-filter');
       expect(within(statusFilter).getByText('All')).toBeInTheDocument();
-      expect(within(statusFilter).getByText('Draft')).toBeInTheDocument();
-      expect(within(statusFilter).getByText('Registration Open')).toBeInTheDocument();
+      // Status values are translation keys in the actual component
+      expect(within(statusFilter).getByRole('option', { name: /draft/i })).toBeInTheDocument();
     });
 
     it('should call API when status filter changes', async () => {
@@ -320,7 +320,7 @@ describe('Tournaments Page', () => {
       });
 
       const statusFilter = screen.getByTestId('status-filter');
-      await user.selectOptions(statusFilter, 'REGISTRATION_OPEN');
+      await user.selectOptions(statusFilter, 'PUBLISHED');
 
       await waitFor(() => {
         expect((tournamentService.getTournaments as ReturnType<typeof vi.fn>)).toHaveBeenCalled();

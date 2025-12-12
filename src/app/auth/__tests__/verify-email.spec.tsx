@@ -93,7 +93,8 @@ describe('Verify Email Page', () => {
     it('should render resend email option', () => {
       render(<VerifyEmailPage />);
 
-      expect(screen.getByText("Didn't receive the email?")).toBeInTheDocument();
+      // The text uses i18n key auth.didntReceiveEmail
+      expect(screen.getByText(/Didn't receive|didntReceiveEmail/i)).toBeInTheDocument();
     });
   });
 

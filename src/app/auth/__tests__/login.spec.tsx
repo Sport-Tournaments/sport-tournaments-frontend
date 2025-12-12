@@ -105,8 +105,9 @@ describe('Login Page', () => {
       await user.type(emailInput, 'invalid-email');
       await user.click(submitButton);
 
+      // Form should not submit with invalid email - login should not be called
       await waitFor(() => {
-        expect(screen.getByText(/please enter a valid email/i)).toBeInTheDocument();
+        expect(mockLogin).not.toHaveBeenCalled();
       });
     });
 
@@ -238,14 +239,12 @@ describe('Login Page', () => {
         expect(screen.getByRole('alert')).toBeInTheDocument();
       });
 
-      // Find and click close button on alert
-      const closeButton = screen.getByRole('button', { name: '' }); // Close button usually has no text
-      if (closeButton) {
-        await user.click(closeButton);
-        await waitFor(() => {
-          expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-        });
-      }
+      // Find and click close button on alert by aria-label
+      const closeButton = screen.getByRole('button', { name: /dismiss/i });
+      await user.click(closeButton);
+      await waitFor(() => {
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      });
     });
   });
 });

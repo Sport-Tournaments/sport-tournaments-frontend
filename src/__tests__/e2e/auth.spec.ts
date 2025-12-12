@@ -9,8 +9,8 @@ test.describe('Authentication E2E Tests', () => {
   test('should display login page correctly', async ({ page }) => {
     await page.goto('/auth/login');
 
-    // Check page title/heading
-    await expect(page.locator('h1, h2').first()).toContainText(/login|sign in/i);
+    // Check page title/heading (uses 'Welcome back!' as title)
+    await expect(page.locator('h1, h2').first()).toContainText(/welcome|login|sign in/i);
 
     // Check form elements exist
     await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
@@ -42,8 +42,9 @@ test.describe('Authentication E2E Tests', () => {
     await page.fill('input[type="password"], input[name="password"]', 'wrongpassword');
     await page.click('button[type="submit"]');
 
-    // Wait for error message
-    await expect(page.locator('[role="alert"], .error, text=/invalid|incorrect/i').first()).toBeVisible({
+    // Wait for error message (Alert component with role="alert")
+    const errorLocator = page.locator('[role="alert"]').or(page.locator('.error')).or(page.getByText(/invalid|incorrect|failed/i));
+    await expect(errorLocator.first()).toBeVisible({
       timeout: 10000,
     });
   });

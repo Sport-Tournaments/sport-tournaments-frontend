@@ -75,7 +75,6 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          set({ isLoading: false, error: LOGIN_ERROR_MESSAGE });
           throw new Error(LOGIN_ERROR_MESSAGE);
         } catch (error: unknown) {
           const message = extractErrorMessage(error, LOGIN_ERROR_MESSAGE);
@@ -96,7 +95,6 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          set({ isLoading: false, error: REGISTRATION_ERROR_MESSAGE });
           throw new Error(REGISTRATION_ERROR_MESSAGE);
         } catch (error: unknown) {
           const message = extractErrorMessage(error, REGISTRATION_ERROR_MESSAGE);

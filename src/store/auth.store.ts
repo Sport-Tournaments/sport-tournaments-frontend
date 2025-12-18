@@ -6,6 +6,35 @@ import type { User } from '@/types';
 import { authService } from '@/services';
 import { clearAllTokens } from '@/utils/cookies';
 
+// Helper function to extract error message from axios error or generic error
+function extractErrorMessage(error: unknown, defaultMessage: string): string {
+  // Check if error has axios response structure
+  if (
+    error &&
+    typeof error === 'object' &&
+    'response' in error &&
+    error.response &&
+    typeof error.response === 'object' &&
+    'data' in error.response &&
+    error.response.data &&
+    typeof error.response.data === 'object' &&
+    'error' in error.response.data &&
+    error.response.data.error &&
+    typeof error.response.data.error === 'object' &&
+    'message' in error.response.data.error &&
+    typeof error.response.data.error.message === 'string'
+  ) {
+    return error.response.data.error.message;
+  }
+  
+  // Check if error has a message property
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+  
+  return defaultMessage;
+}
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -58,14 +87,8 @@ export const useAuthStore = create<AuthState>()(
           }
           set({ isLoading: false, error: 'Login failed' });
           throw new Error('Login failed');
-        } catch (error: any) {
-          // Extract error message from axios error response
-          let message = 'Login failed';
-          if (error.response?.data?.error?.message) {
-            message = error.response.data.error.message;
-          } else if (error.message) {
-            message = error.message;
-          }
+        } catch (error: unknown) {
+          const message = extractErrorMessage(error, 'Login failed');
           set({ isLoading: false, error: message });
           throw new Error(message);
         }
@@ -85,14 +108,8 @@ export const useAuthStore = create<AuthState>()(
           }
           set({ isLoading: false, error: 'Registration failed' });
           throw new Error('Registration failed');
-        } catch (error: any) {
-          // Extract error message from axios error response
-          let message = 'Registration failed';
-          if (error.response?.data?.error?.message) {
-            message = error.response.data.error.message;
-          } else if (error.message) {
-            message = error.message;
-          }
+        } catch (error: unknown) {
+          const message = extractErrorMessage(error, 'Registration failed');
           set({ isLoading: false, error: message });
           throw new Error(message);
         }

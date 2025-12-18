@@ -2,33 +2,23 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import axios from 'axios';
 import type { User } from '@/types';
 import { authService } from '@/services';
 import { clearAllTokens } from '@/utils/cookies';
 
+const LOGIN_ERROR_MESSAGE = 'Login failed';
+const REGISTRATION_ERROR_MESSAGE = 'Registration failed';
+
 // Helper function to extract error message from axios error or generic error
 function extractErrorMessage(error: unknown, defaultMessage: string): string {
-  // Check if error has axios response structure
-  if (
-    error &&
-    typeof error === 'object' &&
-    'response' in error &&
-    error.response &&
-    typeof error.response === 'object' &&
-    'data' in error.response &&
-    error.response.data &&
-    typeof error.response.data === 'object' &&
-    'error' in error.response.data &&
-    error.response.data.error &&
-    typeof error.response.data.error === 'object' &&
-    'message' in error.response.data.error &&
-    typeof error.response.data.error.message === 'string'
-  ) {
+  // Check if error is an axios error with our API error structure
+  if (axios.isAxiosError(error) && error.response?.data?.error?.message) {
     return error.response.data.error.message;
   }
   
   // Check if error has a message property
-  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+  if (error instanceof Error) {
     return error.message;
   }
   
@@ -85,10 +75,10 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          set({ isLoading: false, error: 'Login failed' });
-          throw new Error('Login failed');
+          set({ isLoading: false, error: LOGIN_ERROR_MESSAGE });
+          throw new Error(LOGIN_ERROR_MESSAGE);
         } catch (error: unknown) {
-          const message = extractErrorMessage(error, 'Login failed');
+          const message = extractErrorMessage(error, LOGIN_ERROR_MESSAGE);
           set({ isLoading: false, error: message });
           throw new Error(message);
         }
@@ -106,10 +96,10 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          set({ isLoading: false, error: 'Registration failed' });
-          throw new Error('Registration failed');
+          set({ isLoading: false, error: REGISTRATION_ERROR_MESSAGE });
+          throw new Error(REGISTRATION_ERROR_MESSAGE);
         } catch (error: unknown) {
-          const message = extractErrorMessage(error, 'Registration failed');
+          const message = extractErrorMessage(error, REGISTRATION_ERROR_MESSAGE);
           set({ isLoading: false, error: message });
           throw new Error(message);
         }

@@ -530,8 +530,6 @@
     "registrationEndDate": "Registration Closes",
     "startDate": "Tournament Start",
     "endDate": "Tournament End",
-    "format": "Tournament Format",
-    "ageCategory": "Age Category",
     "minTeams": "Minimum Teams",
     "maxTeams": "Maximum Teams",
     "registrationFee": "Registration Fee",
@@ -542,12 +540,14 @@
     "rulesPlaceholder": "Enter the rules and regulations for your tournament...",
     "createTournament": "Create Tournament",
     "format": {
+      "label": "Tournament Format",
       "SINGLE_ELIMINATION": "Single Elimination",
       "DOUBLE_ELIMINATION": "Double Elimination",
       "ROUND_ROBIN": "Round Robin",
       "GROUPS_PLUS_KNOCKOUT": "Groups + Knockout"
     },
     "ageCategory": {
+      "label": "Age Category",
       "U8": "Under 8",
       "U10": "Under 10",
       "U12": "Under 12",

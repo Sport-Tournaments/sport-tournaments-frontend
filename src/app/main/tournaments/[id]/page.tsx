@@ -366,11 +366,11 @@ export default function TournamentDetailPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{t('tournament.ageCategory')}</span>
+                    <span className="text-gray-500">{t('tournament.ageCategory.label')}</span>
                     <span className="font-medium">{tournament.ageCategory || 'Open'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{t('tournament.format')}</span>
+                    <span className="text-gray-500">{t('tournament.format.label')}</span>
                     <span className="font-medium">{tournament.format || 'Groups + Knockout'}</span>
                   </div>
                 </div>

@@ -30,6 +30,8 @@
     "select": "Selectează",
     "selectAll": "Selectează tot",
     "noResults": "Niciun rezultat găsit",
+    "noMoreResults": "Nu mai sunt rezultate de încărcat",
+    "retry": "Încearcă din nou",
     "showMore": "Afișează mai mult",
     "showLess": "Afișează mai puțin",
     "required": "Obligatoriu",

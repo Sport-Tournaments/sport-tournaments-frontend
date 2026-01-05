@@ -30,6 +30,8 @@
     "select": "Select",
     "selectAll": "Select all",
     "noResults": "No results found",
+    "noMoreResults": "No more results to load",
+    "retry": "Try again",
     "showMore": "Show more",
     "showLess": "Show less",
     "required": "Required",

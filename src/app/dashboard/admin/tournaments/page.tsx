@@ -1,24 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Input, Select, Pagination, Alert } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Input, Select, Alert } from '@/components/ui';
 import { useAuthStore } from '@/store';
 import { tournamentService } from '@/services';
 import type { Tournament, TournamentStatus } from '@/types';
 import { formatDate } from '@/utils/date';
+import { useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 10;
 
 export default function AdminTournamentsPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
@@ -27,57 +26,64 @@ export default function AdminTournamentsPage() {
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
       router.push('/dashboard');
-      return;
     }
-    fetchTournaments();
-  }, [user, router, currentPage, statusFilter]);
+  }, [user, router]);
 
-  const fetchTournaments = async () => {
-    setLoading(true);
-    try {
-      const params: any = { page: currentPage, pageSize: 10 };
-      if (statusFilter !== 'all') params.status = statusFilter;
-      if (search) params.search = search;
-      
-      const response = await tournamentService.getTournaments(params);
-      const resData = response.data as any;
-      
-      // Handle different response structures
-      let tournamentData: Tournament[] = [];
-      let pages = 1;
-      
-      if (Array.isArray(resData)) {
-        tournamentData = resData;
-      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-        tournamentData = resData.data.items;
-        pages = resData.data.totalPages || 1;
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        tournamentData = resData.items;
-        pages = resData.totalPages || 1;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        tournamentData = resData.data;
-        pages = resData.totalPages || 1;
-      }
-      
-      setTournaments(tournamentData);
-      setTotalPages(pages);
-    } catch (err: any) {
-      setError('Failed to load tournaments');
-    } finally {
-      setLoading(false);
+  const fetchTournaments = useCallback(async (page: number) => {
+    const params: any = { page, pageSize: PAGE_SIZE };
+    if (statusFilter !== 'all') params.status = statusFilter;
+    if (search) params.search = search;
+    
+    const response = await tournamentService.getTournaments(params);
+    const resData = response.data as any;
+    
+    // Handle different response structures
+    let tournamentData: Tournament[] = [];
+    let totalPages = 1;
+    
+    if (Array.isArray(resData)) {
+      tournamentData = resData;
+    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+      tournamentData = resData.data.items;
+      totalPages = resData.data.totalPages || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      tournamentData = resData.items;
+      totalPages = resData.totalPages || 1;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      tournamentData = resData.data;
+      totalPages = resData.totalPages || 1;
     }
-  };
+    
+    return {
+      items: tournamentData,
+      hasMore: page < totalPages,
+      totalPages,
+    };
+  }, [statusFilter, search]);
+
+  const {
+    items: tournaments,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error: fetchError,
+    sentinelRef,
+    retry,
+    reset,
+  } = useInfiniteScroll<Tournament>({
+    fetchData: fetchTournaments,
+    dependencies: [statusFilter, search],
+  });
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    fetchTournaments();
+    reset();
   };
 
   const handleStatusChange = async (tournamentId: string, newStatus: TournamentStatus) => {
     try {
       await tournamentService.adminUpdateTournament(tournamentId, { status: newStatus });
       setSuccess('Tournament status updated');
-      fetchTournaments();
+      reset();
     } catch (err: any) {
       setError('Failed to update tournament status');
     }
@@ -89,7 +95,7 @@ export default function AdminTournamentsPage() {
     try {
       await tournamentService.deleteTournament(tournamentId);
       setSuccess('Tournament deleted successfully');
-      fetchTournaments();
+      reset();
     } catch (err: any) {
       setError('Failed to delete tournament');
     }
@@ -149,10 +155,7 @@ export default function AdminTournamentsPage() {
                   <Select
                     options={statusOptions}
                     value={statusFilter}
-                    onChange={(e) => {
-                      setStatusFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
+                    onChange={(e) => setStatusFilter(e.target.value)}
                   />
                 </div>
                 <Button variant="primary" onClick={handleSearch}>
@@ -164,10 +167,25 @@ export default function AdminTournamentsPage() {
         </Card>
 
         {/* Tournaments List */}
-        {loading ? (
+        {isLoading && tournaments.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loading size="lg" />
           </div>
+        ) : fetchError ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                {t('common.error')}
+              </h3>
+              <p className="text-gray-500 mb-4">{fetchError.message}</p>
+              <Button variant="primary" onClick={retry}>
+                {t('common.retry')}
+              </Button>
+            </CardContent>
+          </Card>
         ) : tournaments.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -254,13 +272,13 @@ export default function AdminTournamentsPage() {
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            {/* Infinite scroll sentinel */}
+            {hasMore && (
+              <div 
+                ref={sentinelRef} 
+                className="flex justify-center py-8"
+              >
+                {isFetchingMore && <Loading size="md" />}
               </div>
             )}
           </>

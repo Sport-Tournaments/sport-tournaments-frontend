@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Input, Pagination, Alert } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Input, Alert } from '@/components/ui';
 import { useAuthStore } from '@/store';
-import { adminService, clubService } from '@/services';
+import { clubService } from '@/services';
 import type { Club } from '@/types';
+import { useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 12;
 
 export default function AdminClubsPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -25,56 +24,63 @@ export default function AdminClubsPage() {
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
       router.push('/dashboard');
-      return;
     }
-    fetchClubs();
-  }, [user, router, currentPage]);
+  }, [user, router]);
 
-  const fetchClubs = async () => {
-    setLoading(true);
-    try {
-      const params: any = { page: currentPage, pageSize: 10 };
-      if (search) params.search = search;
-      
-      const response = await clubService.getClubs(params);
-      const resData = response.data as any;
-      
-      // Handle different response structures
-      let clubData: Club[] = [];
-      let pages = 1;
-      
-      if (Array.isArray(resData)) {
-        clubData = resData;
-      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-        clubData = resData.data.items;
-        pages = resData.data.totalPages || 1;
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        clubData = resData.items;
-        pages = resData.totalPages || 1;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        clubData = resData.data;
-        pages = resData.totalPages || 1;
-      }
-      
-      setClubs(clubData);
-      setTotalPages(pages);
-    } catch (err: any) {
-      setError('Failed to load clubs');
-    } finally {
-      setLoading(false);
+  const fetchClubs = useCallback(async (page: number) => {
+    const params: any = { page, pageSize: PAGE_SIZE };
+    if (search) params.search = search;
+    
+    const response = await clubService.getClubs(params);
+    const resData = response.data as any;
+    
+    // Handle different response structures
+    let clubData: Club[] = [];
+    let totalPages = 1;
+    
+    if (Array.isArray(resData)) {
+      clubData = resData;
+    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+      clubData = resData.data.items;
+      totalPages = resData.data.totalPages || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      clubData = resData.items;
+      totalPages = resData.totalPages || 1;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      clubData = resData.data;
+      totalPages = resData.totalPages || 1;
     }
-  };
+    
+    return {
+      items: clubData,
+      hasMore: page < totalPages,
+      totalPages,
+    };
+  }, [search]);
+
+  const {
+    items: clubs,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error: fetchError,
+    sentinelRef,
+    retry,
+    reset,
+  } = useInfiniteScroll<Club>({
+    fetchData: fetchClubs,
+    dependencies: [search],
+  });
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    fetchClubs();
+    reset();
   };
 
   const handleVerify = async (clubId: string) => {
     try {
       await clubService.verifyClub(clubId);
       setSuccess('Club verified successfully');
-      fetchClubs();
+      reset();
     } catch (err: any) {
       setError('Failed to verify club');
     }
@@ -86,7 +92,7 @@ export default function AdminClubsPage() {
     try {
       await clubService.deleteClub(clubId);
       setSuccess('Club deleted successfully');
-      fetchClubs();
+      reset();
     } catch (err: any) {
       setError('Failed to delete club');
     }
@@ -129,10 +135,25 @@ export default function AdminClubsPage() {
         </Card>
 
         {/* Clubs List */}
-        {loading ? (
+        {isLoading && clubs.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loading size="lg" />
           </div>
+        ) : fetchError ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                {t('common.error')}
+              </h3>
+              <p className="text-gray-500 mb-4">{fetchError.message}</p>
+              <Button variant="primary" onClick={retry}>
+                {t('common.retry')}
+              </Button>
+            </CardContent>
+          </Card>
         ) : clubs.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -219,13 +240,13 @@ export default function AdminClubsPage() {
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            {/* Infinite scroll sentinel */}
+            {hasMore && (
+              <div 
+                ref={sentinelRef} 
+                className="flex justify-center py-8"
+              >
+                {isFetchingMore && <Loading size="md" />}
               </div>
             )}
           </>

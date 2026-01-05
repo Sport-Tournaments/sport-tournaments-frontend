@@ -1,23 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Loading, Input, Select, Pagination, Modal, Alert } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Input, Select, Modal, Alert } from '@/components/ui';
 import { useAuthStore } from '@/store';
 import { adminService } from '@/services';
 import type { User, UserRole } from '@/types';
 import { formatDateTime } from '@/utils/date';
+import { useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 10;
 
 export default function AdminUsersPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<User[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -28,89 +27,57 @@ export default function AdminUsersPage() {
   useEffect(() => {
     if (currentUser && currentUser.role !== 'ADMIN') {
       router.push('/dashboard');
-      return;
     }
-    fetchUsers();
-  }, [currentUser, router, currentPage, roleFilter]);
+  }, [currentUser, router]);
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const params: any = { page: currentPage, pageSize: 10 };
-      if (roleFilter !== 'all') params.role = roleFilter;
-      if (search) params.search = search;
-      
-      const response = await adminService.getUsers(params);
-      const resData = response.data as any;
-      
-      // Handle different response structures
-      let userData: User[] = [];
-      let pages = 1;
-      
-      if (Array.isArray(resData)) {
-        userData = resData;
-      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-        userData = resData.data.items;
-        pages = resData.data.totalPages || 1;
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        userData = resData.items;
-        pages = resData.totalPages || 1;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        userData = resData.data;
-        pages = resData.totalPages || 1;
-      }
-      
-      setUsers(userData);
-      setTotalPages(pages);
-    } catch (err: any) {
-      setError('Failed to load users');
-      // Mock data for demo
-      setUsers([
-        {
-          id: '1',
-          email: 'admin@example.com',
-          firstName: 'Admin',
-          lastName: 'User',
-          role: 'ADMIN' as UserRole,
-          isActive: true,
-          isVerified: true,
-          country: 'Romania',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          email: 'organizer@example.com',
-          firstName: 'Tournament',
-          lastName: 'Organizer',
-          role: 'ORGANIZER' as UserRole,
-          isActive: true,
-          isVerified: true,
-          country: 'Romania',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          email: 'participant@example.com',
-          firstName: 'Club',
-          lastName: 'Manager',
-          role: 'PARTICIPANT' as UserRole,
-          isActive: true,
-          isVerified: false,
-          country: 'Romania',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
+  const fetchUsers = useCallback(async (page: number) => {
+    const params: any = { page, pageSize: PAGE_SIZE };
+    if (roleFilter !== 'all') params.role = roleFilter;
+    if (search) params.search = search;
+    
+    const response = await adminService.getUsers(params);
+    const resData = response.data as any;
+    
+    // Handle different response structures
+    let userData: User[] = [];
+    let totalPages = 1;
+    
+    if (Array.isArray(resData)) {
+      userData = resData;
+    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+      userData = resData.data.items;
+      totalPages = resData.data.totalPages || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      userData = resData.items;
+      totalPages = resData.totalPages || 1;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      userData = resData.data;
+      totalPages = resData.totalPages || 1;
     }
-  };
+    
+    return {
+      items: userData,
+      hasMore: page < totalPages,
+      totalPages,
+    };
+  }, [roleFilter, search]);
+
+  const {
+    items: users,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error: fetchError,
+    sentinelRef,
+    retry,
+    reset,
+  } = useInfiniteScroll<User>({
+    fetchData: fetchUsers,
+    dependencies: [roleFilter, search],
+  });
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    fetchUsers();
+    reset();
   };
 
   const handleUpdateUser = async (data: Partial<User>) => {
@@ -120,7 +87,7 @@ export default function AdminUsersPage() {
       await adminService.updateUser(selectedUser.id, data);
       setSuccess('User updated successfully');
       setShowEditModal(false);
-      fetchUsers();
+      reset();
     } catch (err: any) {
       setError('Failed to update user');
     }
@@ -130,7 +97,7 @@ export default function AdminUsersPage() {
     try {
       await adminService.updateUser(userId, { isActive });
       setSuccess(`User ${isActive ? 'activated' : 'deactivated'} successfully`);
-      fetchUsers();
+      reset();
     } catch (err: any) {
       setError('Failed to update user status');
     }
@@ -188,10 +155,7 @@ export default function AdminUsersPage() {
                   <Select
                     options={roleOptions}
                     value={roleFilter}
-                    onChange={(e) => {
-                      setRoleFilter(e.target.value);
-                      setCurrentPage(1);
-                    }}
+                    onChange={(e) => setRoleFilter(e.target.value)}
                   />
                 </div>
                 <Button variant="primary" onClick={handleSearch}>
@@ -205,9 +169,22 @@ export default function AdminUsersPage() {
         {/* Users Table */}
         <Card>
           <CardContent className="p-0">
-            {loading ? (
+            {isLoading && users.length === 0 ? (
               <div className="flex justify-center py-12">
                 <Loading size="lg" />
+              </div>
+            ) : fetchError ? (
+              <div className="text-center py-12">
+                <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  {t('common.error')}
+                </h3>
+                <p className="text-gray-500 mb-4">{fetchError.message}</p>
+                <Button variant="primary" onClick={retry}>
+                  {t('common.retry')}
+                </Button>
               </div>
             ) : users.length === 0 ? (
               <div className="text-center py-12">
@@ -298,16 +275,17 @@ export default function AdminUsersPage() {
                 </table>
               </div>
             )}
+            
+            {/* Infinite scroll sentinel */}
+            {hasMore && (
+              <div 
+                ref={sentinelRef} 
+                className="flex justify-center py-8 border-t border-gray-200 dark:border-gray-700"
+              >
+                {isFetchingMore && <Loading size="md" />}
+              </div>
+            )}
           </CardContent>
-          {totalPages > 1 && (
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
         </Card>
 
         {/* Edit User Modal */}

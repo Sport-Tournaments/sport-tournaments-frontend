@@ -1,61 +1,66 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Pagination, Tabs } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading } from '@/components/ui';
 import { registrationService } from '@/services';
 import type { Registration, RegistrationStatus } from '@/types';
 import { formatDateTime } from '@/utils/date';
+import { useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 10;
 
 export default function RegistrationsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all');
 
-  useEffect(() => {
-    fetchRegistrations();
-  }, [currentPage, statusFilter]);
-
-  const fetchRegistrations = async () => {
-    setLoading(true);
-    try {
-      const params: any = { page: currentPage, pageSize: 10 };
-      if (statusFilter !== 'all') {
-        params.status = statusFilter;
-      }
-      const response = await registrationService.getMyRegistrations(params);
-      const resData = response.data as any;
-      
-      // Handle different response structures
-      let registrationData: Registration[] = [];
-      let pages = 1;
-      
-      if (Array.isArray(resData)) {
-        registrationData = resData;
-      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-        registrationData = resData.data.items;
-        pages = resData.data.totalPages || resData.data.meta?.totalPages || 1;
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        registrationData = resData.items;
-        pages = resData.totalPages || resData.meta?.totalPages || 1;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        registrationData = resData.data;
-        pages = resData.totalPages || resData.meta?.totalPages || 1;
-      }
-      
-      setRegistrations(registrationData);
-      setTotalPages(pages);
-    } catch (error) {
-      console.error('Failed to fetch registrations:', error);
-    } finally {
-      setLoading(false);
+  const fetchRegistrations = useCallback(async (page: number) => {
+    const params: any = { page, pageSize: PAGE_SIZE };
+    if (statusFilter !== 'all') {
+      params.status = statusFilter;
     }
-  };
+    const response = await registrationService.getMyRegistrations(params);
+    const resData = response.data as any;
+    
+    // Handle different response structures
+    let registrationData: Registration[] = [];
+    let totalPages = 1;
+    
+    if (Array.isArray(resData)) {
+      registrationData = resData;
+    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+      registrationData = resData.data.items;
+      totalPages = resData.data.totalPages || resData.data.meta?.totalPages || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      registrationData = resData.items;
+      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      registrationData = resData.data;
+      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
+    }
+    
+    return {
+      items: registrationData,
+      hasMore: page < totalPages,
+      totalPages,
+    };
+  }, [statusFilter]);
+
+  const {
+    items: registrations,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error,
+    sentinelRef,
+    retry,
+    reset,
+  } = useInfiniteScroll<Registration>({
+    fetchData: fetchRegistrations,
+    dependencies: [statusFilter],
+  });
 
   const getStatusBadge = (status: RegistrationStatus) => {
     const variants: Record<RegistrationStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
@@ -72,24 +77,17 @@ export default function RegistrationsPage() {
     
     try {
       await registrationService.withdrawRegistration(registrationId);
-      fetchRegistrations();
+      reset();
     } catch (error) {
       console.error('Failed to withdraw:', error);
     }
   };
 
-  const statusCounts = {
-    all: registrations.length,
-    pending: registrations.filter(r => r.status === 'PENDING').length,
-    approved: registrations.filter(r => r.status === 'APPROVED').length,
-    rejected: registrations.filter(r => r.status === 'REJECTED').length,
-  };
-
   const tabs = [
-    { id: 'all', label: `All (${statusCounts.all})` },
-    { id: 'pending', label: `Pending (${statusCounts.pending})` },
-    { id: 'approved', label: `Approved (${statusCounts.approved})` },
-    { id: 'rejected', label: `Rejected (${statusCounts.rejected})` },
+    { id: 'all', label: t('common.all') },
+    { id: 'pending', label: t('registration.status.PENDING') },
+    { id: 'approved', label: t('registration.status.APPROVED') },
+    { id: 'rejected', label: t('registration.status.REJECTED') },
   ];
 
   return (
@@ -119,10 +117,7 @@ export default function RegistrationsPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => {
-                setStatusFilter(tab.id as any);
-                setCurrentPage(1);
-              }}
+              onClick={() => setStatusFilter(tab.id as any)}
               className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                 statusFilter === tab.id
                   ? 'bg-primary text-white'
@@ -134,10 +129,25 @@ export default function RegistrationsPage() {
           ))}
         </div>
 
-        {loading ? (
+        {isLoading && registrations.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loading size="lg" />
           </div>
+        ) : error ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                {t('common.error')}
+              </h3>
+              <p className="text-gray-500 mb-4">{error.message}</p>
+              <Button variant="primary" onClick={retry}>
+                {t('common.retry')}
+              </Button>
+            </CardContent>
+          </Card>
         ) : registrations.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
@@ -227,13 +237,13 @@ export default function RegistrationsPage() {
               ))}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+            {/* Infinite scroll sentinel */}
+            {hasMore && (
+              <div 
+                ref={sentinelRef} 
+                className="flex justify-center py-8"
+              >
+                {isFetchingMore && <Loading size="md" />}
               </div>
             )}
           </>

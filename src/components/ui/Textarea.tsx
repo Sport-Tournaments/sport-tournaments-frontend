@@ -26,12 +26,19 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ) => {
     const textareaId = id || props.name;
 
+    const baseStyles = 'block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-gray-800 dark:text-white dark:outline-gray-600 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 min-h-[100px] resize-y';
+    
+    const errorStyles = 'block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-red-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-red-600 sm:text-sm/6 dark:bg-gray-800 dark:text-white dark:outline-red-500/50 dark:placeholder:text-gray-500 dark:focus:outline-red-500 min-h-[100px] resize-y';
+
     return (
       <div className={cn('space-y-1.5', containerClassName)}>
         {label && (
           <label
             htmlFor={textareaId}
-            className={cn('label', required && 'label-required')}
+            className={cn(
+              'block text-sm/6 font-medium text-gray-900 dark:text-white',
+              required && "after:content-['*'] after:ml-0.5 after:text-red-500"
+            )}
           >
             {label}
           </label>
@@ -40,7 +47,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            error ? 'textarea border-[var(--color-error)]' : 'textarea',
+            error ? errorStyles : baseStyles,
             className
           )}
           aria-invalid={error ? 'true' : 'false'}
@@ -50,12 +57,12 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p id={`${textareaId}-error`} className="error-text">
+          <p id={`${textareaId}-error`} className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${textareaId}-helper`} className="helper-text">
+          <p id={`${textareaId}-helper`} className="text-sm text-gray-500 dark:text-gray-400">
             {helperText}
           </p>
         )}

@@ -70,7 +70,7 @@ export default function PaymentsPage() {
             {t('nav.payments')}
           </h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-            View and manage your tournament payments
+            {t('payments.subtitle')}
           </p>
         </div>
 
@@ -85,13 +85,13 @@ export default function PaymentsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No payments yet
+                {t('payments.noPayments')}
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
-                Register for tournaments to see your payment history here.
+                {t('payments.noPaymentsDesc')}
               </p>
               <Link href="/main/tournaments" className="text-primary hover:underline">
-                Browse Tournaments
+                {t('payments.browseTournaments')}
               </Link>
             </CardContent>
           </Card>
@@ -123,7 +123,7 @@ export default function PaymentsPage() {
                         href={`/dashboard/registrations/${registration.id}`}
                         className="text-sm text-primary hover:underline"
                       >
-                        View Details →
+                        {t('payments.viewDetails')} →
                       </Link>
                     </div>
                   </div>
@@ -138,32 +138,32 @@ export default function PaymentsPage() {
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Payment Summary
+                {t('payments.summary')}
               </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {registrations.length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Total</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.total')}</p>
                 </div>
                 <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {registrations.filter(r => r.paymentStatus === 'PENDING').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.pending')}</p>
                 </div>
                 <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                     {registrations.filter(r => r.paymentStatus === 'COMPLETED').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.completed')}</p>
                 </div>
                 <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
                   <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                     {registrations.filter(r => r.paymentStatus === 'FAILED').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Failed</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.failed')}</p>
                 </div>
               </div>
             </CardContent>

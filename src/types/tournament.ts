@@ -20,6 +20,8 @@ export interface AgeGroup {
   displayLabel?: string;
   gameSystem?: string;
   teamCount?: number;
+  minTeams?: number;
+  guaranteedMatches?: number;
   startDate?: string;
   endDate?: string;
   locationId?: string;
@@ -82,8 +84,11 @@ export interface Tournament {
   country?: string;
   status: TournamentStatus;
   isPrivate: boolean;
+  invitationCode?: string;
+  invitationCodeExpiresAt?: string;
   visibilitySettings?: VisibilitySettings;
   bracketType?: BracketType;
+  distance?: number;
   groupCount?: number;
   teamsPerGroup?: number;
   thirdPlaceMatch?: boolean;
@@ -116,11 +121,11 @@ export interface CreateTournamentDto {
   location: string;
   latitude?: number;
   longitude?: number;
-  ageCategory: AgeCategory;
+  ageCategory?: AgeCategory; // Made optional - configuration moved to ageGroups
   level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;
-  maxTeams: number;
+  maxTeams?: number; // Made optional - configuration moved to ageGroups
   regulationsDocument?: string;
   currency?: Currency;
   participationFee?: number;
@@ -140,7 +145,7 @@ export interface CreateTournamentDto {
   brochureUrl?: string;
   socialMediaAssets?: Record<string, string>;
   urlSlug?: string;
-  ageGroups?: Omit<AgeGroup, 'id'>[];
+  ageGroups?: Omit<AgeGroup, 'id'>[]; // Now primary way to configure tournament
   locations?: Omit<TournamentLocation, 'id'>[];
 }
 
@@ -169,6 +174,7 @@ export interface TournamentFilters {
   userLatitude?: number;
   userLongitude?: number;
   maxDistance?: number;
+  sortByDistance?: boolean;
   isPremium?: boolean;
   isFeatured?: boolean;
   hasAvailableSpots?: boolean;

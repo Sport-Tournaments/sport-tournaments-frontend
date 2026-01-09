@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Modal } from '@/components/ui';
 import { registrationService, tournamentService } from '@/services';
 import type { Registration, Tournament, RegistrationStatus, PaymentStatus } from '@/types';
 import { formatDateTime, formatDate } from '@/utils/date';
@@ -19,6 +19,10 @@ export default function RegistrationDetailPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Withdraw modal state
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -63,15 +67,23 @@ export default function RegistrationDetailPage() {
     return variants[status] || 'default';
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = () => {
     if (!registration) return;
-    if (!confirm('Are you sure you want to withdraw this registration? This action cannot be undone.')) return;
+    setWithdrawModalOpen(true);
+  };
+
+  const confirmWithdraw = async () => {
+    if (!registration) return;
     
+    setWithdrawing(true);
     try {
       await registrationService.withdrawRegistration(registration.id);
+      setWithdrawModalOpen(false);
       fetchData();
     } catch (err: any) {
       setError('Failed to withdraw registration');
+    } finally {
+      setWithdrawing(false);
     }
   };
 
@@ -335,6 +347,34 @@ export default function RegistrationDetailPage() {
           </Card>
         )}
       </div>
+
+      {/* Withdraw Confirmation Modal */}
+      <Modal
+        isOpen={withdrawModalOpen}
+        onClose={() => setWithdrawModalOpen(false)}
+        title={t('registration.withdrawTitle', 'Withdraw Registration')}
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-300">
+            {t('registration.withdrawConfirm', 'Are you sure you want to withdraw this registration? This action cannot be undone.')}
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setWithdrawModalOpen(false)}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmWithdraw}
+              isLoading={withdrawing}
+            >
+              {t('registration.withdraw', 'Withdraw')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

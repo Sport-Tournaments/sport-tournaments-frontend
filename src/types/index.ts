@@ -59,3 +59,4 @@ export * from './groups';
 export * from './notification';
 export * from './payment';
 export * from './admin';
+export * from './location';

@@ -140,7 +140,7 @@ export default function SettingsPage() {
           {/* Avatar */}
           <Card>
             <CardHeader>
-              <CardTitle>Profile Picture</CardTitle>
+              <CardTitle>{t('settings.profilePicture')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-6">
@@ -157,8 +157,8 @@ export default function SettingsPage() {
                     onFilesSelected={(files) => setAvatarFile(files[0])}
                   >
                     <div className="text-center">
-                      <p className="text-sm font-medium">Upload new photo</p>
-                      <p className="text-xs text-gray-500">PNG, JPG up to 2MB</p>
+                      <p className="text-sm font-medium">{t('settings.uploadPhoto')}</p>
+                      <p className="text-xs text-gray-500">{t('settings.photoFormat')}</p>
                     </div>
                   </FileUpload>
                 </div>
@@ -197,9 +197,9 @@ export default function SettingsPage() {
                 {...registerProfile('phone')}
               />
               <Textarea
-                label="Bio"
+                label={t('common.bio')}
                 rows={3}
-                placeholder="Tell us about yourself..."
+                placeholder={t('settings.bioPlaceholder')}
                 error={profileErrors.bio?.message}
                 {...registerProfile('bio')}
               />
@@ -278,19 +278,19 @@ export default function SettingsPage() {
           {/* Two-Factor Authentication */}
           <Card>
             <CardHeader>
-              <CardTitle>Two-Factor Authentication</CardTitle>
+              <CardTitle>{t('settings.twoFactorAuth')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    Protect your account with 2FA
+                    {t('settings.protect2fa')}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Add an extra layer of security to your account
+                    {t('settings.twoFactorDesc')}
                   </p>
                 </div>
-                <Button variant="outline">Enable 2FA</Button>
+                <Button variant="outline">{t('settings.enable2fa')}</Button>
               </div>
             </CardContent>
           </Card>
@@ -298,7 +298,7 @@ export default function SettingsPage() {
           {/* Sessions */}
           <Card>
             <CardHeader>
-              <CardTitle>Active Sessions</CardTitle>
+              <CardTitle>{t('settings.sessions')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -310,15 +310,15 @@ export default function SettingsPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Current Session</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{t('settings.currentSession')}</p>
                       <p className="text-sm text-gray-500">Windows • Chrome</p>
                     </div>
                   </div>
-                  <span className="text-sm text-green-600 font-medium">Active now</span>
+                  <span className="text-sm text-green-600 font-medium">{t('settings.activeNow')}</span>
                 </div>
               </div>
               <div className="mt-4">
-                <Button variant="danger" size="sm">Sign out all other sessions</Button>
+                <Button variant="danger" size="sm">{t('settings.signOutAllSessions')}</Button>
               </div>
             </CardContent>
           </Card>
@@ -335,56 +335,56 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white">Email Notifications</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('settings.emailNotifications')}</h4>
               
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Tournament Updates</p>
-                  <p className="text-sm text-gray-500">Get notified about tournaments you're registered for</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.tournamentUpdates')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.tournamentUpdatesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Registration Status</p>
-                  <p className="text-sm text-gray-500">Updates when your registration is approved or rejected</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.registrationStatus')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.registrationStatusDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Match Reminders</p>
-                  <p className="text-sm text-gray-500">Remind me before matches</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.matchReminders')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.matchRemindersDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Marketing Emails</p>
-                  <p className="text-sm text-gray-500">News, announcements, and promotional content</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.marketingEmails')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.marketingEmailsDesc')}</p>
                 </div>
                 <input type="checkbox" className="w-5 h-5 text-primary rounded" />
               </label>
             </div>
 
             <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white">Push Notifications</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white">{t('settings.pushNotifications')}</h4>
               
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Live Match Updates</p>
-                  <p className="text-sm text-gray-500">Real-time score updates</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.liveMatchUpdates')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.liveMatchUpdatesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
               </label>
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Chat Messages</p>
-                  <p className="text-sm text-gray-500">Notify when you receive new messages</p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.chatMessages')}</p>
+                  <p className="text-sm text-gray-500">{t('settings.chatMessagesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
               </label>
@@ -425,15 +425,15 @@ export default function SettingsPage() {
               <div className="grid grid-cols-3 gap-4">
                 <button className="p-4 border-2 border-primary rounded-lg bg-white">
                   <div className="w-full h-12 bg-gray-100 rounded mb-2"></div>
-                  <span className="text-sm font-medium">Light</span>
+                  <span className="text-sm font-medium">{t('settings.themeLight')}</span>
                 </button>
                 <button className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-gray-900">
                   <div className="w-full h-12 bg-gray-800 rounded mb-2"></div>
-                  <span className="text-sm font-medium text-white">Dark</span>
+                  <span className="text-sm font-medium text-white">{t('settings.themeDark')}</span>
                 </button>
                 <button className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-b from-white to-gray-900">
                   <div className="w-full h-12 bg-gradient-to-r from-gray-100 to-gray-800 rounded mb-2"></div>
-                  <span className="text-sm font-medium">System</span>
+                  <span className="text-sm font-medium">{t('settings.themeSystem')}</span>
                 </button>
               </div>
             </CardContent>
@@ -441,14 +441,14 @@ export default function SettingsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Danger Zone</CardTitle>
+              <CardTitle>{t('settings.dangerZone')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-900 rounded-lg">
                 <div>
                   <p className="font-medium text-red-600">{t('settings.deleteAccount')}</p>
                   <p className="text-sm text-gray-500">
-                    Once you delete your account, there is no going back
+                    {t('settings.deleteAccountWarning')}
                   </p>
                 </div>
                 <Button variant="danger">{t('settings.deleteAccount')}</Button>
@@ -468,7 +468,7 @@ export default function SettingsPage() {
             {t('settings.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Manage your account settings and preferences
+            {t('settings.subtitle')}
           </p>
         </div>
 

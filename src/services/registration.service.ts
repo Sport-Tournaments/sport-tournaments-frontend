@@ -5,6 +5,10 @@ import type {
   CreateRegistrationDto,
   UpdateRegistrationDto,
   AdminUpdateRegistrationDto,
+  ApproveRegistrationDto,
+  RejectRegistrationDto,
+  BulkReviewDto,
+  BulkReviewResult,
   RegistrationFilters,
   RegistrationStatistics,
   ApiResponse,
@@ -28,9 +32,28 @@ export async function getTournamentRegistrations(
   filters?: RegistrationFilters
 ): Promise<PaginatedResponse<Registration>> {
   const queryString = filters ? buildQueryString(filters as Record<string, unknown>) : '';
-  return apiGet<PaginatedResponse<Registration>>(
+  const response = await apiGet<{ success: boolean; data: { data: Registration[]; meta: { total: number; page: number; limit: number; totalPages: number } } }>(
     `/v1/tournaments/${tournamentId}/registrations${queryString ? `?${queryString}` : ''}`
   );
+  
+  // API response is: { success: true, data: { data: [...], meta: {...} } }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const apiResponse = response as any;
+  const innerData = apiResponse?.data || apiResponse;
+  const items = innerData?.data || [];
+  const meta = innerData?.meta || {};
+  
+  return {
+    success: true,
+    data: {
+      items: items,
+      total: meta.total || 0,
+      page: meta.page || 1,
+      pageSize: meta.limit || 20,
+      totalPages: meta.totalPages || 1,
+      hasMore: (meta.page || 1) < (meta.totalPages || 1),
+    },
+  };
 }
 
 // Get registration statistics for a tournament
@@ -75,13 +98,50 @@ export async function deleteRegistration(id: string): Promise<ApiResponse<void>>
 }
 
 // Approve registration
-export async function approveRegistration(id: string): Promise<ApiResponse<Registration>> {
-  return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/approve`);
+export async function approveRegistration(
+  id: string,
+  data?: ApproveRegistrationDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/approve`, data || {});
 }
 
 // Reject registration
-export async function rejectRegistration(id: string): Promise<ApiResponse<Registration>> {
-  return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/reject`);
+export async function rejectRegistration(
+  id: string,
+  data: RejectRegistrationDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/reject`, data);
+}
+
+// Get pending registrations for review
+export async function getPendingRegistrations(
+  tournamentId: string
+): Promise<ApiResponse<Registration[]>> {
+  return apiGet<ApiResponse<Registration[]>>(
+    `/v1/tournaments/${tournamentId}/registrations/pending`
+  );
+}
+
+// Bulk approve registrations
+export async function bulkApproveRegistrations(
+  tournamentId: string,
+  data: BulkReviewDto
+): Promise<ApiResponse<BulkReviewResult>> {
+  return apiPost<ApiResponse<BulkReviewResult>>(
+    `/v1/tournaments/${tournamentId}/registrations/bulk-approve`,
+    data
+  );
+}
+
+// Bulk reject registrations
+export async function bulkRejectRegistrations(
+  tournamentId: string,
+  data: BulkReviewDto & { rejectionReason: string }
+): Promise<ApiResponse<BulkReviewResult>> {
+  return apiPost<ApiResponse<BulkReviewResult>>(
+    `/v1/tournaments/${tournamentId}/registrations/bulk-reject`,
+    data
+  );
 }
 
 // Withdraw registration
@@ -100,6 +160,9 @@ export const registrationService = {
   deleteRegistration,
   approveRegistration,
   rejectRegistration,
+  getPendingRegistrations,
+  bulkApproveRegistrations,
+  bulkRejectRegistrations,
   withdrawRegistration,
 };
 

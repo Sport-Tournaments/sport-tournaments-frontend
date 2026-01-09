@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs } from '@/components/ui';
-import { tournamentService, registrationService } from '@/services';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal } from '@/components/ui';
+import { tournamentService, registrationService, fileService } from '@/services';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency } from '@/utils/helpers';
@@ -19,6 +19,35 @@ export default function TournamentDetailPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingRegulations, setDownloadingRegulations] = useState(false);
+  
+  // Rejection modal state
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectingRegistrationId, setRejectingRegistrationId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+
+  // Handle downloading/viewing regulations PDF
+  const handleDownloadRegulations = async () => {
+    if (!tournament?.regulationsDocument) return;
+    
+    setDownloadingRegulations(true);
+    try {
+      // Track the download
+      await tournamentService.trackRegulationsDownload(tournament.id);
+      
+      // Get presigned URL with inline disposition for viewing in browser
+      const response = await fileService.getFileDownloadUrl(tournament.regulationsDocument, true);
+      if (response.data?.url) {
+        window.open(response.data.url, '_blank');
+      }
+    } catch (err) {
+      console.error('Failed to download regulations:', err);
+      setError(t('tournament.regulationsDownloadError', 'Failed to download regulations. Please try again.'));
+    } finally {
+      setDownloadingRegulations(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -26,12 +55,18 @@ export default function TournamentDetailPage() {
 
   const fetchData = async () => {
     try {
-      const [tournamentData, registrationsData] = await Promise.all([
-        tournamentService.getTournamentById(params.id as string),
-        registrationService.getTournamentRegistrations(params.id as string, {}),
-      ]);
+      const tournamentData = await tournamentService.getTournamentById(params.id as string);
       setTournament(tournamentData.data);
-      setRegistrations(registrationsData.data.items || []);
+      
+      // Fetch registrations separately to handle errors gracefully
+      try {
+        const registrationsData = await registrationService.getTournamentRegistrations(params.id as string, {});
+        const items = registrationsData?.data?.items || [];
+        setRegistrations(Array.isArray(items) ? items : []);
+      } catch (regErr) {
+        console.error('Failed to load registrations:', regErr);
+        setRegistrations([]);
+      }
     } catch (err: any) {
       setError('Failed to load tournament');
     } finally {
@@ -63,10 +98,18 @@ export default function TournamentDetailPage() {
   const handleStatusChange = async (newStatus: TournamentStatus) => {
     if (!tournament) return;
     try {
-      await tournamentService.updateTournament(tournament.id, { status: newStatus } as any);
-      setTournament({ ...tournament, status: newStatus });
+      let response;
+      if (newStatus === 'PUBLISHED') {
+        response = await tournamentService.publishTournament(tournament.id);
+      } else if (newStatus === 'ONGOING') {
+        response = await tournamentService.startTournament(tournament.id);
+      } else {
+        setError('Invalid status transition');
+        return;
+      }
+      setTournament(response.data);
     } catch (err: any) {
-      setError('Failed to update status');
+      setError(err.response?.data?.message || 'Failed to update status');
     }
   };
 
@@ -79,12 +122,26 @@ export default function TournamentDetailPage() {
     }
   };
 
-  const handleRejectRegistration = async (registrationId: string) => {
+  const handleRejectRegistration = (registrationId: string) => {
+    setRejectingRegistrationId(registrationId);
+    setRejectionReason('');
+    setRejectModalOpen(true);
+  };
+
+  const confirmRejectRegistration = async () => {
+    if (!rejectingRegistrationId || !rejectionReason.trim()) return;
+    
+    setRejecting(true);
     try {
-      await registrationService.rejectRegistration(registrationId);
+      await registrationService.rejectRegistration(rejectingRegistrationId, { rejectionReason: rejectionReason.trim() });
+      setRejectModalOpen(false);
+      setRejectingRegistrationId(null);
+      setRejectionReason('');
       fetchData();
     } catch (err: any) {
       setError('Failed to reject registration');
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -189,6 +246,69 @@ export default function TournamentDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Regulations Document */}
+          {tournament.regulationsDocument && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                        <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('tournament.clickToDownload', 'Click to view or download')}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleDownloadRegulations}
+                    isLoading={downloadingRegulations}
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {t('tournament.viewRegulations', 'View PDF')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Private Tournament Invitation Code */}
+          {tournament.isPrivate && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  {t('tournament.invitationCode', 'Private Tournament Invitation')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <InvitationCodeManager
+                  tournamentId={tournament.id}
+                  tournamentName={tournament.name}
+                  isPrivate={tournament.isPrivate}
+                  initialCode={tournament.invitationCode}
+                  initialExpiresAt={tournament.invitationCodeExpiresAt}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       ),
     },
@@ -332,6 +452,14 @@ export default function TournamentDetailPage() {
               <Badge variant={getStatusBadge(tournament.status)}>
                 {t(`tournament.status.${tournament.status}`)}
               </Badge>
+              {tournament.isPrivate && (
+                <Badge variant="warning">
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  {t('tournament.private', 'Private')}
+                </Badge>
+              )}
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               {tournament.location}{tournament.country ? `, ${tournament.country}` : ''} • {formatDate(tournament.startDate)}
@@ -388,6 +516,55 @@ export default function TournamentDetailPage() {
         {/* Tabs */}
         <Tabs tabs={tabs} defaultTab="overview" />
       </div>
+
+      {/* Rejection Modal */}
+      <Modal
+        isOpen={rejectModalOpen}
+        onClose={() => {
+          setRejectModalOpen(false);
+          setRejectingRegistrationId(null);
+          setRejectionReason('');
+        }}
+        title={t('registration.rejectTitle')}
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-300">
+            {t('registration.rejectConfirm')}
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('registration.rejectReason')} <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder={t('registration.rejectReasonPlaceholder')}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectModalOpen(false);
+                setRejectingRegistrationId(null);
+                setRejectionReason('');
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmRejectRegistration}
+              isLoading={rejecting}
+              disabled={!rejectionReason.trim()}
+            >
+              {t('registration.reject')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

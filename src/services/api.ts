@@ -34,6 +34,8 @@ const processQueue = (error: unknown, token: string | null = null) => {
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getTokenFromCookie('accessToken');
+    
+    // Only add token if available (all endpoints are public by default)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -56,8 +58,27 @@ api.interceptors.response.use(
   async (error: AxiosError<ApiError>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     
+    // Handle 403 Forbidden - log for debugging
+    if (error.response?.status === 403) {
+      console.error('403 Forbidden Error:', {
+        url: originalRequest.url,
+        method: originalRequest.method,
+        headers: originalRequest.headers,
+        data: error.response.data,
+      });
+    }
+    
     // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Check if the original request had an auth token
+      // If not, this is a public page hitting a protected endpoint - don't redirect
+      const hadAuthToken = originalRequest.headers.Authorization;
+      
+      if (!hadAuthToken) {
+        // User was never logged in, just reject the error without redirecting
+        return Promise.reject(error);
+      }
+      
       if (isRefreshing) {
         // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
@@ -82,7 +103,7 @@ api.interceptors.response.use(
 
         // Call refresh token endpoint
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/refresh-token`,
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/auth/refresh-token`,
           { refreshToken },
           {
             timeout: 5000,

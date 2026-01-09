@@ -8,6 +8,8 @@ export interface Club {
   longitude?: number;
   description?: string;
   logo?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   foundedYear?: number;
   website?: string;
   email?: string;
@@ -39,6 +41,8 @@ export interface CreateClubDto {
   longitude?: number;
   description?: string;
   logo?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   foundedYear?: number;
   website?: string;
   contactEmail?: string;

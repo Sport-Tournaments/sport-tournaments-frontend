@@ -1,9 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useNotificationStore } from '@/store';
 import { ToastType } from '@/components/ui/Toast';
-import type { NotificationType } from '@/types';
 
 interface ToastOptions {
   title?: string;
@@ -29,7 +27,6 @@ interface UseToastReturn {
 
 export function useToast(): UseToastReturn {
   const [toasts, setToasts] = useState<UseToastReturn['toasts']>([]);
-  const { addNotification } = useNotificationStore();
 
   const generateId = () => `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -46,20 +43,14 @@ export function useToast(): UseToastReturn {
 
       setToasts((prev) => [...prev, newToast]);
 
-      // Also add to notification store for persistence
-      if (type !== 'info') {
-        addNotification({
-          id,
-          userId: '',  // Will be set by the store
-          type: (type === 'success' ? 'SUCCESS' : type === 'error' ? 'ERROR' : 'WARNING') as NotificationType,
-          title: options.title || type.charAt(0).toUpperCase() + type.slice(1),
-          message,
-          createdAt: new Date().toISOString(),
-          isRead: false,
-        });
+      // Auto-remove after duration
+      if (newToast.duration > 0) {
+        setTimeout(() => {
+          setToasts((prev) => prev.filter((toast) => toast.id !== id));
+        }, newToast.duration);
       }
     },
-    [addNotification]
+    []
   );
 
   const success = useCallback(

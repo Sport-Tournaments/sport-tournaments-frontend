@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Modal } from '@/components/ui';
 import { registrationService } from '@/services';
 import type { Registration, RegistrationStatus } from '@/types';
 import { formatDateTime } from '@/utils/date';
@@ -15,34 +15,47 @@ const PAGE_SIZE = 10;
 export default function RegistrationsPage() {
   const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all');
+  
+  // Withdraw modal state
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [withdrawingRegistrationId, setWithdrawingRegistrationId] = useState<string | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const fetchRegistrations = useCallback(async (page: number) => {
-    const params: any = { page, pageSize: PAGE_SIZE };
-    if (statusFilter !== 'all') {
-      params.status = statusFilter;
-    }
-    const response = await registrationService.getMyRegistrations(params);
+    const response = await registrationService.getMyRegistrations({});
     const resData = response.data as any;
     
     // Handle different response structures
     let registrationData: Registration[] = [];
-    let totalPages = 1;
     
     if (Array.isArray(resData)) {
       registrationData = resData;
     } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
       registrationData = resData.data.items;
-      totalPages = resData.data.totalPages || resData.data.meta?.totalPages || 1;
     } else if (resData?.items && Array.isArray(resData.items)) {
       registrationData = resData.items;
-      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
     } else if (resData?.data && Array.isArray(resData.data)) {
       registrationData = resData.data;
-      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
     }
     
+    console.log('[MyRegistrations] Raw data count:', registrationData.length, 'Filter:', statusFilter);
+    
+    // Apply client-side filter since backend doesn't support it
+    if (statusFilter !== 'all') {
+      registrationData = registrationData.filter(reg => reg.status === statusFilter);
+      console.log('[MyRegistrations] After filter count:', registrationData.length);
+    }
+    
+    // Client-side pagination
+    const startIndex = (page - 1) * PAGE_SIZE;
+    const endIndex = startIndex + PAGE_SIZE;
+    const paginatedData = registrationData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(registrationData.length / PAGE_SIZE) || 1;
+    
+    console.log('[MyRegistrations] Returning page:', page, 'items:', paginatedData.length, 'hasMore:', page < totalPages);
+    
     return {
-      items: registrationData,
+      items: paginatedData,
       hasMore: page < totalPages,
       totalPages,
     };
@@ -72,22 +85,32 @@ export default function RegistrationsPage() {
     return variants[status] || 'default';
   };
 
-  const handleWithdraw = async (registrationId: string) => {
-    if (!confirm('Are you sure you want to withdraw this registration?')) return;
+  const handleWithdraw = (registrationId: string) => {
+    setWithdrawingRegistrationId(registrationId);
+    setWithdrawModalOpen(true);
+  };
+
+  const confirmWithdraw = async () => {
+    if (!withdrawingRegistrationId) return;
     
+    setWithdrawing(true);
     try {
-      await registrationService.withdrawRegistration(registrationId);
+      await registrationService.withdrawRegistration(withdrawingRegistrationId);
+      setWithdrawModalOpen(false);
+      setWithdrawingRegistrationId(null);
       reset();
     } catch (error) {
       console.error('Failed to withdraw:', error);
+    } finally {
+      setWithdrawing(false);
     }
   };
 
   const tabs = [
     { id: 'all', label: t('common.all') },
-    { id: 'pending', label: t('registration.status.PENDING') },
-    { id: 'approved', label: t('registration.status.APPROVED') },
-    { id: 'rejected', label: t('registration.status.REJECTED') },
+    { id: 'PENDING', label: t('registration.status.PENDING') },
+    { id: 'APPROVED', label: t('registration.status.APPROVED') },
+    { id: 'REJECTED', label: t('registration.status.REJECTED') },
   ];
 
   return (
@@ -99,7 +122,7 @@ export default function RegistrationsPage() {
               {t('registration.myRegistrations')}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-              View and manage your tournament registrations
+              {t('dashboard.manageRegistrations')}
             </p>
           </div>
           <Link href="/main/tournaments" className="self-start sm:self-auto">
@@ -107,7 +130,7 @@ export default function RegistrationsPage() {
               <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Browse Tournaments
+              {t('registrations.browseTournaments')}
             </Button>
           </Link>
         </div>
@@ -159,12 +182,12 @@ export default function RegistrationsPage() {
               </h3>
               <p className="text-gray-500 mb-4">
                 {statusFilter === 'all' 
-                  ? 'You haven\'t registered for any tournaments yet'
-                  : `No ${statusFilter} registrations found`
+                  ? t('registrations.noRegistrationsDesc')
+                  : t('registrations.noRegistrationsFiltered', { status: statusFilter })
                 }
               </p>
               <Link href="/main/tournaments">
-                <Button variant="primary">Find Tournaments</Button>
+                <Button variant="primary">{t('registrations.findTournaments')}</Button>
               </Link>
             </CardContent>
           </Card>
@@ -249,6 +272,40 @@ export default function RegistrationsPage() {
           </>
         )}
       </div>
+
+      {/* Withdraw Confirmation Modal */}
+      <Modal
+        isOpen={withdrawModalOpen}
+        onClose={() => {
+          setWithdrawModalOpen(false);
+          setWithdrawingRegistrationId(null);
+        }}
+        title={t('registration.withdrawTitle', 'Withdraw Registration')}
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600 dark:text-gray-300">
+            {t('registration.withdrawConfirm', 'Are you sure you want to withdraw this registration? This action cannot be undone.')}
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setWithdrawModalOpen(false);
+                setWithdrawingRegistrationId(null);
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmWithdraw}
+              isLoading={withdrawing}
+            >
+              {t('registration.withdraw', 'Withdraw')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

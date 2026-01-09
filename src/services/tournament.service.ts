@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { apiGet, apiPost, apiPatch, apiDelete, apiPut } from './api';
 import { buildQueryString } from '@/utils/helpers';
 import type {
   Tournament,
@@ -9,6 +9,7 @@ import type {
   TournamentStatistics,
   ApiResponse,
   PaginatedResponse,
+  AgeGroup,
 } from '@/types';
 
 const TOURNAMENTS_BASE = '/v1/tournaments';
@@ -110,9 +111,63 @@ export async function trackRegulationsDownload(id: string): Promise<ApiResponse<
   return apiPost<ApiResponse<void>>(`${TOURNAMENTS_BASE}/${id}/download-regulations`);
 }
 
+// Get invitation code for private tournament
+export async function getInvitationCode(
+  id: string
+): Promise<ApiResponse<{ code: string; expiresAt?: string }>> {
+  const response = await apiGet<ApiResponse<{ invitationCode: string; expiresAt?: string }>>(
+    `${TOURNAMENTS_BASE}/${id}/invitation-code`
+  );
+  // Transform backend response to match expected format
+  return {
+    ...response,
+    data: response.data ? {
+      code: response.data.invitationCode,
+      expiresAt: response.data.expiresAt,
+    } : undefined,
+  };
+}
+
+// Regenerate invitation code
+export async function regenerateInvitationCode(
+  id: string,
+  expiresInDays?: number
+): Promise<ApiResponse<{ code: string; expiresAt?: string }>> {
+  const response = await apiPost<ApiResponse<{ invitationCode: string; expiresAt?: string }>>(
+    `${TOURNAMENTS_BASE}/${id}/regenerate-invitation-code`,
+    { expiresInDays }
+  );
+  // Transform backend response to match expected format
+  return {
+    ...response,
+    data: response.data ? {
+      code: response.data.invitationCode,
+      expiresAt: response.data.expiresAt,
+    } : undefined,
+  };
+}
+
+// Validate invitation code
+export async function validateInvitationCode(
+  code: string
+): Promise<ApiResponse<{ valid: boolean; tournament?: Tournament }>> {
+  return apiPost<ApiResponse<{ valid: boolean; tournament?: Tournament }>>(
+    `${TOURNAMENTS_BASE}/validate-invitation-code`,
+    { code }
+  );
+}
+
 // Get tournament statistics (Admin only)
 export async function getTournamentStatistics(): Promise<ApiResponse<TournamentStatistics>> {
   return apiGet<ApiResponse<TournamentStatistics>>(`${TOURNAMENTS_BASE}/statistics`);
+}
+
+// Update age groups for a tournament
+export async function updateTournamentAgeGroups(
+  id: string,
+  ageGroups: Omit<AgeGroup, 'id'>[] | AgeGroup[]
+): Promise<ApiResponse<AgeGroup[]>> {
+  return apiPut<ApiResponse<AgeGroup[]>>(`${TOURNAMENTS_BASE}/${id}/age-groups`, { ageGroups });
 }
 
 export const tournamentService = {
@@ -131,7 +186,11 @@ export const tournamentService = {
   startTournament,
   completeTournament,
   trackRegulationsDownload,
+  getInvitationCode,
+  regenerateInvitationCode,
+  validateInvitationCode,
   getTournamentStatistics,
+  updateTournamentAgeGroups,
 };
 
 export default tournamentService;

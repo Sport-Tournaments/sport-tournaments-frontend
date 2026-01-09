@@ -31,7 +31,7 @@ export default function AdminUsersPage() {
   }, [currentUser, router]);
 
   const fetchUsers = useCallback(async (page: number) => {
-    const params: any = { page, pageSize: PAGE_SIZE };
+    const params: any = { page, limit: PAGE_SIZE };
     if (roleFilter !== 'all') params.role = roleFilter;
     if (search) params.search = search;
     

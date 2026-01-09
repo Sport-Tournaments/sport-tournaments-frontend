@@ -1,5 +1,5 @@
 import api from './api';
-import { User, Tournament, Club, PaginatedResponse, QueryParams } from '@/types';
+import { User, Tournament, Club, PaginatedResponse, QueryParams, PlatformStatistics } from '@/types';
 
 export interface DashboardStats {
   totalUsers: number;
@@ -12,81 +12,99 @@ export interface DashboardStats {
   revenue: number;
 }
 
+const ADMIN_BASE = '/v1/admin';
+
 export const adminService = {
-  // Dashboard
+  // Platform Statistics
+  getPlatformStatistics: async (): Promise<PlatformStatistics> => {
+    const response = await api.get(`${ADMIN_BASE}/statistics`);
+    return response.data;
+  },
+
+  // Dashboard (alias for backward compatibility)
   getDashboardStats: async (): Promise<DashboardStats> => {
-    const response = await api.get('/admin/dashboard/stats');
+    const response = await api.get(`${ADMIN_BASE}/statistics`);
     return response.data;
   },
 
   // Users
   getUsers: async (params?: QueryParams): Promise<PaginatedResponse<User>> => {
-    const response = await api.get('/admin/users', { params });
+    const response = await api.get(`${ADMIN_BASE}/users`, { params });
     return response.data;
   },
 
   getUser: async (id: string): Promise<User> => {
-    const response = await api.get(`/admin/users/${id}`);
+    const response = await api.get(`${ADMIN_BASE}/users/${id}`);
     return response.data;
   },
 
-  updateUser: async (id: string, data: Partial<User>): Promise<User> => {
-    const response = await api.patch(`/admin/users/${id}`, data);
+  updateUserRole: async (id: string, role: string): Promise<User> => {
+    const response = await api.put(`${ADMIN_BASE}/users/${id}/role`, { role });
     return response.data;
   },
 
-  deleteUser: async (id: string): Promise<void> => {
-    await api.delete(`/admin/users/${id}`);
-  },
-
-  // Clubs
-  verifyClub: async (id: string): Promise<Club> => {
-    const response = await api.post(`/admin/clubs/${id}/verify`);
+  updateUserStatus: async (id: string, data: { isActive?: boolean; isVerified?: boolean }): Promise<User> => {
+    const response = await api.put(`${ADMIN_BASE}/users/${id}/status`, data);
     return response.data;
   },
 
-  unverifyClub: async (id: string): Promise<Club> => {
-    const response = await api.post(`/admin/clubs/${id}/unverify`);
-    return response.data;
+  deleteUser: async (id: string, reason?: string): Promise<void> => {
+    await api.delete(`${ADMIN_BASE}/users/${id}`, { data: { reason } });
   },
 
   // Tournaments
+  getTournaments: async (params?: QueryParams): Promise<PaginatedResponse<Tournament>> => {
+    const response = await api.get(`${ADMIN_BASE}/tournaments`, { params });
+    return response.data;
+  },
+
+  forceCancelTournament: async (id: string, reason?: string): Promise<Tournament> => {
+    const response = await api.post(`${ADMIN_BASE}/tournaments/${id}/cancel`, { reason });
+    return response.data;
+  },
+
   featureTournament: async (id: string, featured: boolean): Promise<Tournament> => {
-    const response = await api.patch(`/admin/tournaments/${id}`, { featured });
+    const response = await api.put(`${ADMIN_BASE}/tournaments/${id}/feature`, { featured });
     return response.data;
   },
 
-  // Settings
-  getSettings: async (): Promise<Record<string, any>> => {
-    const response = await api.get('/admin/settings');
+  // Payments
+  getPayments: async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
+    const response = await api.get(`${ADMIN_BASE}/payments`, { params });
     return response.data;
   },
 
-  updateSettings: async (settings: Record<string, any>): Promise<void> => {
-    await api.put('/admin/settings', settings);
-  },
-
-  // Reports
-  getReports: async (type: string, params?: QueryParams): Promise<any> => {
-    const response = await api.get(`/admin/reports/${type}`, { params });
-    return response.data;
-  },
-
-  // System
-  clearCache: async (): Promise<void> => {
-    await api.post('/admin/system/clear-cache');
-  },
-
-  exportData: async (type: string): Promise<Blob> => {
-    const response = await api.get(`/admin/system/export/${type}`, {
-      responseType: 'blob',
+  getPaymentReport: async (startDate: string, endDate: string): Promise<any> => {
+    const response = await api.get(`${ADMIN_BASE}/payments/report`, {
+      params: { startDate, endDate }
     });
     return response.data;
   },
 
+  // Notifications
+  sendBroadcastNotification: async (title: string, message: string, targetRole?: string): Promise<void> => {
+    await api.post(`${ADMIN_BASE}/notifications/broadcast`, { title, message, targetRole });
+  },
+
   // Audit logs
-  getAuditLogs: async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
-    const response = await api.get('/admin/audit-logs', { params });
+  getAuditLog: async (page?: number, limit?: number): Promise<PaginatedResponse<any>> => {
+    const response = await api.get(`${ADMIN_BASE}/audit-log`, { params: { page, limit } });
+    return response.data;
+  },
+
+  // Settings (stub - not yet implemented in backend)
+  /** @todo Implement settings endpoint in backend */
+  updateSettings: async (settings: Record<string, any>): Promise<void> => {
+    console.warn('adminService.updateSettings is not yet implemented in backend');
+    // When implemented, uncomment:
+    // await api.put(`${ADMIN_BASE}/settings`, settings);
+  },
+
+  // Legacy compatibility aliases (deprecated)
+  /** @deprecated Use updateUserRole instead */
+  updateUser: async (id: string, data: Partial<User>): Promise<User> => {
+    console.warn('adminService.updateUser is deprecated, use updateUserRole or updateUserStatus');
+    const response = await api.put(`${ADMIN_BASE}/users/${id}/status`, data);
     return response.data;
   },
 };

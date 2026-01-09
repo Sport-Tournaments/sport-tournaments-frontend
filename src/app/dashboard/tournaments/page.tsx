@@ -79,7 +79,7 @@ export default function DashboardTournamentsPage() {
               {t('nav.myTournaments')}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
-              Manage your tournaments
+              {t('dashboard.manageTournaments')}
             </p>
           </div>
           <Link href="/dashboard/tournaments/create" className="self-start sm:self-auto">

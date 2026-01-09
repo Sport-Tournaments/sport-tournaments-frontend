@@ -1,5 +1,17 @@
-// Notification types
-export type NotificationType = 'INFO' | 'SUCCESS' | 'WARNING' | 'ERROR' | 'TOURNAMENT' | 'REGISTRATION' | 'INVITATION';
+// Notification types - matches backend enum
+export type NotificationType =
+  | 'REGISTRATION_CONFIRMATION'
+  | 'REGISTRATION_APPROVED'
+  | 'REGISTRATION_REJECTED'
+  | 'TOURNAMENT_PUBLISHED'
+  | 'TOURNAMENT_CANCELLED'
+  | 'TOURNAMENT_UPDATE'
+  | 'GROUP_DRAW'
+  | 'PAYMENT_REMINDER'
+  | 'PAYMENT_COMPLETED'
+  | 'PAYMENT_FAILED'
+  | 'NEW_TOURNAMENT_MATCH'
+  | 'SYSTEM';
 
 export interface Notification {
   id: string;
@@ -7,7 +19,9 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  data?: Record<string, unknown>;
+  relatedTournamentId?: string;
+  relatedRegistrationId?: string;
+  metadata?: Record<string, unknown>;
   isRead: boolean;
   createdAt: string;
 }
@@ -78,7 +92,7 @@ export interface InvitePastParticipantsDto {
 }
 
 export interface RespondToInvitationDto {
-  response: 'accept' | 'decline';
+  response: 'ACCEPTED' | 'DECLINED';
   responseMessage?: string;
 }
 

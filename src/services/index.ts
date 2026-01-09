@@ -27,3 +27,6 @@ export { default as invitationService } from './invitation.service';
 export * from './invitation.service';
 
 export { paymentService, fileService } from './payment.service';
+
+export { default as locationService } from './location.service';
+export * from './location.service';

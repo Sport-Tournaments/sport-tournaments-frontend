@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { apiGet, apiPost, apiPatch, apiPut, apiDelete } from './api';
 import { buildQueryString } from '@/utils/helpers';
 import type {
   User,
@@ -95,14 +95,14 @@ export async function updateUserRole(
   id: string,
   data: UpdateUserRoleDto
 ): Promise<ApiResponse<User>> {
-  return apiPatch<ApiResponse<User>>(`${ADMIN_BASE}/users/${id}/role`, data);
+  return apiPut<ApiResponse<User>>(`${ADMIN_BASE}/users/${id}/role`, data);
 }
 
 export async function updateUserStatus(
   id: string,
   data: UpdateUserStatusDto
 ): Promise<ApiResponse<User>> {
-  return apiPatch<ApiResponse<User>>(`${ADMIN_BASE}/users/${id}/status`, data);
+  return apiPut<ApiResponse<User>>(`${ADMIN_BASE}/users/${id}/status`, data);
 }
 
 export async function getAdminTournaments(filters?: {
@@ -126,8 +126,8 @@ export async function forceCancelTournament(
   return apiPost<ApiResponse<void>>(`${ADMIN_BASE}/tournaments/${id}/cancel`, data);
 }
 
-export async function featureTournament(id: string): Promise<ApiResponse<void>> {
-  return apiPatch<ApiResponse<void>>(`${ADMIN_BASE}/tournaments/${id}/feature`);
+export async function featureTournament(id: string, featured: boolean): Promise<ApiResponse<void>> {
+  return apiPut<ApiResponse<void>>(`${ADMIN_BASE}/tournaments/${id}/feature`, { featured });
 }
 
 export async function getAdminPayments(filters?: {

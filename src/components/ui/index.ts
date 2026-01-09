@@ -45,3 +45,25 @@ export type { FileUploadProps, FilePreviewProps } from './FileUpload';
 
 export { default as DataTable, createSelectionColumn } from './Table';
 export type { DataTableProps } from './Table';
+
+// New components for API updates
+export { default as ColorPicker } from './ColorPicker';
+export { ColorCombinationPicker } from './ColorCombinationPicker';
+export { ClubColorBadge, ClubColorStripes } from './ClubColorBadge';
+export { ClubColorBanner } from './ClubColorBanner';
+export type { ColorPickerProps } from './ColorPicker';
+
+export { default as LocationAutocomplete } from './LocationAutocomplete';
+export type { LocationAutocompleteProps } from './LocationAutocomplete';
+
+export { default as InvitationCodeManager } from './InvitationCodeManager';
+export type { InvitationCodeManagerProps } from './InvitationCodeManager';
+
+export { RegistrationReviewCard, BulkRegistrationReview } from './RegistrationReview';
+export type { RegistrationReviewProps, BulkRegistrationReviewProps } from './RegistrationReview';
+
+export { default as GeolocationFilter, GeolocationFilterCompact } from './GeolocationFilter';
+export type { GeolocationFilterProps, GeolocationFilterCompactProps } from './GeolocationFilter';
+
+export { default as AgeGroupsManager } from './AgeGroupsManager';
+export type { AgeGroupFormData } from './AgeGroupsManager';

@@ -32,6 +32,15 @@ export interface Registration {
   status: RegistrationStatus;
   paymentStatus: PaymentStatus;
   groupAssignment?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  rejectionReason?: string;
+  reviewer?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -71,4 +80,26 @@ export interface RegistrationStatistics {
   total: number;
   byStatus: Record<RegistrationStatus, number>;
   byPaymentStatus: Record<PaymentStatus, number>;
+}
+
+export interface ApproveRegistrationDto {
+  reviewNotes?: string;
+}
+
+export interface RejectRegistrationDto {
+  rejectionReason: string;
+  reviewNotes?: string;
+}
+
+export interface BulkReviewDto {
+  registrationIds: string[];
+  reviewNotes?: string;
+}
+
+export interface BulkReviewResult {
+  successful: string[];
+  failed: Array<{
+    id: string;
+    error: string;
+  }>;
 }

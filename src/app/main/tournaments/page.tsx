@@ -4,9 +4,10 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardContent, Badge, Button, Input, Select, Loading } from '@/components/ui';
+import { Card, CardContent, Badge, Button, Input, Select, Loading, GeolocationFilterCompact } from '@/components/ui';
 import { tournamentService } from '@/services';
-import { Tournament, TournamentStatus } from '@/types';
+import { formatDistance } from '@/services/location.service';
+import { Tournament, TournamentStatus, GeolocationFilters } from '@/types';
 import { formatDate } from '@/utils/date';
 import { useDebounce, useInfiniteScroll } from '@/hooks';
 
@@ -16,6 +17,7 @@ export default function TournamentsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [geoFilters, setGeoFilters] = useState<GeolocationFilters>({});
   const debouncedSearch = useDebounce(search, 300);
 
   const fetchTournaments = useCallback(async (page: number) => {
@@ -25,6 +27,14 @@ export default function TournamentsPage() {
     };
     if (debouncedSearch) params.search = debouncedSearch;
     if (status) params.status = status;
+    
+    // Add geolocation params
+    if (geoFilters.userLatitude && geoFilters.userLongitude) {
+      params.userLatitude = geoFilters.userLatitude;
+      params.userLongitude = geoFilters.userLongitude;
+      if (geoFilters.maxDistance) params.maxDistance = geoFilters.maxDistance;
+      if (geoFilters.sortByDistance) params.sortByDistance = true;
+    }
 
     const response = await tournamentService.getTournaments(params);
     const resData = response.data as any;
@@ -56,7 +66,7 @@ export default function TournamentsPage() {
       hasMore: page < totalPages,
       totalPages,
     };
-  }, [debouncedSearch, status]);
+  }, [debouncedSearch, status, geoFilters]);
 
   const {
     items: tournaments,
@@ -68,7 +78,7 @@ export default function TournamentsPage() {
     retry,
   } = useInfiniteScroll<Tournament>({
     fetchData: fetchTournaments,
-    dependencies: [debouncedSearch, status],
+    dependencies: [debouncedSearch, status, geoFilters],
   });
 
   const statusOptions = [
@@ -115,7 +125,7 @@ export default function TournamentsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="flex-1">
             <Input
               placeholder={t('common.search')}
@@ -135,6 +145,10 @@ export default function TournamentsPage() {
               onChange={(e) => setStatus(e.target.value)}
             />
           </div>
+          <GeolocationFilterCompact
+            value={geoFilters}
+            onChange={setGeoFilters}
+          />
         </div>
 
         {/* Loading state */}
@@ -217,7 +231,14 @@ export default function TournamentsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          {tournament.location || t('common.online')}
+                          <span className="flex-1 truncate">
+                            {tournament.location || t('common.online')}
+                          </span>
+                          {tournament.distance !== undefined && (
+                            <Badge variant="info" className="ml-auto">
+                              {formatDistance(tournament.distance)}
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -49,8 +49,8 @@ export async function deleteFile(id: string): Promise<ApiResponse<void>> {
   return apiDelete<ApiResponse<void>>(`${FILES_BASE}/${id}`);
 }
 
-export async function getFileDownloadUrl(id: string): Promise<ApiResponse<{ url: string }>> {
-  return apiGet<ApiResponse<{ url: string }>>(`${FILES_BASE}/${id}/download`);
+export async function getFileDownloadUrl(id: string, inline = false): Promise<ApiResponse<{ url: string }>> {
+  return apiGet<ApiResponse<{ url: string }>>(`${FILES_BASE}/${id}/download${inline ? '?inline=true' : ''}`);
 }
 
 export async function getFilesByEntity(

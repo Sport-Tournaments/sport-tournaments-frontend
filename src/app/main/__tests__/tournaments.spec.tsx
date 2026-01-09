@@ -141,6 +141,9 @@ vi.mock('@/components/ui', () => ({
     </select>
   ),
   Loading: ({ size }: { size?: string }) => <div data-testid="loading" data-size={size}>Loading...</div>,
+  GeolocationFilterCompact: ({ value, onChange }: { value?: any; onChange?: (value: any) => void }) => (
+    <div data-testid="geolocation-filter">Geolocation Filter</div>
+  ),
 }));
 
 describe('Tournaments Page', () => {

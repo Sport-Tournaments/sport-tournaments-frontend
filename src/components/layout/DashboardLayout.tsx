@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store';
-import Header from './Header';
+import DashboardHeader from './DashboardHeader';
 import Sidebar from './Sidebar';
 import { LoadingState } from '@/components/ui';
 
@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
-          <Header />
+          <DashboardHeader />
           <main className="flex-1 p-4 lg:p-6">{children}</main>
         </div>
       </div>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, Input } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, Input, ClubColorBadge, ClubColorStripes, ClubColorBanner } from '@/components/ui';
 import { clubService } from '@/services';
 import { Club } from '@/types';
 
@@ -152,18 +152,24 @@ export default function ClubDetailPage() {
                   <p className="font-medium">{club.city}, {club.country}</p>
                   {club.address && <p className="text-gray-500">{club.address}</p>}
                 </div>
-                {club.email && (
+                {club.foundedYear && (
+                  <div>
+                    <p className="text-sm text-gray-500">{t('clubs.foundedYear')}</p>
+                    <p className="font-medium">{club.foundedYear}</p>
+                  </div>
+                )}
+                {club.contactEmail && (
                   <div>
                     <p className="text-sm text-gray-500">{t('common.email')}</p>
-                    <a href={`mailto:${club.email}`} className="text-primary hover:underline">
-                      {club.email}
+                    <a href={`mailto:${club.contactEmail}`} className="text-primary hover:underline">
+                      {club.contactEmail}
                     </a>
                   </div>
                 )}
-                {club.phone && (
+                {club.contactPhone && (
                   <div>
                     <p className="text-sm text-gray-500">{t('common.phone')}</p>
-                    <p className="font-medium">{club.phone}</p>
+                    <p className="font-medium">{club.contactPhone}</p>
                   </div>
                 )}
                 {club.website && (
@@ -175,6 +181,20 @@ export default function ClubDetailPage() {
                   </div>
                 )}
               </div>
+              
+              {/* Club Colors Display */}
+              {(club.primaryColor || club.secondaryColor) && (
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm text-gray-500 mb-3">{t('clubs.colors', 'Club Colors')}</p>
+                  <ClubColorStripes primaryColor={club.primaryColor} secondaryColor={club.secondaryColor} className="mb-3" />
+                  <ClubColorBadge 
+                    primaryColor={club.primaryColor} 
+                    secondaryColor={club.secondaryColor} 
+                    size="lg"
+                    showHex
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -297,57 +317,123 @@ export default function ClubDetailPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Color Banner */}
+        {(club.primaryColor || club.secondaryColor) && (
+          <ClubColorBanner
+            primaryColor={club.primaryColor}
+            secondaryColor={club.secondaryColor}
+            height="lg"
+            pattern="gradient"
+            opacity={0.08}
+          >
+            <div className="container mx-auto px-4 h-full flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                {club.logo ? (
+                  <img 
+                    src={club.logo} 
+                    alt={club.name} 
+                    className="w-20 h-20 rounded-xl object-cover shadow-lg" 
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-white/90 rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-3xl font-bold text-primary">{club.name.charAt(0)}</span>
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white drop-shadow-md">
+                      {club.name}
+                    </h1>
+                    {club.verified && (
+                      <Badge variant="success">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        {t('common.verified')}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-gray-700 dark:text-gray-200 mt-1 font-medium drop-shadow">
+                    {club.city}, {club.country}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Link href={`/main/clubs/${club.id}`}>
+                  <Button variant="outline">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {t('common.viewPublic')}
+                  </Button>
+                </Link>
+                <Link href={`/dashboard/clubs/${club.id}/edit`}>
+                  <Button variant="primary">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    {t('common.edit')}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </ClubColorBanner>
+        )}
+        
         {error && <Alert variant="error">{error}</Alert>}
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {club.logo ? (
-              <img src={club.logo} alt={club.name} className="w-16 h-16 rounded-lg object-cover" />
-            ) : (
-              <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary">{club.name.charAt(0)}</span>
+        {/* Header (fallback when no colors) */}
+        {!(club.primaryColor || club.secondaryColor) && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              {club.logo ? (
+                <img src={club.logo} alt={club.name} className="w-16 h-16 rounded-lg object-cover" />
+              ) : (
+                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">{club.name.charAt(0)}</span>
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {club.name}
+                  </h1>
+                  {club.verified && (
+                    <Badge variant="success">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      {t('common.verified')}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  {club.city}, {club.country}
+                </p>
               </div>
-            )}
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {club.name}
-                </h1>
-                {club.verified && (
-                  <Badge variant="success">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    {t('common.verified')}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                {club.city}, {club.country}
-              </p>
+            </div>
+            <div className="flex gap-2">
+              <Link href={`/main/clubs/${club.id}`}>
+                <Button variant="outline">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {t('common.viewPublic')}
+                </Button>
+              </Link>
+              <Link href={`/dashboard/clubs/${club.id}/edit`}>
+                <Button variant="primary">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  {t('common.edit')}
+                </Button>
+              </Link>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Link href={`/main/clubs/${club.id}`}>
-              <Button variant="outline">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                {t('common.viewPublic')}
-              </Button>
-            </Link>
-            <Link href={`/dashboard/clubs/${club.id}/edit`}>
-              <Button variant="primary">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {t('common.edit')}
-              </Button>
-            </Link>
-          </div>
-        </div>
+        )}
 
         {/* Tabs */}
         <Tabs tabs={tabs} defaultTab="overview" />

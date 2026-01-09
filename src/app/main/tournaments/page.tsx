@@ -1,71 +1,75 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardContent, Badge, Button, Input, Select, Pagination, Loading } from '@/components/ui';
+import { Card, CardContent, Badge, Button, Input, Select, Loading } from '@/components/ui';
 import { tournamentService } from '@/services';
 import { Tournament, TournamentStatus } from '@/types';
 import { formatDate } from '@/utils/date';
-import { useDebounce } from '@/hooks';
+import { useDebounce, useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 12;
 
 export default function TournamentsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const debouncedSearch = useDebounce(search, 300);
 
-  useEffect(() => {
-    fetchTournaments();
-  }, [currentPage, debouncedSearch, status]);
+  const fetchTournaments = useCallback(async (page: number) => {
+    const params: Record<string, unknown> = {
+      page,
+      pageSize: PAGE_SIZE,
+    };
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (status) params.status = status;
 
-  const fetchTournaments = async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, unknown> = {
-        page: currentPage,
-        pageSize: 12,
-      };
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (status) params.status = status;
-
-      const response = await tournamentService.getTournaments(params);
-      const resData = response.data as any;
-      
-      // Handle different response structures
-      let tournamentData: Tournament[] = [];
-      let pages = 1;
-      
-      if (Array.isArray(resData)) {
-        // Direct array response
-        tournamentData = resData;
-      } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-        // Nested data.items structure
-        tournamentData = resData.data.items;
-        pages = resData.data.totalPages || resData.data.meta?.totalPages || 1;
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        // data.items structure
-        tournamentData = resData.items;
-        pages = resData.totalPages || resData.meta?.totalPages || 1;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        // data.data array structure
-        tournamentData = resData.data;
-        pages = resData.totalPages || resData.meta?.totalPages || 1;
-      }
-      
-      setTournaments(tournamentData);
-      setTotalPages(pages);
-    } catch (error) {
-      console.error('Failed to fetch tournaments:', error);
-    } finally {
-      setLoading(false);
+    const response = await tournamentService.getTournaments(params);
+    const resData = response.data as any;
+    
+    // Handle different response structures
+    let tournamentData: Tournament[] = [];
+    let totalPages = 1;
+    
+    if (Array.isArray(resData)) {
+      // Direct array response
+      tournamentData = resData;
+      totalPages = 1;
+    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
+      // Nested data.items structure
+      tournamentData = resData.data.items;
+      totalPages = resData.data.totalPages || resData.data.meta?.totalPages || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      // data.items structure
+      tournamentData = resData.items;
+      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      // data.data array structure
+      tournamentData = resData.data;
+      totalPages = resData.totalPages || resData.meta?.totalPages || 1;
     }
-  };
+    
+    return {
+      items: tournamentData,
+      hasMore: page < totalPages,
+      totalPages,
+    };
+  }, [debouncedSearch, status]);
+
+  const {
+    items: tournaments,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error,
+    sentinelRef,
+    retry,
+  } = useInfiniteScroll<Tournament>({
+    fetchData: fetchTournaments,
+    dependencies: [debouncedSearch, status],
+  });
 
   const statusOptions = [
     { value: '', label: t('common.all') },
@@ -134,9 +138,23 @@ export default function TournamentsPage() {
         </div>
 
         {/* Loading state */}
-        {loading ? (
+        {isLoading && tournaments.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loading size="lg" />
+          </div>
+        ) : error ? (
+          /* Error state */
+          <div className="text-center py-12">
+            <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              {t('common.error')}
+            </h3>
+            <p className="text-gray-500 mb-4">{error.message}</p>
+            <Button variant="primary" onClick={retry}>
+              {t('common.retry')}
+            </Button>
           </div>
         ) : tournaments.length === 0 ? (
           /* Empty state */
@@ -153,7 +171,7 @@ export default function TournamentsPage() {
             </Link>
           </div>
         ) : (
-          /* Tournament grid */
+          /* Tournament grid with infinite scroll */
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {tournaments.map((tournament) => (
@@ -224,16 +242,23 @@ export default function TournamentsPage() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+            {/* Infinite scroll sentinel & loading indicator */}
+            <div 
+              ref={sentinelRef}
+              className="mt-8 flex justify-center py-4"
+            >
+              {isFetchingMore && (
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Loading size="sm" />
+                  <span>{t('common.loading')}</span>
+                </div>
+              )}
+              {!hasMore && tournaments.length > 0 && (
+                <p className="text-gray-500 text-sm">
+                  {t('common.noMoreResults')}
+                </p>
+              )}
+            </div>
           </>
         )}
       </div>

@@ -30,7 +30,20 @@ const tournamentSchema = z.object({
   rules: z.string().optional(),
   numberOfGroups: z.coerce.number().min(1).max(16).optional(),
   teamsPerGroup: z.coerce.number().min(2).max(8).optional(),
-});
+}).refine(
+  (data) => {
+    // Only validate for formats that use groups
+    if (data.format !== 'GROUPS_PLUS_KNOCKOUT' && data.format !== 'ROUND_ROBIN') {
+      return true;
+    }
+    const totalGroupTeams = (data.numberOfGroups || 1) * (data.teamsPerGroup || 2);
+    return totalGroupTeams <= data.maxTeams;
+  },
+  {
+    message: 'Total teams in groups (groups × teams per group) cannot exceed max teams',
+    path: ['teamsPerGroup'],
+  }
+);
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
 
@@ -61,6 +74,14 @@ export default function CreateTournamentPage() {
   });
 
   const selectedFormat = watch('format');
+  const watchedMaxTeams = watch('maxTeams');
+  const watchedNumberOfGroups = watch('numberOfGroups');
+  const watchedTeamsPerGroup = watch('teamsPerGroup');
+
+  // Calculate total teams in groups and check validation
+  const totalGroupTeams = (watchedNumberOfGroups || 1) * (watchedTeamsPerGroup || 2);
+  const isGroupsFormat = selectedFormat === 'GROUPS_PLUS_KNOCKOUT' || selectedFormat === 'ROUND_ROBIN';
+  const exceedsMaxTeams = isGroupsFormat && totalGroupTeams > (watchedMaxTeams || 0);
 
   const onSubmit = async (data: TournamentFormData) => {
     setIsLoading(true);
@@ -83,7 +104,8 @@ export default function CreateTournamentPage() {
       //   }
       // }
 
-      router.push(`/dashboard/tournaments/${response.data?.id}`);
+      // Redirect to tournament preview page
+      router.push(`/main/tournaments/${response.data?.id}`);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create tournament';
       setError(errorMessage);
@@ -218,7 +240,7 @@ export default function CreateTournamentPage() {
                   control={control}
                   render={({ field }) => (
                     <Select
-                      label={t('tournament.format')}
+                      label={t('tournament.format.label')}
                       options={formatOptions}
                       error={errors.format?.message}
                       {...field}
@@ -230,7 +252,7 @@ export default function CreateTournamentPage() {
                   control={control}
                   render={({ field }) => (
                     <Select
-                      label={t('tournament.ageCategory')}
+                      label={t('tournament.ageCategory.label')}
                       options={ageCategoryOptions}
                       error={errors.ageCategory?.message}
                       {...field}
@@ -285,6 +307,39 @@ export default function CreateTournamentPage() {
                     error={errors.teamsPerGroup?.message}
                     {...register('teamsPerGroup')}
                   />
+                </div>
+              )}
+
+              {/* Groups validation warning */}
+              {isGroupsFormat && (
+                <div className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
+                  exceedsMaxTeams 
+                    ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800' 
+                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                }`}>
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {exceedsMaxTeams ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    )}
+                  </svg>
+                  <span>
+                    {exceedsMaxTeams 
+                      ? t('tournament.groupsExceedMaxTeams', { 
+                          total: totalGroupTeams, 
+                          max: watchedMaxTeams,
+                          groups: watchedNumberOfGroups,
+                          perGroup: watchedTeamsPerGroup 
+                        })
+                      : t('tournament.groupsCapacityInfo', { 
+                          total: totalGroupTeams, 
+                          max: watchedMaxTeams,
+                          groups: watchedNumberOfGroups,
+                          perGroup: watchedTeamsPerGroup 
+                        })
+                    }
+                  </span>
                 </div>
               )}
             </CardContent>

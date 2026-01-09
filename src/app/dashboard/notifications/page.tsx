@@ -1,66 +1,86 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardContent, Button, Badge, Loading } from '@/components/ui';
 import { notificationService } from '@/services';
 import { Notification } from '@/types';
 import { formatRelativeTime } from '@/utils/date';
+import { useInfiniteScroll } from '@/hooks';
+
+const PAGE_SIZE = 20;
 
 export default function NotificationsPage() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
 
-  useEffect(() => {
-    fetchNotifications();
-  }, [currentPage]);
-
-  const fetchNotifications = async () => {
-    setLoading(true);
-    try {
-      const response = await notificationService.getNotifications({ page: currentPage, pageSize: 20 });
-      const resData = response.data as Record<string, unknown>;
-      
-      let notificationData: Notification[] = [];
-      if (Array.isArray(resData)) {
-        notificationData = resData;
-      } else if (resData?.data && Array.isArray(resData.data)) {
-        notificationData = resData.data as Notification[];
-      } else if (resData?.items && Array.isArray(resData.items)) {
-        notificationData = resData.items as Notification[];
-        const hasMoreData = resData.hasMore as boolean || (resData.page as number) < (resData.totalPages as number);
-        setHasMore(hasMoreData);
-      } else if (typeof resData?.data === 'object' && resData.data !== null) {
-        const nestedData = resData.data as Record<string, unknown>;
-        if (nestedData.items && Array.isArray(nestedData.items)) {
-          notificationData = nestedData.items as Notification[];
-          const hasMoreData = nestedData.hasMore as boolean || (nestedData.page as number) < (nestedData.totalPages as number);
-          setHasMore(hasMoreData);
-        }
+  const fetchNotifications = useCallback(async (page: number) => {
+    const response = await notificationService.getNotifications({ page, pageSize: PAGE_SIZE });
+    const resData = response.data as Record<string, unknown>;
+    
+    let notificationData: Notification[] = [];
+    let totalPages = 1;
+    let hasMoreData = false;
+    
+    if (Array.isArray(resData)) {
+      notificationData = resData;
+    } else if (resData?.data && Array.isArray(resData.data)) {
+      notificationData = resData.data as Notification[];
+      totalPages = (resData.totalPages as number) || 1;
+    } else if (resData?.items && Array.isArray(resData.items)) {
+      notificationData = resData.items as Notification[];
+      hasMoreData = (resData.hasMore as boolean) || (resData.page as number) < (resData.totalPages as number);
+      totalPages = (resData.totalPages as number) || 1;
+    } else if (typeof resData?.data === 'object' && resData.data !== null) {
+      const nestedData = resData.data as Record<string, unknown>;
+      if (nestedData.items && Array.isArray(nestedData.items)) {
+        notificationData = nestedData.items as Notification[];
+        hasMoreData = (nestedData.hasMore as boolean) || (nestedData.page as number) < (nestedData.totalPages as number);
+        totalPages = (nestedData.totalPages as number) || 1;
       }
-      
-      if (currentPage === 1) {
-        setNotifications(notificationData);
-      } else {
-        setNotifications(prev => [...prev, ...notificationData]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
-    } finally {
-      setLoading(false);
     }
-  };
+    
+    return {
+      items: notificationData,
+      hasMore: hasMoreData || page < totalPages,
+      totalPages,
+    };
+  }, []);
+
+  const {
+    items: notifications,
+    isLoading,
+    isFetchingMore,
+    hasMore,
+    error,
+    sentinelRef,
+    retry,
+    reset,
+  } = useInfiniteScroll<Notification>({
+    fetchData: fetchNotifications,
+  });
+
+  // Merge local changes with hook items
+  const mergedNotifications = notifications.map(n => {
+    const local = localNotifications.find(l => l.id === n.id);
+    return local || n;
+  });
 
   const handleMarkAsRead = async (id: string) => {
     try {
       await notificationService.markAsRead(id);
-      setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, isRead: true } : n))
-      );
+      setLocalNotifications(prev => {
+        const existing = prev.find(n => n.id === id);
+        if (existing) {
+          return prev.map(n => n.id === id ? { ...n, isRead: true } : n);
+        }
+        const original = notifications.find(n => n.id === id);
+        if (original) {
+          return [...prev, { ...original, isRead: true }];
+        }
+        return prev;
+      });
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -69,7 +89,7 @@ export default function NotificationsPage() {
   const handleMarkAllAsRead = async () => {
     try {
       await notificationService.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setLocalNotifications(notifications.map(n => ({ ...n, isRead: true })));
     } catch (error) {
       console.error('Failed to mark all as read:', error);
     }
@@ -78,7 +98,7 @@ export default function NotificationsPage() {
   const handleDelete = async (id: string) => {
     try {
       await notificationService.deleteNotification(id);
-      setNotifications(prev => prev.filter(n => n.id !== id));
+      reset();
     } catch (error) {
       console.error('Failed to delete notification:', error);
     }
@@ -145,13 +165,34 @@ export default function NotificationsPage() {
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = mergedNotifications.filter(n => !n.isRead).length;
 
-  if (loading && notifications.length === 0) {
+  if (isLoading && notifications.length === 0) {
     return (
       <DashboardLayout>
         <div className="flex justify-center py-12">
           <Loading size="lg" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              {t('common.error')}
+            </h3>
+            <p className="text-gray-500 mb-4">{error.message}</p>
+            <Button variant="primary" onClick={retry}>
+              {t('common.retry')}
+            </Button>
+          </div>
         </div>
       </DashboardLayout>
     );
@@ -180,9 +221,9 @@ export default function NotificationsPage() {
         </div>
 
         {/* Notifications List */}
-        {notifications.length > 0 ? (
+        {mergedNotifications.length > 0 ? (
           <div className="space-y-4">
-            {notifications.map((notification) => (
+            {mergedNotifications.map((notification) => (
               <Card 
                 key={notification.id}
                 className={!notification.isRead ? 'ring-2 ring-indigo-500 dark:ring-indigo-400' : ''}
@@ -236,15 +277,13 @@ export default function NotificationsPage() {
               </Card>
             ))}
 
+            {/* Infinite scroll sentinel */}
             {hasMore && (
-              <div className="text-center pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  isLoading={loading}
-                >
-                  {t('common.showMore')}
-                </Button>
+              <div 
+                ref={sentinelRef} 
+                className="flex justify-center py-8"
+              >
+                {isFetchingMore && <Loading size="md" />}
               </div>
             )}
           </div>

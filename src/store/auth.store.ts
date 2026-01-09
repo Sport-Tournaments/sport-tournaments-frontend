@@ -6,24 +6,8 @@ import axios from 'axios';
 import type { User } from '@/types';
 import { authService } from '@/services';
 import { clearAllTokens } from '@/utils/cookies';
+import { getApiErrorMessage } from '@/utils/helpers';
 
-const LOGIN_ERROR_MESSAGE = 'Login failed';
-const REGISTRATION_ERROR_MESSAGE = 'Registration failed';
-
-// Helper function to extract error message from axios error or generic error
-function extractErrorMessage(error: unknown, defaultMessage: string): string {
-  // Check if error is an axios error with our API error structure
-  if (axios.isAxiosError(error) && error.response?.data?.error?.message) {
-    return error.response.data.error.message;
-  }
-  
-  // Check if error has a message property
-  if (error instanceof Error) {
-    return error.message;
-  }
-  
-  return defaultMessage;
-}
 
 interface AuthState {
   user: User | null;
@@ -75,9 +59,10 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          throw new Error(LOGIN_ERROR_MESSAGE);
-        } catch (error: unknown) {
-          const message = extractErrorMessage(error, LOGIN_ERROR_MESSAGE);
+          set({ isLoading: false, error: 'Login failed' });
+          return false;
+        } catch (error) {
+          const message = getApiErrorMessage(error, 'Login failed');
           set({ isLoading: false, error: message });
           throw new Error(message);
         }
@@ -95,9 +80,10 @@ export const useAuthStore = create<AuthState>()(
             });
             return true;
           }
-          throw new Error(REGISTRATION_ERROR_MESSAGE);
-        } catch (error: unknown) {
-          const message = extractErrorMessage(error, REGISTRATION_ERROR_MESSAGE);
+          set({ isLoading: false, error: 'Registration failed' });
+          return false;
+        } catch (error) {
+          const message = getApiErrorMessage(error, 'Registration failed');
           set({ isLoading: false, error: message });
           throw new Error(message);
         }

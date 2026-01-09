@@ -16,6 +16,7 @@ const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email'),
+  phone: z.string().min(10, 'Phone number must be at least 10 characters'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   confirmPassword: z.string(),
   country: z.string().min(2, 'Country is required'),
@@ -57,6 +58,7 @@ export default function RegisterPage() {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
+        phone: data.phone,
         password: data.password,
         country: data.country,
         role: data.role as 'ORGANIZER' | 'PARTICIPANT',
@@ -119,6 +121,14 @@ export default function RegisterPage() {
           placeholder="you@example.com"
           error={errors.email?.message}
           {...register('email')}
+        />
+
+        <Input
+          label={t('auth.phone')}
+          type="tel"
+          placeholder="+40 123 456 789"
+          error={errors.phone?.message}
+          {...register('phone')}
         />
 
         <Input

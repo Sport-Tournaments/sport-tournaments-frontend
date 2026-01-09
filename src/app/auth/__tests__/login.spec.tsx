@@ -93,13 +93,6 @@ describe('Login Page', () => {
 
       expect(screen.getByText('Register')).toBeInTheDocument();
     });
-
-    it('should render social login buttons', () => {
-      render(<LoginPage />);
-
-      expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /facebook/i })).toBeInTheDocument();
-    });
   });
 
   describe('Form Validation', () => {

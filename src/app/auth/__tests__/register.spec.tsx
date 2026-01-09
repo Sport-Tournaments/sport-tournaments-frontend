@@ -23,6 +23,7 @@ vi.mock('react-i18next', () => ({
         'auth.firstName': 'First Name',
         'auth.lastName': 'Last Name',
         'auth.email': 'Email',
+        'auth.phone': 'Phone',
         'auth.password': 'Password',
         'auth.confirmPassword': 'Confirm Password',
         'auth.country': 'Country',
@@ -198,6 +199,7 @@ describe('Register Page', () => {
       await user.type(screen.getByLabelText(/first name/i), 'John');
       await user.type(screen.getByLabelText(/last name/i), 'Doe');
       await user.type(screen.getByLabelText(/email/i), 'john@example.com');
+      await user.type(screen.getByLabelText(/phone/i), '+40123456789');
       await user.type(screen.getByLabelText(/country/i), 'Romania');
       await user.type(screen.getByLabelText(/^password$/i), 'password123');
       await user.type(screen.getByLabelText(/confirm password/i), 'password123');
@@ -221,6 +223,7 @@ describe('Register Page', () => {
           firstName: 'John',
           lastName: 'Doe',
           email: 'john@example.com',
+          phone: '+40123456789',
           password: 'password123',
         }));
       });

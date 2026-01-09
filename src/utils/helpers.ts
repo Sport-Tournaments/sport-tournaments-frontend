@@ -235,3 +235,46 @@ export function formatFileSize(bytes: number): string {
   
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
+
+// Extract error message from API error response
+export function getApiErrorMessage(error: unknown, fallbackMessage = 'An error occurred'): string {
+  // Handle Axios errors with response data
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { data?: { error?: { message?: string; details?: Record<string, string[]> } } } };
+    const errorData = axiosError.response?.data?.error;
+    
+    if (errorData) {
+      // If there are validation details, extract the first error message
+      if (errorData.details && typeof errorData.details === 'object') {
+        const details = errorData.details;
+        // Get the first validation error message from details
+        for (const key of Object.keys(details)) {
+          const messages = details[key];
+          if (Array.isArray(messages) && messages.length > 0) {
+            return messages[0];
+          }
+          if (typeof messages === 'string') {
+            return messages;
+          }
+        }
+      }
+      
+      // Return the main error message
+      if (errorData.message) {
+        return errorData.message;
+      }
+    }
+  }
+  
+  // Handle standard Error objects
+  if (error instanceof Error) {
+    return error.message;
+  }
+  
+  // Handle string errors
+  if (typeof error === 'string') {
+    return error;
+  }
+  
+  return fallbackMessage;
+}

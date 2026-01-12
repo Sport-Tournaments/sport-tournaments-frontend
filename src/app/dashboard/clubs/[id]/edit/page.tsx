@@ -156,12 +156,15 @@ export default function EditClubPage() {
       
       await clubService.updateClub(params.id as string, updateData);
       
-      // TODO: Upload logo functionality to be implemented
-      // if (logoFile) {
-      //   const formData = new FormData();
-      //   formData.append('logo', logoFile);
-      //   await clubService.uploadLogo(params.id as string, formData);
-      // }
+      // Upload new logo if selected
+      if (logoFile) {
+        try {
+          await clubService.uploadLogo(params.id as string, logoFile);
+        } catch (err) {
+          console.error('Failed to upload logo:', err);
+          // Don't block club update if logo upload fails
+        }
+      }
       
       setSuccess(true);
       setTimeout(() => {

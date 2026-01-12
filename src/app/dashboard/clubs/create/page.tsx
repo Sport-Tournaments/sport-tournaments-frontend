@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, FileUpload, ColorPicker, ColorCombinationPicker, LocationAutocomplete } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, FileUpload, FilePreview, ColorPicker, ColorCombinationPicker, LocationAutocomplete } from '@/components/ui';
 import { clubService } from '@/services';
 import { getCurrentLocation } from '@/services/location.service';
 import type { LocationSuggestion } from '@/types';
@@ -98,12 +98,15 @@ export default function CreateClubPage() {
       const response = await clubService.createClub(data);
       const club = (response as any)?.data || response;
       
-      // TODO: Upload logo functionality to be implemented
-      // if (logoFile && club.id) {
-      //   const formData = new FormData();
-      //   formData.append('logo', logoFile);
-      //   await clubService.uploadLogo(club.id, formData);
-      // }
+      // Upload logo if selected
+      if (logoFile && club.id) {
+        try {
+          await clubService.uploadLogo(club.id, logoFile);
+        } catch (err) {
+          console.error('Failed to upload logo:', err);
+          // Don't block club creation if logo upload fails
+        }
+      }
       
       router.push(`/dashboard/clubs/${club.id}`);
     } catch (err: any) {
@@ -152,11 +155,18 @@ export default function CreateClubPage() {
               <CardTitle>Club Logo</CardTitle>
             </CardHeader>
             <CardContent>
-              <FileUpload
-                accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
-                maxSize={5 * 1024 * 1024}
-                onFilesSelected={(files) => setLogoFile(files[0])}
-              />
+              {logoFile ? (
+                <FilePreview
+                  file={logoFile}
+                  onRemove={() => setLogoFile(null)}
+                />
+              ) : (
+                <FileUpload
+                  accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
+                  maxSize={5 * 1024 * 1024}
+                  onFilesSelected={(files) => setLogoFile(files[0])}
+                />
+              )}
               <p className="text-sm text-gray-500 mt-2">PNG, JPG up to 5MB</p>
             </CardContent>
           </Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { InputHTMLAttributes, forwardRef, useCallback } from 'react';
 import { cn } from '@/utils/helpers';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -27,12 +27,38 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       type = 'text',
       required,
       id,
+      onClick,
       ...props
     },
     ref
   ) => {
     const inputId = id || props.name;
     const helpText = helperText || hint;
+
+    // Handler to open date/time picker when clicking the field
+    const handleClick = useCallback(
+      (e: React.MouseEvent<HTMLInputElement>) => {
+        // Call the original onClick if provided
+        if (onClick) {
+          onClick(e);
+        }
+        
+        // For date/time inputs, programmatically open the picker
+        if (type === 'datetime-local' || type === 'date' || type === 'time') {
+          const input = e.currentTarget;
+          // Use showPicker API if available (modern browsers)
+          if (input && typeof (input as any).showPicker === 'function') {
+            try {
+              (input as any).showPicker();
+            } catch (error) {
+              // Silently fail - some browsers/contexts don't support it
+              console.debug('showPicker not available:', error);
+            }
+          }
+        }
+      },
+      [onClick, type]
+    );
 
     const baseInputStyles = 'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
     
@@ -61,6 +87,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             type={type}
+            onClick={handleClick}
             className={cn(
               error ? errorInputStyles : baseInputStyles,
               leftIcon && 'pl-10',

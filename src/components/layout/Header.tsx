@@ -52,7 +52,7 @@ export default function Header() {
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">⚽</span>
               <span className="font-bold text-xl text-indigo-600 dark:text-indigo-400 hidden sm:inline">
-                Football EU
+                Worldwide Football
               </span>
             </Link>
           </div>

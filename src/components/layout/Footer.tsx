@@ -34,7 +34,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <span className="text-3xl">⚽</span>
-              <span className="font-bold text-xl text-primary">Football EU</span>
+              <span className="font-bold text-xl text-primary">Worldwide Football</span>
             </Link>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               {t('footer.description')}
@@ -137,7 +137,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
           <p className="text-sm text-center text-gray-500">
-            © {currentYear} Football EU. {t('footer.allRightsReserved')}
+            © {currentYear} Worldwide Football. {t('footer.allRightsReserved')}
           </p>
         </div>
       </div>

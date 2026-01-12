@@ -31,7 +31,7 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [settings, setSettings] = useState<PlatformSettings>({
     siteName: 'Football Tournament Platform',
-    siteDescription: 'Your gateway to football tournaments across Europe',
+    siteDescription: 'Your gateway to football tournaments worldwide',
     contactEmail: 'contact@footbaleu.com',
     supportEmail: 'support@footbaleu.com',
     defaultCurrency: 'EUR',

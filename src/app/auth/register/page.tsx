@@ -8,8 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { AuthLayout } from '@/components/layout';
-import { Button, Input, Alert } from '@/components/ui';
+import { Button, Input, Select, Alert } from '@/components/ui';
 import { useAuthStore } from '@/store';
+import type { UserRole } from '@/types';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -24,6 +25,7 @@ const registerSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string(),
   country: z.string().min(2, 'Country is required'),
+  role: z.enum(['PARTICIPANT', 'ORGANIZER'] as const) as z.ZodType<UserRole>,
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: 'You must accept the terms and conditions',
   }),
@@ -47,6 +49,9 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      role: 'PARTICIPANT' as UserRole,
+    },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -61,7 +66,7 @@ export default function RegisterPage() {
         phone: data.phone,
         password: data.password,
         country: data.country,
-        role: 'PARTICIPANT', // Default role, user can change it later in dashboard
+        role: data.role as 'ORGANIZER' | 'PARTICIPANT',
       });
       
       if (success) {
@@ -82,6 +87,11 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  const roleOptions = [
+    { value: 'PARTICIPANT', label: t('auth.roleParticipant') },
+    { value: 'ORGANIZER', label: t('auth.roleOrganizer') },
+  ];
 
   return (
     <AuthLayout
@@ -131,6 +141,13 @@ export default function RegisterPage() {
           placeholder="Romania"
           error={errors.country?.message}
           {...register('country')}
+        />
+
+        <Select
+          label={t('auth.accountType')}
+          options={roleOptions}
+          error={errors.role?.message}
+          {...register('role')}
         />
 
         <Input

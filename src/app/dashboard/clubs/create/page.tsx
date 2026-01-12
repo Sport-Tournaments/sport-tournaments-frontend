@@ -22,7 +22,14 @@ const clubSchema = z.object({
   address: z.string().optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  website: z.string().optional().or(z.literal('')).transform((val) => {
+    if (!val) return '';
+    // Auto-prepend https:// if no protocol is specified
+    if (!/^https?:\/\//i.test(val)) {
+      return `https://${val}`;
+    }
+    return val;
+  }).pipe(z.string().url('Invalid URL format').optional().or(z.literal(''))),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   phone: z.string().optional(),
   colors: z.string().optional(),

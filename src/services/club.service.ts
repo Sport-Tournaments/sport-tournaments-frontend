@@ -87,6 +87,24 @@ export async function getClubStatistics(): Promise<ApiResponse<ClubStatistics>> 
   return apiGet<ApiResponse<ClubStatistics>>(`${CLUBS_BASE}/statistics`);
 }
 
+// Upload club logo
+export async function uploadLogo(id: string, file: File): Promise<ApiResponse<Club>> {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await api.patch<ApiResponse<Club>>(
+    `${CLUBS_BASE}/${id}/logo`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  
+  return response.data;
+}
+
 export const clubService = {
   getClubs,
   getMyClubs,
@@ -100,6 +118,7 @@ export const clubService = {
   unverifyClub,
   setClubPremium,
   getClubStatistics,
+  uploadLogo,
 };
 
 export default clubService;

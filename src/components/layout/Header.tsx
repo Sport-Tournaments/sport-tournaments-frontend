@@ -12,7 +12,7 @@ export default function Header() {
   const { t, i18n } = useTranslation();
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { theme, setTheme, toggleSidebar } = useUIStore();
+  const { theme, setTheme, mobileMenuOpen, toggleMobileMenu, setMobileMenuOpen } = useUIStore();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
 
@@ -39,8 +39,8 @@ export default function Header() {
           {/* Logo and Mobile menu button */}
           <div className="flex items-center gap-4">
             <button
-              onClick={toggleSidebar}
-              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-300"
+              onClick={toggleMobileMenu}
+              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
               aria-label="Toggle menu"
             >
               <span className="sr-only">Open main menu</span>
@@ -182,6 +182,47 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-gray-200 dark:border-white/10">
+          <div className="space-y-1 px-4 pb-3 pt-2">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'block rounded-md px-3 py-2 text-base font-medium',
+                  pathname === item.href
+                    ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white'
+                )}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+          {!isAuthenticated && (
+            <div className="border-t border-gray-200 px-4 py-3 dark:border-white/10">
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
+              >
+                {t('auth.login')}
+              </Link>
+              <Link
+                href="/auth/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-1 block rounded-md bg-indigo-600 px-3 py-2 text-base font-medium text-white hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+              >
+                {t('auth.register')}
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }

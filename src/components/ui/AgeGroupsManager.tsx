@@ -99,9 +99,18 @@ export function AgeGroupsManager({
   }, [ageGroups, onChange, expandedIndex]);
 
   const handleUpdateAgeGroup = useCallback((index: number, updates: Partial<AgeGroupFormData>) => {
-    const newAgeGroups = ageGroups.map((ag, i) =>
-      i === index ? { ...ag, ...updates } : ag
-    );
+    const newAgeGroups = ageGroups.map((ag, i) => {
+      if (i !== index) return ag;
+      
+      const updated = { ...ag, ...updates };
+      
+      // Auto-calculate groupsCount when teamCount or teamsPerGroup changes
+      if (('teamCount' in updates || 'teamsPerGroup' in updates) && updated.teamCount && updated.teamsPerGroup) {
+        updated.groupsCount = Math.ceil(updated.teamCount / updated.teamsPerGroup);
+      }
+      
+      return updated;
+    });
     onChange(newAgeGroups);
   }, [ageGroups, onChange]);
 
@@ -303,7 +312,7 @@ export function AgeGroupsManager({
                       max={16}
                       step={1}
                       disabled={disabled}
-                      helperText={t('tournaments.ageGroups.groupsCountHelp', 'Number of groups for this category')}
+                      helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
                     />
 
                     {/* Guaranteed Matches */}

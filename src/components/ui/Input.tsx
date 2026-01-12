@@ -28,6 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       required,
       id,
       onClick,
+      onChange,
       ...props
     },
     ref
@@ -35,7 +36,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || props.name;
     const helpText = helperText || hint;
 
-    // Handler to open date/time picker when clicking the field
+    // Handler to open date/time picker when clicking the field (Issue #28)
     const handleClick = useCallback(
       (e: React.MouseEvent<HTMLInputElement>) => {
         // Call the original onClick if provided
@@ -58,6 +59,23 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         }
       },
       [onClick, type]
+    );
+
+    // Handler to auto-close datetime picker after selection (Issue #29)
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (onChange) {
+          onChange(e);
+        }
+        // Auto-close datetime picker after value selection
+        if ((type === 'datetime-local' || type === 'date' || type === 'time') && e.target.value) {
+          // Trigger blur to close the picker after a small delay
+          setTimeout(() => {
+            e.target.blur();
+          }, 100);
+        }
+      },
+      [onChange, type]
     );
 
     const baseInputStyles = 'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500';
@@ -88,6 +106,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={type}
             onClick={handleClick}
+            onChange={handleChange}
             className={cn(
               error ? errorInputStyles : baseInputStyles,
               leftIcon && 'pl-10',

@@ -98,12 +98,16 @@ export default function CreateClubPage() {
       const response = await clubService.createClub(data);
       const club = (response as any)?.data || response;
       
-      // TODO: Upload logo functionality to be implemented
-      // if (logoFile && club.id) {
-      //   const formData = new FormData();
-      //   formData.append('logo', logoFile);
-      //   await clubService.uploadLogo(club.id, formData);
-      // }
+      // Upload logo if file was selected
+      if (logoFile && club.id) {
+        try {
+          await clubService.uploadLogo(club.id, logoFile);
+        } catch (logoErr) {
+          // Log error but don't block club creation
+          console.error('Failed to upload logo:', logoErr);
+          setError('Club created, but logo upload failed. You can upload it later.');
+        }
+      }
       
       router.push(`/dashboard/clubs/${club.id}`);
     } catch (err: any) {

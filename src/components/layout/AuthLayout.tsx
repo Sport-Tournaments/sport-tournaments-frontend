@@ -37,32 +37,10 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       {/* Header */}
       <header className="p-4">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-              aria-label={t('common.back', 'Go back')}
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              {t('common.back', 'Back')}
-            </button>
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl">⚽</span>
-              <span className="font-bold text-xl text-primary">Worldwide Football</span>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl">⚽</span>
+            <span className="font-bold text-xl text-primary">Worldwide Football</span>
+          </Link>
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -76,6 +54,30 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+            {/* Back button - Top Left of Form Container */}
+            <div className="mb-6">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label={t('common.back', 'Go back')}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                {t('common.back', 'Back')}
+              </button>
+            </div>
+
             {/* Title */}
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

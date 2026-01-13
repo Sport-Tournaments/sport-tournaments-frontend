@@ -127,7 +127,7 @@ export default function Sidebar() {
           <div className="flex h-16 shrink-0 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">⚽</span>
-              <span className="font-bold text-xl text-white">Football EU</span>
+              <span className="font-bold text-xl text-white">Worldwide Football</span>
             </Link>
             <button
               onClick={closeSidebar}

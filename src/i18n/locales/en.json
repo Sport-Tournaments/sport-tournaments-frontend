@@ -527,7 +527,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact Us",
-    "description": "The ultimate platform for organizing and managing youth football tournaments across Europe.",
+    "description": "The ultimate platform for organizing and managing youth football tournaments worldwide.",
     "platform": "Platform",
     "support": "Support",
     "legal": "Legal",
@@ -610,10 +610,10 @@
   "home": {
     "hero": {
       "title": "Your Tournament, Simplified",
-      "subtitle": "The all-in-one platform for organizing, managing, and participating in youth football tournaments across Europe.",
+      "subtitle": "The all-in-one platform for organizing, managing, and participating in youth football tournaments worldwide.",
       "browseTournaments": "Browse Tournaments",
       "getStarted": "Get Started Free",
-      "platformName": "Football EU",
+      "platformName": "Worldwide Football",
       "platformTagline": "Where Champions Begin"
     },
     "stats": {
@@ -651,7 +651,7 @@
     },
     "cta": {
       "title": "Ready to Get Started?",
-      "subtitle": "Join thousands of clubs and organizers already using Football EU",
+      "subtitle": "Join thousands of clubs and organizers already using Worldwide Football",
       "createAccount": "Create Free Account",
       "contactUs": "Contact Us",
       "organizer": "I'm an Organizer",
@@ -675,7 +675,7 @@
   },
   "tournament": {
     "title": "Tournaments",
-    "subtitle": "Discover and join football tournaments across Europe",
+    "subtitle": "Discover and join football tournaments worldwide",
     "create": "Create Tournament",
     "edit": "Edit Tournament",
     "venue": "Venue",

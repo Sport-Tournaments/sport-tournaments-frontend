@@ -15,10 +15,10 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
         'home.hero.title': 'Youth Football Tournament Management',
-        'home.hero.subtitle': 'The complete platform for organizing and managing youth football tournaments across Europe',
+        'home.hero.subtitle': 'The complete platform for organizing and managing youth football tournaments worldwide',
         'home.hero.browseTournaments': 'Browse Tournaments',
         'home.hero.getStarted': 'Get Started',
-        'home.hero.platformName': 'Football EU',
+        'home.hero.platformName': 'Worldwide Football',
         'home.hero.platformTagline': 'Your Tournament Platform',
         'home.stats.tournaments': 'Tournaments',
         'home.stats.clubs': 'Clubs',

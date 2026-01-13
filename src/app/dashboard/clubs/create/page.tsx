@@ -14,27 +14,47 @@ import type { LocationSuggestion } from '@/types';
 
 const clubSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  shortName: z.string().min(2, 'Short name must be at least 2 characters').max(10, 'Short name max 10 characters').optional(),
+  shortName: z.string().optional().or(z.literal(''))
+    .transform(val => !val || val === '' ? undefined : val)
+    .refine(val => !val || val.length >= 2, { message: 'Short name must be at least 2 characters' })
+    .refine(val => !val || val.length <= 10, { message: 'Short name max 10 characters' }),
   description: z.string().optional(),
-  foundedYear: z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Year cannot be in the future').optional(),
+  foundedYear: z.union([
+    z.string().optional().or(z.literal('')),
+    z.number(),
+    z.null(),
+    z.undefined(),
+  ])
+    .transform(val => {
+      if (val === null || val === undefined || val === '') return undefined;
+      const num = typeof val === 'string' ? parseInt(val, 10) : val;
+      if (isNaN(num)) return undefined;
+      return num;
+    })
+    .refine(val => val === undefined || (val >= 1800 && val <= new Date().getFullYear()), {
+      message: 'Invalid year'
+    }),
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
   address: z.string().optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
   website: z.string().optional().or(z.literal('')).transform((val) => {
-    if (!val) return '';
+    if (!val || val === '') return undefined;
     // Auto-prepend https:// if no protocol is specified
-    if (!/^https?:\/\//i.test(val)) {
+    if (!/^https?:\/\//.test(val)) {
       return `https://${val}`;
     }
     return val;
-  }).pipe(z.string().url('Invalid URL format').optional().or(z.literal(''))),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
-  phone: z.string().optional(),
+  }).refine(val => !val || /^https?:\/\/.+\..+/.test(val), { message: 'Invalid URL format' }),
+  contactEmail: z.string().optional().or(z.literal('')).transform(val => !val || val === '' ? undefined : val)
+    .refine(val => !val || /^[^@]+@[^@]+\.[^@]+$/.test(val), { message: 'Invalid email' }),
+  contactPhone: z.string().optional().or(z.literal('')).transform(val => !val || val === '' ? undefined : val),
   colors: z.string().optional(),
-  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format').optional(),
-  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format').optional(),
+  primaryColor: z.string().optional().or(z.literal('')).transform(val => !val || val === '' ? undefined : val)
+    .refine(val => !val || /^#[0-9A-Fa-f]{6}$/i.test(val), { message: 'Invalid color format' }),
+  secondaryColor: z.string().optional().or(z.literal('')).transform(val => !val || val === '' ? undefined : val)
+    .refine(val => !val || /^#[0-9A-Fa-f]{6}$/i.test(val), { message: 'Invalid color format' }),
 });
 
 type ClubFormData = z.infer<typeof clubSchema>;
@@ -242,7 +262,7 @@ export default function CreateClubPage() {
                 label={t('clubs.foundedYear')}
                 placeholder="1990"
                 error={errors.foundedYear?.message}
-                {...register('foundedYear', { valueAsNumber: true })}
+                {...register('foundedYear')}
               />
             </CardContent>
           </Card>
@@ -351,15 +371,15 @@ export default function CreateClubPage() {
                   type="email"
                   label={t('common.email')}
                   placeholder="club@example.com"
-                  error={errors.email?.message}
-                  {...register('email')}
+                  error={errors.contactEmail?.message}
+                  {...register('contactEmail')}
                 />
                 <Input
                   type="tel"
                   label={t('common.phone')}
                   placeholder="+40 xxx xxx xxx"
-                  error={errors.phone?.message}
-                  {...register('phone')}
+                  error={errors.contactPhone?.message}
+                  {...register('contactPhone')}
                 />
               </div>
               <Input

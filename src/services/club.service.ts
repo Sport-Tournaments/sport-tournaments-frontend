@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { apiGet, apiPost, apiPatch, apiDelete, api } from './api';
 import { buildQueryString } from '@/utils/helpers';
 import type {
   Club,

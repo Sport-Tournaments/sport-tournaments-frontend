@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 interface AuthLayoutProps {
@@ -11,10 +12,24 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'ro' : 'en';
     i18n.changeLanguage(newLang);
+  };
+
+  const handleBack = () => {
+    // Check if there's a back URL in the query parameters (where user came from)
+    const backUrl = searchParams.get('backUrl');
+    if (backUrl) {
+      // Navigate to the back URL (the page user came from before redirect)
+      router.push(decodeURIComponent(backUrl));
+    } else {
+      // Fallback to browser back navigation
+      router.back();
+    }
   };
 
   return (
@@ -39,6 +54,30 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+            {/* Back button - Top Left of Form Container */}
+            <div className="mb-6">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                aria-label={t('common.back', 'Go back')}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                {t('common.back', 'Back')}
+              </button>
+            </div>
+
             {/* Title */}
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +36,19 @@ export default function CreateTournamentPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to error message when error is set
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      // Focus on the error message for accessibility
+      errorRef.current.focus();
+    }
+  }, [error]);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [regulationsFile, setRegulationsFile] = useState<File | null>(null);
   const [ageGroups, setAgeGroups] = useState<AgeGroupFormData[]>([]);

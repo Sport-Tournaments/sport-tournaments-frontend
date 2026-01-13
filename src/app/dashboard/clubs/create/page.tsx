@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -46,6 +46,19 @@ export default function CreateClubPage() {
   const [error, setError] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to error message when error is set
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      // Focus on the error message for accessibility
+      errorRef.current.focus();
+    }
+  }, [error]);
 
   const {
     register,
@@ -166,7 +179,13 @@ export default function CreateClubPage() {
           </div>
         </div>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && (
+          <div ref={errorRef} tabIndex={-1} className="outline-none">
+            <Alert variant="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Logo */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
@@ -59,6 +59,19 @@ export default function EditTournamentPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to error message when error is set
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      // Focus on the error message for accessibility
+      errorRef.current.focus();
+    }
+  }, [error]);
   const [regulationsFile, setRegulationsFile] = useState<File | null>(null);
   const [hasExistingRegulations, setHasExistingRegulations] = useState(false);
   const [ageGroups, setAgeGroups] = useState<AgeGroupFormData[]>([]);
@@ -312,7 +325,13 @@ export default function EditTournamentPage() {
           </Button>
         </div>
 
-        {error && <Alert variant="error">{error}</Alert>}
+        {error && (
+          <div ref={errorRef} tabIndex={-1} className="outline-none">
+            <Alert variant="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          </div>
+        )}
         {success && <Alert variant="success">{t('common.saveSuccess')}</Alert>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

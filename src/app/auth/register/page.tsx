@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -42,6 +42,7 @@ export default function RegisterPage() {
   const { register: registerUser } = useAuthStore();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const {
     register,
@@ -53,6 +54,18 @@ export default function RegisterPage() {
       role: 'PARTICIPANT' as UserRole,
     },
   });
+
+  // Auto-scroll to error message when error is set
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      // Focus on the error message for accessibility
+      errorRef.current.focus();
+    }
+  }, [error]);
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -100,9 +113,11 @@ export default function RegisterPage() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {error && (
-          <Alert variant="error" onClose={() => setError(null)}>
-            {error}
-          </Alert>
+          <div ref={errorRef} tabIndex={-1} className="outline-none">
+            <Alert variant="error" onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

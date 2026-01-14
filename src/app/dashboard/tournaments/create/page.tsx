@@ -225,18 +225,14 @@ export default function CreateTournamentPage() {
                 {...register('description')}
               />
 
-              <Input
-                label={t('tournament.location')}
-                placeholder={t('tournament.locationPlaceholder')}
-                error={errors.location?.message}
-                {...register('location')}
-              />
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <LocationAutocomplete
-                    label={t('tournament.locationSearch')}
+                    label={t('tournament.location')}
                     placeholder="Search for city or venue..."
                     onSelect={handleLocationSelect}
+                    error={errors.location?.message}
+                    required
                   />
                 </div>
                 <div className="flex items-end">

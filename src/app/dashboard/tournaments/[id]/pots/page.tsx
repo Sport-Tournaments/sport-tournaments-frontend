@@ -179,13 +179,9 @@ export default function PotManagementPage() {
 
   const canExecuteDraw = () => {
     const totalAssigned = getTotalAssigned();
-    const allPotsSameSize = pots.every(
-      (pot) => pot.count === pots[0].count || pot.count === 0
-    );
     return (
       totalAssigned === registrations.length &&
-      totalAssigned > 0 &&
-      allPotsSameSize
+      totalAssigned > 0
     );
   };
 
@@ -289,9 +285,6 @@ export default function PotManagementPage() {
                     <ul className="list-disc list-inside space-y-1">
                       {getTotalAssigned() !== registrations.length && (
                         <li>All teams must be assigned to pots</li>
-                      )}
-                      {!pots.every((pot) => pot.count === pots[0].count || pot.count === 0) && (
-                        <li>All non-empty pots must have the same number of teams</li>
                       )}
                     </ul>
                   </div>

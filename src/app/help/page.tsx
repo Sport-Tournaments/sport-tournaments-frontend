@@ -101,7 +101,7 @@ const faqs = [
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -125,10 +125,10 @@ export default function HelpPage() {
           {helpCategories.map((category, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+              className="bg-white  rounded-lg p-6 border border-gray-200  hover:shadow-lg transition-shadow"
             >
               <div className="text-4xl mb-3">{category.icon}</div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-xl font-bold text-gray-900  mb-4">
                 {category.title}
               </h2>
               <ul className="space-y-2">
@@ -136,7 +136,7 @@ export default function HelpPage() {
                   <li key={aIndex}>
                     <Link
                       href={article.slug}
-                      className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                      className="text-indigo-600  hover:underline"
                     >
                       {article.title}
                     </Link>
@@ -149,22 +149,22 @@ export default function HelpPage() {
 
         {/* FAQ Section */}
         <div className="mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900  mb-8 text-center">
             Frequently Asked Questions
           </h2>
-          <div className="bg-white dark:bg-gray-800 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="bg-white  rounded-lg divide-y divide-gray-200 ">
             {faqs.map((faq, index) => (
               <details
                 key={index}
                 className="p-6 cursor-pointer group"
               >
-                <summary className="flex items-center justify-between font-semibold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400">
+                <summary className="flex items-center justify-between font-semibold text-gray-900  hover:text-indigo-600 ">
                   <span>{faq.question}</span>
                   <span className="ml-4 group-open:rotate-180 transition-transform">
                     ▼
                   </span>
                 </summary>
-                <p className="mt-4 text-gray-600 dark:text-gray-400">
+                <p className="mt-4 text-gray-600 ">
                   {faq.answer}
                 </p>
               </details>
@@ -173,11 +173,11 @@ export default function HelpPage() {
         </div>
 
         {/* Contact Support */}
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-indigo-50 /20 rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900  mb-4">
             Still need help?
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600  mb-6">
             Can't find what you're looking for? Contact our support team.
           </p>
           <Link

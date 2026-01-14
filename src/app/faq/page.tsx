@@ -145,7 +145,7 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -161,22 +161,22 @@ export default function FAQPage() {
         <div className="space-y-12">
           {faqCategories.map((category, catIndex) => (
             <div key={catIndex}>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              <h2 className="text-2xl font-bold text-gray-900  mb-6">
                 {category.title}
               </h2>
               <div className="space-y-4">
                 {category.faqs.map((faq, faqIndex) => (
                   <details
                     key={faqIndex}
-                    className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden group"
+                    className="bg-white  rounded-lg overflow-hidden group"
                   >
-                    <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                    <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50  transition-colors">
+                      <h3 className="font-semibold text-gray-900  text-lg">
                         {faq.question}
                       </h3>
                       <span className="ml-4 group-open:rotate-180 transition-transform flex-shrink-0">
                         <svg
-                          className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
+                          className="w-5 h-5 text-indigo-600 "
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -190,8 +190,8 @@ export default function FAQPage() {
                         </svg>
                       </span>
                     </summary>
-                    <div className="px-6 pb-6 border-t border-gray-200 dark:border-gray-700">
-                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <div className="px-6 pb-6 border-t border-gray-200 ">
+                      <p className="text-gray-600  leading-relaxed">
                         {faq.answer}
                       </p>
                     </div>
@@ -203,11 +203,11 @@ export default function FAQPage() {
         </div>
 
         {/* Still Have Questions */}
-        <div className="mt-12 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mt-12 bg-indigo-50 /20 rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900  mb-4">
             Still have questions?
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600  mb-6">
             Can't find what you're looking for? Contact our support team.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -219,7 +219,7 @@ export default function FAQPage() {
             </Link>
             <Link
               href="/help"
-              className="px-8 py-3 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors font-semibold"
+              className="px-8 py-3 border-2 border-indigo-600 text-indigo-600   rounded-md hover:bg-indigo-50 /20 transition-colors font-semibold"
             >
               Visit Help Center
             </Link>

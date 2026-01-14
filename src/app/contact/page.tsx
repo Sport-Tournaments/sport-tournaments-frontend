@@ -42,7 +42,7 @@ const socialLinks = [
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -56,49 +56,49 @@ export default function ContactPage() {
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* Contact Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          <div className="bg-white  rounded-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900  mb-6">
               Send us a message
             </h2>
             <form className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700  mb-2">
                   Full Name
                 </label>
                 <input
                   type="text"
                   placeholder="Your name"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300  bg-white  text-gray-900  focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700  mb-2">
                   Email
                 </label>
                 <input
                   type="email"
                   placeholder="your@email.com"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300  bg-white  text-gray-900  focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700  mb-2">
                   Subject
                 </label>
                 <input
                   type="text"
                   placeholder="How can we help?"
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300  bg-white  text-gray-900  focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700  mb-2">
                   Message
                 </label>
                 <textarea
                   rows={5}
                   placeholder="Tell us more..."
-                  className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300  bg-white  text-gray-900  focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
               </div>
               <button
@@ -112,24 +112,24 @@ export default function ContactPage() {
 
           {/* Contact Information */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="text-2xl font-bold text-gray-900  mb-6">
               Get in touch
             </h2>
             <div className="space-y-6">
               {contactMethods.map((method, index) => (
                 <div
                   key={index}
-                  className="flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                  className="flex gap-4 p-4 bg-white  rounded-lg border border-gray-200 "
                 >
                   <div className="text-3xl flex-shrink-0">{method.icon}</div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <h3 className="font-semibold text-gray-900 ">
                       {method.title}
                     </h3>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-medium">
+                    <p className="text-indigo-600  font-medium">
                       {method.value}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 ">
                       {method.description}
                     </p>
                   </div>
@@ -139,7 +139,7 @@ export default function ContactPage() {
 
             {/* Social Links */}
             <div className="mt-8">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="font-semibold text-gray-900  mb-4">
                 Follow us
               </h3>
               <div className="flex gap-4">
@@ -159,11 +159,11 @@ export default function ContactPage() {
         </div>
 
         {/* Response Time Info */}
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-8 text-center">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="bg-indigo-50 /20 rounded-lg p-8 text-center">
+          <h3 className="text-xl font-bold text-gray-900  mb-2">
             We'll get back to you quickly
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 ">
             Our team typically responds to inquiries within 24 hours during business days.
           </p>
         </div>

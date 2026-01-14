@@ -74,7 +74,7 @@ const features = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">

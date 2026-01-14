@@ -531,6 +531,8 @@
     "platform": "Platform",
     "support": "Support",
     "legal": "Legal",
+    "tournaments": "Tournaments",
+    "clubs": "Clubs",
     "howItWorks": "How It Works",
     "pricing": "Pricing",
     "helpCenter": "Help Center",
@@ -846,5 +848,422 @@
     },
     "participatedTournaments": "Tournament History",
     "noTournamentsParticipated": "No tournament participations yet"
+  },
+  "pages": {
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Follow these simple steps to organize and manage your football tournaments",
+      "stepsTitle": "6 Easy Steps to Get Started",
+      "featuresTitle": "Key Features",
+      "steps": {
+        "step1": {
+          "title": "Create Your Account",
+          "description": "Sign up as a tournament organizer or club member in just a few minutes. Choose your role and complete your profile."
+        },
+        "step2": {
+          "title": "Create a Tournament",
+          "description": "Set up your tournament with details like dates, location, age categories, and rules. Define your competition format."
+        },
+        "step3": {
+          "title": "Add Age Categories",
+          "description": "Organize teams into age groups with customized settings, game formats, and participation fees for each category."
+        },
+        "step4": {
+          "title": "Teams Register",
+          "description": "Teams browse your tournament and submit registration requests. Review and approve registrations from your dashboard."
+        },
+        "step5": {
+          "title": "Create Groups & Matches",
+          "description": "Organize teams into groups and generate match schedules. Manage the competition format and brackets."
+        },
+        "step6": {
+          "title": "Track Results",
+          "description": "Update match results, manage standings, and keep participants informed throughout the tournament."
+        }
+      },
+      "features": {
+        "easyRegistration": {
+          "title": "Easy Registration",
+          "description": "Streamlined registration process for teams with automatic confirmation and payment handling."
+        },
+        "matchManagement": {
+          "title": "Match Management",
+          "description": "Manage matches, update scores, and generate automatic standings and leaderboards."
+        },
+        "teamCommunication": {
+          "title": "Team Communication",
+          "description": "Built-in messaging system to communicate with teams and participants throughout the tournament."
+        },
+        "analytics": {
+          "title": "Analytics & Reports",
+          "description": "Comprehensive statistics and reports to track tournament performance and team progress."
+        },
+        "mobileFriendly": {
+          "title": "Mobile Friendly",
+          "description": "Access your tournaments and information on any device with our responsive design."
+        },
+        "securePayments": {
+          "title": "Secure Payments",
+          "description": "Safe and secure payment processing for registration fees and participation charges."
+        }
+      },
+      "cta": {
+        "title": "Ready to Get Started?",
+        "subtitle": "Join thousands of tournament organizers using Worldwide Football to manage their competitions.",
+        "signUpNow": "Sign Up Now",
+        "browseTournaments": "Browse Tournaments"
+      }
+    },
+    "pricing": {
+      "title": "Pricing Plans",
+      "subtitle": "Choose the perfect plan for your needs",
+      "monthlyBilling": "Monthly",
+      "annualBilling": "Annual",
+      "save": "Save {{percent}}%",
+      "selectPlan": "Select Plan",
+      "getStarted": "Get Started",
+      "mostPopular": "Most Popular",
+      "plans": {
+        "basic": {
+          "name": "Basic",
+          "price": "Free",
+          "description": "Perfect for small tournaments and clubs",
+          "cta": "Get Started",
+          "features": {
+            "f1": "Up to 1 tournament",
+            "f2": "Up to 10 teams",
+            "f3": "Basic match scheduling",
+            "f4": "Basic standings",
+            "f5": "Email support",
+            "f6": "Community access"
+          }
+        },
+        "professional": {
+          "name": "Professional",
+          "price": "$29",
+          "period": "/month",
+          "description": "Ideal for growing tournament organizers",
+          "cta": "Start Free Trial",
+          "features": {
+            "f1": "Unlimited tournaments",
+            "f2": "Up to 100 teams per tournament",
+            "f3": "Advanced scheduling",
+            "f4": "Custom standings",
+            "f5": "Team communication tools",
+            "f6": "Priority email support",
+            "f7": "Custom branding",
+            "f8": "Analytics dashboard"
+          }
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Custom",
+          "description": "For large organizations and federations",
+          "cta": "Contact Sales",
+          "features": {
+            "f1": "Everything in Professional",
+            "f2": "Unlimited teams",
+            "f3": "API access",
+            "f4": "24/7 phone support",
+            "f5": "Dedicated account manager",
+            "f6": "Custom integrations",
+            "f7": "Advanced analytics",
+            "f8": "White-label options"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "q1": {
+          "question": "Can I change plans anytime?",
+          "answer": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately."
+        },
+        "q2": {
+          "question": "Do you offer discounts for annual billing?",
+          "answer": "Yes, annual plans include 20% discount compared to monthly billing."
+        },
+        "q3": {
+          "question": "What about payment methods?",
+          "answer": "We accept credit cards, bank transfers, and PayPal for your convenience."
+        },
+        "q4": {
+          "question": "Is there a free trial?",
+          "answer": "Yes, Professional and Enterprise plans come with a 14-day free trial."
+        }
+      },
+      "cta": {
+        "title": "Ready to Get Started?",
+        "subtitle": "Choose a plan and start managing your tournaments today.",
+        "signUpNow": "Sign Up Now",
+        "browseTournaments": "Browse Tournaments"
+      }
+    },
+    "help": {
+      "title": "Help Center",
+      "subtitle": "Find answers to your questions",
+      "searchPlaceholder": "Search help articles...",
+      "contactSupport": "Contact Support",
+      "faqTitle": "Frequently Asked Questions",
+      "categories": {
+        "gettingStarted": {
+          "title": "Getting Started",
+          "articles": {
+            "a1": "How to sign up",
+            "a2": "Creating your profile",
+            "a3": "Verifying your email",
+            "a4": "First steps as a tournament organizer"
+          }
+        },
+        "tournaments": {
+          "title": "Tournaments",
+          "articles": {
+            "a1": "How to create a tournament",
+            "a2": "Setting tournament dates and venues",
+            "a3": "Managing teams and participants",
+            "a4": "Tournament settings and rules",
+            "a5": "Publishing your tournament"
+          }
+        },
+        "teamsClubs": {
+          "title": "Teams & Clubs",
+          "articles": {
+            "a1": "How to create a club",
+            "a2": "Adding team members",
+            "a3": "Managing club details",
+            "a4": "Registering teams for tournaments",
+            "a5": "Updating team rosters"
+          }
+        },
+        "matchesSchedules": {
+          "title": "Matches & Schedules",
+          "articles": {
+            "a1": "How to create match schedules",
+            "a2": "Setting match details",
+            "a3": "Updating match results",
+            "a4": "Generating group stages",
+            "a5": "Managing knockouts"
+          }
+        },
+        "standingsStats": {
+          "title": "Standings & Statistics",
+          "articles": {
+            "a1": "Understanding tournament standings",
+            "a2": "Viewing team statistics",
+            "a3": "Top scorers and player stats",
+            "a4": "Exporting reports"
+          }
+        },
+        "communication": {
+          "title": "Communication & Notifications",
+          "articles": {
+            "a1": "Sending messages to teams",
+            "a2": "Notification settings",
+            "a3": "Email preferences",
+            "a4": "Announcements and updates"
+          }
+        }
+      },
+      "faqs": {
+        "q1": {
+          "question": "How much does it cost to use Worldwide Football?",
+          "answer": "We offer a free Basic plan with limited features, as well as Professional and Enterprise plans with unlimited tournaments and advanced features. Visit our Pricing page for more details."
+        },
+        "q2": {
+          "question": "Can I create multiple tournaments?",
+          "answer": "Yes! With Professional and Enterprise plans, you can create unlimited tournaments. The Basic plan allows up to 1 tournament."
+        },
+        "q3": {
+          "question": "How do I export tournament data?",
+          "answer": "You can export standings, match results, and team information from your tournament dashboard. Professional and Enterprise plans have additional export options."
+        },
+        "q4": {
+          "question": "Is my data secure?",
+          "answer": "Yes, we use industry-standard encryption and security practices to protect your data. All data is backed up regularly."
+        },
+        "q5": {
+          "question": "Can I cancel my subscription anytime?",
+          "answer": "Yes, you can cancel your subscription at any time. No long-term contracts required."
+        },
+        "q6": {
+          "question": "Do you offer API access?",
+          "answer": "API access is available with our Enterprise plan. Contact our sales team to learn more about integration options."
+        }
+      },
+      "cta": {
+        "title": "Still need help?",
+        "subtitle": "Contact our support team and we'll get back to you as soon as possible.",
+        "contactUs": "Contact Us"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Answers to common questions about our platform",
+      "visitHelpCenter": "Visit Help Center",
+      "categories": {
+        "gettingStarted": {
+          "title": "Getting Started",
+          "q1": {
+            "question": "What is Worldwide Football?",
+            "answer": "Worldwide Football is a comprehensive platform for managing tournaments, clubs, and teams. It allows organizers to schedule matches, manage registrations, track standings, and communicate with participants."
+          },
+          "q2": {
+            "question": "Do I need to create an account?",
+            "answer": "Yes, you need to create an account to use the platform. Registration is free and takes just a few minutes. You can sign up as a tournament organizer, club manager, or team participant."
+          },
+          "q3": {
+            "question": "How do I sign up?",
+            "answer": "Click the \"Sign Up\" button on the homepage, provide your email address, create a password, and fill in your profile information. You can start using the platform immediately after registration."
+          },
+          "q4": {
+            "question": "Is there a mobile app?",
+            "answer": "Our platform is fully responsive and works great on mobile devices. We're also developing native iOS and Android apps that will be available soon."
+          }
+        },
+        "tournaments": {
+          "title": "Tournaments",
+          "q1": {
+            "question": "How do I create a tournament?",
+            "answer": "Log in to your account, navigate to \"Create Tournament\", fill in the tournament details (name, date, location, format), and click \"Create\". You can then add categories, teams, and schedule matches."
+          },
+          "q2": {
+            "question": "What tournament formats are supported?",
+            "answer": "We support multiple formats including group stage, knockout, round-robin, and hybrid formats. You can customize the format based on your needs."
+          },
+          "q3": {
+            "question": "Can I edit a tournament after creating it?",
+            "answer": "Yes, you can edit most tournament details. However, some settings may be locked once matches have started to maintain data integrity."
+          },
+          "q4": {
+            "question": "How do I publish my tournament?",
+            "answer": "After creating your tournament, you can publish it to make it visible to other users. They can then register their teams to participate."
+          },
+          "q5": {
+            "question": "Can I duplicate a tournament?",
+            "answer": "Yes, you can duplicate an existing tournament to quickly create similar ones. The new tournament will have the same structure but separate data."
+          }
+        },
+        "clubsTeams": {
+          "title": "Clubs & Teams",
+          "q1": {
+            "question": "How do I create a club?",
+            "answer": "Go to your dashboard, click \"Create Club\", enter the club name, add basic information, and save. You can then add teams and members to your club."
+          },
+          "q2": {
+            "question": "How many teams can a club have?",
+            "answer": "The number of teams depends on your subscription plan. Basic plans allow unlimited teams, while Professional and Enterprise plans have additional features."
+          },
+          "q3": {
+            "question": "How do I add members to my club?",
+            "answer": "In your club dashboard, go to Members, click \"Add Member\", and provide their email address. They'll receive an invitation to join your club."
+          },
+          "q4": {
+            "question": "Can I manage team rosters?",
+            "answer": "Yes, you can add and remove players from your team roster. You can also assign positions, jersey numbers, and track player statistics."
+          }
+        },
+        "matchesSchedules": {
+          "title": "Matches & Schedules",
+          "q1": {
+            "question": "How do I create match schedules?",
+            "answer": "In your tournament dashboard, go to \"Schedule\", select the teams and date/time, and create matches. You can create them individually or use our scheduling algorithm."
+          },
+          "q2": {
+            "question": "Can I automatically generate group stage matches?",
+            "answer": "Yes, our scheduling tool can automatically generate group stage matches, round-robin schedules, and knockout brackets based on your settings."
+          },
+          "q3": {
+            "question": "How do I update match results?",
+            "answer": "After a match is played, open the match details and enter the final score. You can also add details like goal scorers and red/yellow cards."
+          },
+          "q4": {
+            "question": "Can participants see the schedule?",
+            "answer": "Yes, published schedules are visible to all tournament participants. You can set specific visibility preferences for each match."
+          }
+        },
+        "standingsStats": {
+          "title": "Standings & Statistics",
+          "q1": {
+            "question": "How are standings calculated?",
+            "answer": "Standings are automatically calculated based on match results. Typically, 3 points for a win, 1 point for a draw, and 0 for a loss. You can customize point systems."
+          },
+          "q2": {
+            "question": "How do I view team statistics?",
+            "answer": "Go to the tournament dashboard and select \"Standings\". You'll see points, wins, losses, draws, goals for/against, and other statistics."
+          },
+          "q3": {
+            "question": "Can I export tournament data?",
+            "answer": "Yes, you can export standings, match results, and team information as CSV or PDF. This feature is available in Professional and Enterprise plans."
+          },
+          "q4": {
+            "question": "Where can I find top scorers?",
+            "answer": "Go to the tournament statistics page and select \"Top Scorers\" to see the highest-scoring players ranked by number of goals."
+          }
+        },
+        "accountBilling": {
+          "title": "Account & Billing",
+          "q1": {
+            "question": "What payment methods do you accept?",
+            "answer": "We accept credit cards (Visa, Mastercard, Amex), bank transfers, and PayPal."
+          },
+          "q2": {
+            "question": "Can I cancel my subscription?",
+            "answer": "Yes, you can cancel anytime from your account settings. No long-term contracts are required."
+          },
+          "q3": {
+            "question": "Is there a free trial?",
+            "answer": "Yes, Professional and Enterprise plans offer a 14-day free trial with full access to all features."
+          },
+          "q4": {
+            "question": "Can I change my plan?",
+            "answer": "Yes, you can upgrade or downgrade your plan anytime. Changes take effect immediately and billing is adjusted accordingly."
+          },
+          "q5": {
+            "question": "How do I reset my password?",
+            "answer": "Click \"Forgot Password\" on the login page, enter your email, and follow the instructions sent to your inbox."
+          }
+        }
+      },
+      "cta": {
+        "title": "Didn't find what you're looking for?",
+        "subtitle": "Contact our support team for more help.",
+        "contactUs": "Contact Us"
+      }
+    },
+    "contact": {
+      "title": "Contact Us",
+      "subtitle": "We'd love to hear from you. Get in touch with our team.",
+      "sendMessage": "Send us a message",
+      "fullName": "Full Name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "sendButton": "Send Message",
+      "contactInfo": "Contact Information",
+      "followUs": "Follow us",
+      "responseTime": "We'll get back to you quickly",
+      "responseTimeDesc": "Our team typically responds to inquiries within 24 hours during business days.",
+      "methods": {
+        "email": {
+          "title": "Email",
+          "value": "support@worldwidefootball.com",
+          "description": "For general inquiries and support"
+        },
+        "phone": {
+          "title": "Phone",
+          "value": "+1 (555) 123-4567",
+          "description": "Call us Monday to Friday, 9AM-6PM EST"
+        },
+        "address": {
+          "title": "Address",
+          "value": "123 Football Street, New York, NY 10001",
+          "description": "Visit us at our headquarters"
+        },
+        "liveChat": {
+          "title": "Live Chat",
+          "value": "Chat with us",
+          "description": "Available during business hours"
+        }
+      }
+    }
   }
 }

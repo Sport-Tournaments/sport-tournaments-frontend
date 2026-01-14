@@ -524,8 +524,18 @@
     "privacy": "Politica de confidențialitate",
     "terms": "Termeni și condiții",
     "contact": "Contactează-ne",
-    "about": "Despre noi",
-    "help": "Ajutor"
+    "description": "Platforma supremă pentru organizarea și gestionarea turneelor de fotbal pentru tineret din întreaga lume.",
+    "platform": "Platformă",
+    "support": "Suport",
+    "legal": "Legal",
+    "tournaments": "Turnee",
+    "clubs": "Cluburi",
+    "howItWorks": "Cum funcționează",
+    "pricing": "Prețuri",
+    "helpCenter": "Centru de ajutor",
+    "faq": "Întrebări frecvente",
+    "cookies": "Politica cookies",
+    "allRightsReserved": "Toate drepturile rezervate."
   },
   "home": {
     "title": "Platformă Turnee Fotbal",
@@ -948,5 +958,422 @@
     "tournaments": "Turnee",
     "history": "Istoric",
     "searchPlaceholder": "Caută cluburi..."
+  },
+  "pages": {
+    "howItWorks": {
+      "title": "Cum funcționează",
+      "subtitle": "Urmează acești pași simpli pentru a organiza și gestiona turneele tale de fotbal",
+      "stepsTitle": "6 pași simpli pentru a începe",
+      "featuresTitle": "Caracteristici principale",
+      "steps": {
+        "step1": {
+          "title": "Creează-ți contul",
+          "description": "Înregistrează-te ca organizator de turnee sau membru al unui club în doar câteva minute. Alege-ți rolul și completează-ți profilul."
+        },
+        "step2": {
+          "title": "Creează un turneu",
+          "description": "Configurează turneul tău cu detalii precum date, locație, categorii de vârstă și reguli. Definește formatul competiției."
+        },
+        "step3": {
+          "title": "Adaugă categorii de vârstă",
+          "description": "Organizează echipele în grupe de vârstă cu setări personalizate, formate de joc și taxe de participare pentru fiecare categorie."
+        },
+        "step4": {
+          "title": "Echipele se înregistrează",
+          "description": "Echipele explorează turneul tău și trimit cereri de înregistrare. Revizuiește și aprobă înregistrările din panoul tău de control."
+        },
+        "step5": {
+          "title": "Creează grupe și meciuri",
+          "description": "Organizează echipele în grupe și generează programul meciurilor. Gestionează formatul competiției și tablourile."
+        },
+        "step6": {
+          "title": "Urmărește rezultatele",
+          "description": "Actualizează rezultatele meciurilor, gestionează clasamentele și informează participanții pe tot parcursul turneului."
+        }
+      },
+      "features": {
+        "easyRegistration": {
+          "title": "Înregistrare ușoară",
+          "description": "Proces de înregistrare simplificat pentru echipe cu confirmare automată și gestionarea plăților."
+        },
+        "matchManagement": {
+          "title": "Gestionarea meciurilor",
+          "description": "Gestionează meciuri, actualizează scoruri și generează automat clasamente și tabele."
+        },
+        "teamCommunication": {
+          "title": "Comunicare cu echipele",
+          "description": "Sistem de mesagerie integrat pentru a comunica cu echipele și participanții pe tot parcursul turneului."
+        },
+        "analytics": {
+          "title": "Analize și rapoarte",
+          "description": "Statistici și rapoarte complete pentru a urmări performanța turneului și progresul echipelor."
+        },
+        "mobileFriendly": {
+          "title": "Prietenos cu mobilul",
+          "description": "Accesează turneele și informațiile de pe orice dispozitiv cu designul nostru responsive."
+        },
+        "securePayments": {
+          "title": "Plăți sigure",
+          "description": "Procesare sigură și securizată a plăților pentru taxele de înregistrare și participare."
+        }
+      },
+      "cta": {
+        "title": "Pregătit să începi?",
+        "subtitle": "Alătură-te miilor de organizatori de turnee care folosesc Worldwide Football pentru a gestiona competițiile lor.",
+        "signUpNow": "Înregistrează-te acum",
+        "browseTournaments": "Explorează turnee"
+      }
+    },
+    "pricing": {
+      "title": "Planuri de preț",
+      "subtitle": "Alege planul perfect pentru nevoile tale",
+      "monthlyBilling": "Lunar",
+      "annualBilling": "Anual",
+      "save": "Economisește {{percent}}%",
+      "selectPlan": "Selectează planul",
+      "getStarted": "Începe",
+      "mostPopular": "Cel mai popular",
+      "plans": {
+        "basic": {
+          "name": "Basic",
+          "price": "Gratuit",
+          "description": "Perfect pentru turnee mici și cluburi",
+          "cta": "Începe",
+          "features": {
+            "f1": "Până la 1 turneu",
+            "f2": "Până la 10 echipe",
+            "f3": "Programare de bază a meciurilor",
+            "f4": "Clasamente de bază",
+            "f5": "Suport email",
+            "f6": "Acces la comunitate"
+          }
+        },
+        "professional": {
+          "name": "Profesional",
+          "price": "$29",
+          "period": "/lună",
+          "description": "Ideal pentru organizatorii de turnee în creștere",
+          "cta": "Începe încercarea gratuită",
+          "features": {
+            "f1": "Turnee nelimitate",
+            "f2": "Până la 100 echipe per turneu",
+            "f3": "Programare avansată",
+            "f4": "Clasamente personalizate",
+            "f5": "Instrumente de comunicare cu echipele",
+            "f6": "Suport email prioritar",
+            "f7": "Branding personalizat",
+            "f8": "Panou de analiză"
+          }
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "Personalizat",
+          "description": "Pentru organizații mari și federații",
+          "cta": "Contactează vânzările",
+          "features": {
+            "f1": "Tot ce e în Profesional",
+            "f2": "Echipe nelimitate",
+            "f3": "Acces API",
+            "f4": "Suport telefonic 24/7",
+            "f5": "Manager de cont dedicat",
+            "f6": "Integrări personalizate",
+            "f7": "Analize avansate",
+            "f8": "Opțiuni white-label"
+          }
+        }
+      },
+      "faq": {
+        "title": "Întrebări frecvente",
+        "q1": {
+          "question": "Pot schimba planul oricând?",
+          "answer": "Da, poți face upgrade sau downgrade la plan oricând. Modificările intră în vigoare imediat."
+        },
+        "q2": {
+          "question": "Oferiți reduceri pentru facturarea anuală?",
+          "answer": "Da, planurile anuale includ o reducere de 20% comparativ cu facturarea lunară."
+        },
+        "q3": {
+          "question": "Ce metode de plată acceptați?",
+          "answer": "Acceptăm carduri de credit, transferuri bancare și PayPal pentru confortul tău."
+        },
+        "q4": {
+          "question": "Există o perioadă de încercare gratuită?",
+          "answer": "Da, planurile Profesional și Enterprise vin cu o perioadă de încercare gratuită de 14 zile."
+        }
+      },
+      "cta": {
+        "title": "Pregătit să începi?",
+        "subtitle": "Alege un plan și începe să gestionezi turneele tale astazi.",
+        "signUpNow": "Înregistrează-te acum",
+        "browseTournaments": "Explorează turnee"
+      }
+    },
+    "help": {
+      "title": "Centru de ajutor",
+      "subtitle": "Găsește răspunsuri la întrebările tale",
+      "searchPlaceholder": "Caută articole de ajutor...",
+      "contactSupport": "Contactează suportul",
+      "faqTitle": "Întrebări frecvente",
+      "categories": {
+        "gettingStarted": {
+          "title": "Începe",
+          "articles": {
+            "a1": "Cum să te înregistrezi",
+            "a2": "Crearea profilului tău",
+            "a3": "Verificarea emailului",
+            "a4": "Primii pași ca organizator de turnee"
+          }
+        },
+        "tournaments": {
+          "title": "Turnee",
+          "articles": {
+            "a1": "Cum să creezi un turneu",
+            "a2": "Setarea datelor și locațiilor turneului",
+            "a3": "Gestionarea echipelor și participanților",
+            "a4": "Setări și reguli de turneu",
+            "a5": "Publicarea turneului tău"
+          }
+        },
+        "teamsClubs": {
+          "title": "Echipe și cluburi",
+          "articles": {
+            "a1": "Cum să creezi un club",
+            "a2": "Adăugarea membrilor echipei",
+            "a3": "Gestionarea detaliilor clubului",
+            "a4": "Înregistrarea echipelor la turnee",
+            "a5": "Actualizarea listelor de jucători"
+          }
+        },
+        "matchesSchedules": {
+          "title": "Meciuri și program",
+          "articles": {
+            "a1": "Cum să creezi programul meciurilor",
+            "a2": "Setarea detaliilor meciurilor",
+            "a3": "Actualizarea rezultatelor meciurilor",
+            "a4": "Generarea fazelor de grupă",
+            "a5": "Gestionarea eliminărilor"
+          }
+        },
+        "standingsStats": {
+          "title": "Clasamente și statistici",
+          "articles": {
+            "a1": "Înțelegerea clasamentelor turneului",
+            "a2": "Vizualizarea statisticilor echipei",
+            "a3": "Golgheteri și statistici ale jucătorilor",
+            "a4": "Exportarea rapoartelor"
+          }
+        },
+        "communication": {
+          "title": "Comunicare și notificări",
+          "articles": {
+            "a1": "Trimiterea mesajelor către echipe",
+            "a2": "Setări de notificare",
+            "a3": "Preferințe email",
+            "a4": "Anunțuri și actualizări"
+          }
+        }
+      },
+      "faqs": {
+        "q1": {
+          "question": "Cât costă să folosești Worldwide Football?",
+          "answer": "Oferim un plan Basic gratuit cu funcții limitate, precum și planuri Profesional și Enterprise cu turnee nelimitate și funcții avansate. Vizitează pagina noastră de Prețuri pentru mai multe detalii."
+        },
+        "q2": {
+          "question": "Pot crea mai multe turnee?",
+          "answer": "Da! Cu planurile Profesional și Enterprise, poți crea turnee nelimitate. Planul Basic permite până la 1 turneu."
+        },
+        "q3": {
+          "question": "Cum export datele turneului?",
+          "answer": "Poți exporta clasamente, rezultate ale meciurilor și informații despre echipe din panoul de control al turneului. Planurile Profesional și Enterprise au opțiuni suplimentare de export."
+        },
+        "q4": {
+          "question": "Sunt datele mele în siguranță?",
+          "answer": "Da, folosim criptare și practici de securitate standard din industrie pentru a-ți proteja datele. Toate datele sunt salvate regulat."
+        },
+        "q5": {
+          "question": "Pot anula abonamentul oricând?",
+          "answer": "Da, poți anula abonamentul oricând. Nu sunt necesare contracte pe termen lung."
+        },
+        "q6": {
+          "question": "Oferiți acces API?",
+          "answer": "Accesul API este disponibil cu planul nostru Enterprise. Contactează echipa noastră de vânzări pentru a afla mai multe despre opțiunile de integrare."
+        }
+      },
+      "cta": {
+        "title": "Ai nevoie de mai mult ajutor?",
+        "subtitle": "Contactează echipa noastră de suport și îți vom răspunde cât mai repede posibil.",
+        "contactUs": "Contactează-ne"
+      }
+    },
+    "faq": {
+      "title": "Întrebări frecvente",
+      "subtitle": "Răspunsuri la întrebări comune despre platforma noastră",
+      "visitHelpCenter": "Vizitează Centrul de Ajutor",
+      "categories": {
+        "gettingStarted": {
+          "title": "Începe",
+          "q1": {
+            "question": "Ce este Worldwide Football?",
+            "answer": "Worldwide Football este o platformă completă pentru gestionarea turneelor, cluburilor și echipelor. Permite organizatorilor să programeze meciuri, să gestioneze înregistrările, să urmărească clasamentele și să comunice cu participanții."
+          },
+          "q2": {
+            "question": "Trebuie să creez un cont?",
+            "answer": "Da, trebuie să creezi un cont pentru a folosi platforma. Înregistrarea este gratuită și durează doar câteva minute. Te poți înregistra ca organizator de turnee, manager de club sau participant la echipă."
+          },
+          "q3": {
+            "question": "Cum mă înregistrez?",
+            "answer": "Apasă butonul \"Înregistrare\" pe pagina principală, introdu adresa de email, creează o parolă și completează informațiile de profil. Poți începe să folosești platforma imediat după înregistrare."
+          },
+          "q4": {
+            "question": "Există o aplicație mobilă?",
+            "answer": "Platforma noastră este complet responsive și funcționează excelent pe dispozitive mobile. De asemenea, dezvoltăm aplicații native iOS și Android care vor fi disponibile în curând."
+          }
+        },
+        "tournaments": {
+          "title": "Turnee",
+          "q1": {
+            "question": "Cum creez un turneu?",
+            "answer": "Conectează-te la contul tău, navighează la \"Creează Turneu\", completează detaliile turneului (nume, dată, locație, format) și apasă \"Creează\". Apoi poți adăuga categorii, echipe și programa meciuri."
+          },
+          "q2": {
+            "question": "Ce formate de turneu sunt suportate?",
+            "answer": "Suportăm multiple formate inclusiv fază de grupă, eliminare directă, tur și retur și formate hibride. Poți personaliza formatul în funcție de nevoile tale."
+          },
+          "q3": {
+            "question": "Pot edita un turneu după ce l-am creat?",
+            "answer": "Da, poți edita majoritatea detaliilor turneului. Totuși, unele setări pot fi blocate odată ce meciurile au început pentru a menține integritatea datelor."
+          },
+          "q4": {
+            "question": "Cum public turneul meu?",
+            "answer": "După ce ai creat turneul, îl poți publica pentru a-l face vizibil altor utilizatori. Aceștia își pot apoi înregistra echipele pentru a participa."
+          },
+          "q5": {
+            "question": "Pot duplica un turneu?",
+            "answer": "Da, poți duplica un turneu existent pentru a crea rapid altele similare. Noul turneu va avea aceeași structură dar date separate."
+          }
+        },
+        "clubsTeams": {
+          "title": "Cluburi și echipe",
+          "q1": {
+            "question": "Cum creez un club?",
+            "answer": "Mergi la panoul tău de control, apasă \"Creează Club\", introdu numele clubului, adaugă informații de bază și salvează. Apoi poți adăuga echipe și membri la clubul tău."
+          },
+          "q2": {
+            "question": "Câte echipe poate avea un club?",
+            "answer": "Numărul de echipe depinde de planul tău de abonament. Planurile Basic permit echipe nelimitate, în timp ce planurile Profesional și Enterprise au funcții suplimentare."
+          },
+          "q3": {
+            "question": "Cum adaug membri la clubul meu?",
+            "answer": "În panoul de control al clubului, mergi la Membri, apasă \"Adaugă Membru\" și introdu adresa lor de email. Vor primi o invitație să se alăture clubului tău."
+          },
+          "q4": {
+            "question": "Pot gestiona listele de jucători?",
+            "answer": "Da, poți adăuga și elimina jucători din lista echipei. Poți de asemenea să atribui poziții, numere de tricou și să urmărești statisticile jucătorilor."
+          }
+        },
+        "matchesSchedules": {
+          "title": "Meciuri și program",
+          "q1": {
+            "question": "Cum creez programul meciurilor?",
+            "answer": "În panoul de control al turneului, mergi la \"Program\", selectează echipele și data/ora, și creează meciuri. Le poți crea individual sau folosind algoritmul nostru de programare."
+          },
+          "q2": {
+            "question": "Pot genera automat meciuri pentru faza de grupă?",
+            "answer": "Da, instrumentul nostru de programare poate genera automat meciuri pentru faza de grupă, programe tur și retur și tablouri de eliminare bazate pe setările tale."
+          },
+          "q3": {
+            "question": "Cum actualizez rezultatele meciurilor?",
+            "answer": "După ce un meci este jucat, deschide detaliile meciului și introdu scorul final. Poți adăuga și detalii precum marcatori și cartonașe roșii/galbene."
+          },
+          "q4": {
+            "question": "Pot vedea participanții programul?",
+            "answer": "Da, programele publicate sunt vizibile tuturor participanților la turneu. Poți seta preferințe specifice de vizibilitate pentru fiecare meci."
+          }
+        },
+        "standingsStats": {
+          "title": "Clasamente și statistici",
+          "q1": {
+            "question": "Cum sunt calculate clasamentele?",
+            "answer": "Clasamentele sunt calculate automat pe baza rezultatelor meciurilor. De obicei, 3 puncte pentru victorie, 1 punct pentru egal și 0 pentru înfrângere. Poți personaliza sistemul de puncte."
+          },
+          "q2": {
+            "question": "Cum văd statisticile echipei?",
+            "answer": "Mergi la panoul de control al turneului și selectează \"Clasamente\". Vei vedea puncte, victorii, înfrângeri, egaluri, goluri marcate/primite și alte statistici."
+          },
+          "q3": {
+            "question": "Pot exporta datele turneului?",
+            "answer": "Da, poți exporta clasamente, rezultate ale meciurilor și informații despre echipe ca CSV sau PDF. Această funcție este disponibilă în planurile Profesional și Enterprise."
+          },
+          "q4": {
+            "question": "Unde pot găsi golgheterii?",
+            "answer": "Mergi la pagina de statistici a turneului și selectează \"Golgheteri\" pentru a vedea jucătorii cu cele mai multe goluri clasați după numărul de goluri."
+          }
+        },
+        "accountBilling": {
+          "title": "Cont și facturare",
+          "q1": {
+            "question": "Ce metode de plată acceptați?",
+            "answer": "Acceptăm carduri de credit (Visa, Mastercard, Amex), transferuri bancare și PayPal."
+          },
+          "q2": {
+            "question": "Pot anula abonamentul?",
+            "answer": "Da, poți anula oricând din setările contului. Nu sunt necesare contracte pe termen lung."
+          },
+          "q3": {
+            "question": "Există o perioadă de încercare gratuită?",
+            "answer": "Da, planurile Profesional și Enterprise oferă o perioadă de încercare gratuită de 14 zile cu acces complet la toate funcțiile."
+          },
+          "q4": {
+            "question": "Pot schimba planul?",
+            "answer": "Da, poți face upgrade sau downgrade la plan oricând. Modificările intră în vigoare imediat și facturarea se ajustează corespunzător."
+          },
+          "q5": {
+            "question": "Cum îmi resetez parola?",
+            "answer": "Apasă \"Am uitat parola\" pe pagina de autentificare, introdu emailul tău și urmează instrucțiunile trimise în inbox."
+          }
+        }
+      },
+      "cta": {
+        "title": "Nu ai găsit ce căutai?",
+        "subtitle": "Contactează echipa noastră de suport pentru mai mult ajutor.",
+        "contactUs": "Contactează-ne"
+      }
+    },
+    "contact": {
+      "title": "Contactează-ne",
+      "subtitle": "Ar fi minunat să auzim de la tine. Contactează echipa noastră.",
+      "sendMessage": "Trimite-ne un mesaj",
+      "fullName": "Nume complet",
+      "email": "Email",
+      "subject": "Subiect",
+      "message": "Mesaj",
+      "sendButton": "Trimite mesaj",
+      "contactInfo": "Informații de contact",
+      "followUs": "Urmărește-ne",
+      "responseTime": "Îți vom răspunde rapid",
+      "responseTimeDesc": "Echipa noastră răspunde de obicei la întrebări în decurs de 24 de ore în zilele lucrătoare.",
+      "methods": {
+        "email": {
+          "title": "Email",
+          "value": "support@worldwidefootball.com",
+          "description": "Pentru întrebări generale și suport"
+        },
+        "phone": {
+          "title": "Telefon",
+          "value": "+1 (555) 123-4567",
+          "description": "Sună-ne de luni până vineri, 9AM-6PM EST"
+        },
+        "address": {
+          "title": "Adresă",
+          "value": "123 Football Street, New York, NY 10001",
+          "description": "Vizitează-ne la sediul nostru"
+        },
+        "liveChat": {
+          "title": "Chat live",
+          "value": "Discută cu noi",
+          "description": "Disponibil în timpul programului de lucru"
+        }
+      }
+    }
   }
 }

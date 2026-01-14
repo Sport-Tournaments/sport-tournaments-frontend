@@ -43,7 +43,7 @@ export default function PotManagementPage() {
 
   useEffect(() => {
     // Update pots when numberOfGroups changes
-    if (pots.length !== numberOfGroups && getTotalAssigned() === 0) {
+    if (pots.length !== numberOfGroups) {
       const newPots = Array.from({ length: numberOfGroups }, (_, i) => ({
         potNumber: i + 1,
         count: 0,

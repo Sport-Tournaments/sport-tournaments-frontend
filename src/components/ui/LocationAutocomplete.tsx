@@ -53,7 +53,19 @@ export default function LocationAutocomplete({
       try {
         const response = await searchLocations(debouncedQuery);
         if (response.success) {
-          setSuggestions(response.data);
+          // Remove duplicates based on city + region + country
+          const uniqueSuggestions = response.data.reduce((acc, current) => {
+            const key = `${current.city}-${current.region || ''}-${current.country}`;
+            const existing = acc.find(item => 
+              `${item.city}-${item.region || ''}-${item.country}` === key
+            );
+            if (!existing) {
+              acc.push(current);
+            }
+            return acc;
+          }, [] as LocationSuggestion[]);
+          
+          setSuggestions(uniqueSuggestions);
           setShowSuggestions(true);
         }
       } catch (error) {
@@ -215,25 +227,27 @@ export default function LocationAutocomplete({
       {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
-          {suggestions.map((suggestion, index) => (
-            <li
-              key={suggestion.placeId || `${suggestion.latitude}-${suggestion.longitude}`}
-              className={cn(
-                'px-4 py-2 cursor-pointer text-sm',
-                index === selectedIndex
-                  ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-200'
-              )}
-              onClick={() => handleSelect(suggestion)}
-            >
-              <div className="font-medium">{suggestion.formattedAddress}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {suggestion.city}
-                {suggestion.region && `, ${suggestion.region}`}
-                {`, ${suggestion.country}`}
-              </div>
-            </li>
-          ))}
+          {suggestions.map((suggestion, index) => {
+            // Format display as: village/city, county, country
+            const displayText = suggestion.region 
+              ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
+              : `${suggestion.city}, ${suggestion.country}`;
+            
+            return (
+              <li
+                key={suggestion.placeId || `${suggestion.latitude}-${suggestion.longitude}-${index}`}
+                className={cn(
+                  'px-4 py-2 cursor-pointer text-sm',
+                  index === selectedIndex
+                    ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-200'
+                )}
+                onClick={() => handleSelect(suggestion)}
+              >
+                <div className="font-medium">{displayText}</div>
+              </li>
+            );
+          })}
         </ul>
       )}
 

@@ -537,6 +537,7 @@
     "pricing": "Pricing",
     "helpCenter": "Help Center",
     "faq": "FAQ",
+    "gdpr": "GDPR",
     "cookies": "Cookie Policy",
     "allRightsReserved": "All rights reserved."
   },
@@ -1263,6 +1264,103 @@
           "value": "Chat with us",
           "description": "Available during business hours"
         }
+      }
+    },
+    "gdpr": {
+      "title": "GDPR Compliance",
+      "subtitle": "General Data Protection Regulation Information",
+      "commitment": {
+        "title": "Our Commitment to GDPR",
+        "description1": "Worldwide Football is committed to complying with the General Data Protection Regulation (GDPR), which protects the personal data and privacy of individuals in the European Union (EU) and European Economic Area (EEA).",
+        "description2": "This page provides information about how we comply with GDPR requirements and explains your rights under GDPR."
+      },
+      "legalBasis": {
+        "title": "Legal Basis for Processing",
+        "description": "We process your personal data under the following legal bases:",
+        "consent": {
+          "title": "Consent (Article 6(1)(a))",
+          "description": "You have given clear consent for us to process your personal data for specific purposes, such as marketing communications or location services."
+        },
+        "contract": {
+          "title": "Contract (Article 6(1)(b))",
+          "description": "Processing is necessary to fulfill our contract with you when you use our tournament management services."
+        },
+        "legalObligation": {
+          "title": "Legal Obligation (Article 6(1)(c))",
+          "description": "Processing is necessary to comply with applicable laws and regulations."
+        },
+        "legitimateInterests": {
+          "title": "Legitimate Interests (Article 6(1)(f))",
+          "description": "Processing is necessary for our legitimate interests, such as fraud prevention, network security, and service improvement."
+        }
+      },
+      "rights": {
+        "title": "Your Rights Under GDPR",
+        "access": {
+          "title": "1. Right to Access (Article 15)",
+          "description": "You have the right to request copies of your personal data. We may charge a small fee for this service."
+        },
+        "rectification": {
+          "title": "2. Right to Rectification (Article 16)",
+          "description": "You have the right to request that we correct any information you believe is inaccurate or complete information you believe is incomplete."
+        },
+        "erasure": {
+          "title": "3. Right to Erasure (Article 17)",
+          "description": "You have the right to request that we erase your personal data, under certain conditions."
+        },
+        "restrict": {
+          "title": "4. Right to Restrict Processing (Article 18)",
+          "description": "You have the right to request that we restrict the processing of your personal data, under certain conditions."
+        },
+        "portability": {
+          "title": "5. Right to Data Portability (Article 20)",
+          "description": "You have the right to request that we transfer the data we have collected to another organization, or directly to you, under certain conditions."
+        },
+        "object": {
+          "title": "6. Right to Object (Article 21)",
+          "description": "You have the right to object to our processing of your personal data, under certain conditions."
+        },
+        "automated": {
+          "title": "7. Rights Related to Automated Decision-Making (Article 22)",
+          "description": "You have the right not to be subject to a decision based solely on automated processing, including profiling."
+        }
+      },
+      "dpo": {
+        "title": "Data Protection Officer",
+        "description": "We have appointed a Data Protection Officer (DPO) to oversee our GDPR compliance. You can contact our DPO for any questions or concerns regarding data protection:",
+        "email": "Email",
+        "subject": "Subject Line",
+        "subjectLine": "GDPR Inquiry - [Your Name]"
+      },
+      "dataTransfers": {
+        "title": "International Data Transfers",
+        "description": "When we transfer personal data outside the EU/EEA, we ensure appropriate safeguards are in place, including:",
+        "safeguard1": "Standard Contractual Clauses (SCCs) approved by the European Commission",
+        "safeguard2": "Adequacy decisions for countries deemed to provide adequate protection",
+        "safeguard3": "Binding Corporate Rules for intra-group transfers",
+        "safeguard4": "Additional security measures as required"
+      },
+      "dataBreach": {
+        "title": "Data Breach Notification",
+        "description": "In the event of a data breach that is likely to result in a risk to your rights and freedoms, we will notify you and the relevant supervisory authority within 72 hours of becoming aware of the breach, as required by GDPR Article 33 and 34."
+      },
+      "exercise": {
+        "title": "How to Exercise Your Rights",
+        "description": "To exercise any of your GDPR rights, please:",
+        "step1": "Send an email to privacy@worldwidefootball.com or dpo@worldwidefootball.com",
+        "step2": "Include your full name, email address, and specific request",
+        "step3": "Provide proof of identity (for security purposes)",
+        "step4": "We will respond to your request within 30 days",
+        "complaint": "If you are not satisfied with our response, you have the right to lodge a complaint with your local supervisory authority."
+      },
+      "supervisory": {
+        "title": "Supervisory Authority",
+        "description": "You have the right to lodge a complaint with a supervisory authority, in particular in the EU member state of your habitual residence, place of work, or place of the alleged infringement.",
+        "link": "For a list of supervisory authorities, please visit"
+      },
+      "updates": {
+        "title": "Updates to GDPR Compliance",
+        "description": "We regularly review and update our GDPR compliance practices to ensure we meet all regulatory requirements. Any significant changes will be communicated through our Privacy Policy updates."
       }
     }
   }

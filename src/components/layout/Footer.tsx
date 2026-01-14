@@ -22,6 +22,7 @@ export default function Footer() {
     legal: [
       { name: t('footer.terms'), href: '/terms' },
       { name: t('footer.privacy'), href: '/privacy' },
+      { name: t('footer.gdpr'), href: '/gdpr' },
       { name: t('footer.cookies'), href: '/cookies' },
     ],
   };

@@ -534,6 +534,7 @@
     "pricing": "Prețuri",
     "helpCenter": "Centru de ajutor",
     "faq": "Întrebări frecvente",
+    "gdpr": "GDPR",
     "cookies": "Politica cookies",
     "allRightsReserved": "Toate drepturile rezervate."
   },
@@ -1373,6 +1374,103 @@
           "value": "Discută cu noi",
           "description": "Disponibil în timpul programului de lucru"
         }
+      }
+    },
+    "gdpr": {
+      "title": "Conformitate GDPR",
+      "subtitle": "Informații despre Regulamentul General privind Protecția Datelor",
+      "commitment": {
+        "title": "Angajamentul nostru față de GDPR",
+        "description1": "Worldwide Football se angajează să respecte Regulamentul General privind Protecția Datelor (GDPR), care protejează datele personale și confidențialitatea persoanelor din Uniunea Europeană (UE) și Spațiul Economic European (SEE).",
+        "description2": "Această pagină oferă informații despre modul în care respectăm cerințele GDPR și vă explică drepturile dvs. conform GDPR."
+      },
+      "legalBasis": {
+        "title": "Baza legală pentru procesare",
+        "description": "Procesăm datele dvs. personale pe baza următoarelor temeiuri legale:",
+        "consent": {
+          "title": "Consimțământ (Articolul 6(1)(a))",
+          "description": "Ați dat consimțământul clar pentru a procesa datele dvs. personale în scopuri specifice, cum ar fi comunicările de marketing sau serviciile de localizare."
+        },
+        "contract": {
+          "title": "Contract (Articolul 6(1)(b))",
+          "description": "Procesarea este necesară pentru îndeplinirea contractului nostru cu dvs. atunci când utilizați serviciile noastre de gestionare a turneelor."
+        },
+        "legalObligation": {
+          "title": "Obligație legală (Articolul 6(1)(c))",
+          "description": "Procesarea este necesară pentru a respecta legile și reglementările aplicabile."
+        },
+        "legitimateInterests": {
+          "title": "Interese legitime (Articolul 6(1)(f))",
+          "description": "Procesarea este necesară pentru interesele noastre legitime, cum ar fi prevenirea fraudei, securitatea rețelei și îmbunătățirea serviciilor."
+        }
+      },
+      "rights": {
+        "title": "Drepturile dvs. conform GDPR",
+        "access": {
+          "title": "1. Dreptul de acces (Articolul 15)",
+          "description": "Aveți dreptul de a solicita copii ale datelor dvs. personale. Este posibil să percepem o taxă mică pentru acest serviciu."
+        },
+        "rectification": {
+          "title": "2. Dreptul la rectificare (Articolul 16)",
+          "description": "Aveți dreptul de a solicita corectarea oricăror informații pe care le considerați inexacte sau completarea informațiilor pe care le considerați incomplete."
+        },
+        "erasure": {
+          "title": "3. Dreptul la ștergere (Articolul 17)",
+          "description": "Aveți dreptul de a solicita ștergerea datelor dvs. personale, în anumite condiții."
+        },
+        "restrict": {
+          "title": "4. Dreptul la restricționarea procesării (Articolul 18)",
+          "description": "Aveți dreptul de a solicita restricționarea procesării datelor dvs. personale, în anumite condiții."
+        },
+        "portability": {
+          "title": "5. Dreptul la portabilitatea datelor (Articolul 20)",
+          "description": "Aveți dreptul de a solicita ca datele pe care le-am colectat să fie transferate către o altă organizație sau direct către dvs., în anumite condiții."
+        },
+        "object": {
+          "title": "6. Dreptul de opoziție (Articolul 21)",
+          "description": "Aveți dreptul de a vă opune procesării datelor dvs. personale, în anumite condiții."
+        },
+        "automated": {
+          "title": "7. Drepturi legate de luarea automată a deciziilor (Articolul 22)",
+          "description": "Aveți dreptul de a nu fi supus unei decizii bazate exclusiv pe procesarea automată, inclusiv crearea de profiluri."
+        }
+      },
+      "dpo": {
+        "title": "Responsabil cu protecția datelor",
+        "description": "Am desemnat un Responsabil cu Protecția Datelor (DPO) pentru a supraveghea conformitatea noastră cu GDPR. Puteți contacta DPO-ul nostru pentru orice întrebări sau preocupări legate de protecția datelor:",
+        "email": "Email",
+        "subject": "Subiect",
+        "subjectLine": "Solicitare GDPR - [Numele dvs.]"
+      },
+      "dataTransfers": {
+        "title": "Transferuri internaționale de date",
+        "description": "Când transferăm date personale în afara UE/SEE, ne asigurăm că sunt în vigoare garanții corespunzătoare, inclusiv:",
+        "safeguard1": "Clauze Contractuale Standard (SCC) aprobate de Comisia Europeană",
+        "safeguard2": "Decizii de adecvare pentru țările considerate că oferă protecție adecvată",
+        "safeguard3": "Norme corporative obligatorii pentru transferuri intra-grup",
+        "safeguard4": "Măsuri de securitate suplimentare, după caz"
+      },
+      "dataBreach": {
+        "title": "Notificare încălcare a datelor",
+        "description": "În cazul unei încălcări a datelor care ar putea rezulta într-un risc pentru drepturile și libertățile dvs., vă vom notifica pe dvs. și autoritatea de supraveghere relevantă în termen de 72 de ore de la conștientizarea încălcării, conform cerințelor articolelor 33 și 34 din GDPR."
+      },
+      "exercise": {
+        "title": "Cum să vă exercitați drepturile",
+        "description": "Pentru a vă exercita oricare dintre drepturile GDPR, vă rugăm:",
+        "step1": "Trimiteți un email la privacy@worldwidefootball.com sau dpo@worldwidefootball.com",
+        "step2": "Includeți numele complet, adresa de email și solicitarea specifică",
+        "step3": "Furnizați o dovadă a identității (din motive de securitate)",
+        "step4": "Vom răspunde la solicitarea dvs. în termen de 30 de zile",
+        "complaint": "Dacă nu sunteți mulțumit de răspunsul nostru, aveți dreptul de a depune o plângere la autoritatea locală de supraveghere."
+      },
+      "supervisory": {
+        "title": "Autoritatea de supraveghere",
+        "description": "Aveți dreptul de a depune o plângere la o autoritate de supraveghere, în special în statul membru UE al reședinței dvs. obișnuite, locului de muncă sau locului presupusei încălcări.",
+        "link": "Pentru o listă a autorităților de supraveghere, vă rugăm să vizitați"
+      },
+      "updates": {
+        "title": "Actualizări ale conformității GDPR",
+        "description": "Revizuim și actualizăm în mod regulat practicile noastre de conformitate GDPR pentru a ne asigura că îndeplinim toate cerințele de reglementare. Orice modificări semnificative vor fi comunicate prin actualizările Politicii de confidențialitate."
       }
     }
   }

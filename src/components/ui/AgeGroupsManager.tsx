@@ -31,6 +31,8 @@ export interface AgeGroupFormData {
   gameSystem?: string;
   teamCount?: number;
   minTeams?: number;
+  maxTeams?: number;
+  guaranteedMatches?: number;
   startDate?: string;
   endDate?: string;
   participationFee?: number;
@@ -258,6 +260,32 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.minTeamsHelp', 'Minimum to run this category')}
                     />
 
+                    {/* Max Teams */}
+                    <Input
+                      type="number"
+                      label={t('tournaments.ageGroups.maxTeams', 'Max Teams')}
+                      value={ageGroup.maxTeams || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { maxTeams: e.target.value ? parseInt(e.target.value) : undefined })}
+                      min={2}
+                      max={128}
+                      step={1}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.maxTeamsHelp', 'Maximum teams allowed')}
+                    />
+
+                    {/* Guaranteed Matches */}
+                    <Input
+                      type="number"
+                      label={t('tournaments.ageGroups.guaranteedMatches', 'Guaranteed Matches')}
+                      value={ageGroup.guaranteedMatches || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { guaranteedMatches: e.target.value ? parseInt(e.target.value) : undefined })}
+                      min={1}
+                      max={20}
+                      step={1}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.guaranteedMatchesHelp', 'Minimum matches each team will play')}
+                    />
+
                     {/* Participation Fee */}
                     <Input
                       type="number"
@@ -313,19 +341,6 @@ export function AgeGroupsManager({
                       step={1}
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
-                    />
-
-                    {/* Guaranteed Matches */}
-                    <Input
-                      type="number"
-                      label={t('tournaments.ageGroups.numberOfMatches', 'Guaranteed Matches')}
-                      value={ageGroup.numberOfMatches || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { numberOfMatches: e.target.value ? parseInt(e.target.value) : undefined })}
-                      min={1}
-                      max={20}
-                      step={1}
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.numberOfMatchesHelp', 'Minimum matches each team will play')}
                     />
                   </div>
                 </div>

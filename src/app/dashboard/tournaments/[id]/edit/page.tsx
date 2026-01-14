@@ -26,20 +26,22 @@ const tournamentSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   startDate: z.string().min(1, 'Start date is required'),
   endDate: z.string().min(1, 'End date is required'),
-  registrationDeadline: z.string().min(1, 'Registration deadline is required'),
+  registrationStartDate: z.string().optional(),
+  registrationEndDate: z.string().optional(),
+  registrationDeadline: z.string().optional(),
   location: z.string().min(3, 'Location is required'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   venue: z.string().optional(),
-  city: z.string().min(2, 'City is required'),
-  country: z.string().min(2, 'Country is required'),
-  maxTeams: z.number().min(4, 'Minimum 4 teams').max(64, 'Maximum 64 teams'),
-  minTeams: z.number().min(2, 'Minimum 2 teams'),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  maxTeams: z.number().min(2, 'Minimum 2 teams').max(128, 'Maximum 128 teams').optional(),
+  minTeams: z.number().min(2, 'Minimum 2 teams').optional(),
   numberOfMatches: z.number().min(1, 'At least 1 match').max(20, 'Maximum 20 matches').optional(),
-  ageCategory: z.enum(AGE_CATEGORIES),
-  level: z.enum(TOURNAMENT_LEVELS),
-  format: z.enum(TOURNAMENT_FORMATS),
-  entryFee: z.number().min(0, 'Entry fee cannot be negative'),
+  ageCategory: z.enum(AGE_CATEGORIES).optional(),
+  level: z.enum(TOURNAMENT_LEVELS).optional(),
+  format: z.enum(TOURNAMENT_FORMATS).optional(),
+  entryFee: z.number().min(0, 'Entry fee cannot be negative').optional(),
   prizeMoney: z.number().min(0, 'Prize money cannot be negative').optional(),
   rules: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -147,6 +149,8 @@ export default function EditTournamentPage() {
         description: data.description,
         startDate: formatDateForInput(data.startDate),
         endDate: formatDateForInput(data.endDate),
+        registrationStartDate: formatDateForInput((data as any).registrationStartDate || ''),
+        registrationEndDate: formatDateForInput((data as any).registrationEndDate || ''),
         registrationDeadline: formatDateForInput(data.registrationDeadline || ''),
         location: data.location,
         latitude: data.latitude,
@@ -154,12 +158,12 @@ export default function EditTournamentPage() {
         venue: (data as any).venue || '',
         city: (data as any).city || '',
         country: data.country || '',
-        maxTeams: data.maxTeams,
-        minTeams: (data as any).minTeams || 2,
+        maxTeams: data.maxTeams || undefined,
+        minTeams: (data as any).minTeams || undefined,
         numberOfMatches: data.numberOfMatches || undefined,
-        ageCategory: data.ageCategory,
-        level: data.level,
-        format: (data.format || 'ROUND_ROBIN') as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE',
+        ageCategory: data.ageCategory || undefined,
+        level: data.level || undefined,
+        format: (data.format || undefined) as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE' | undefined,
         entryFee: data.entryFee || 0,
         prizeMoney: data.prizeMoney || 0,
         rules: data.rules || '',
@@ -186,7 +190,9 @@ export default function EditTournamentPage() {
         description: data.description,
         startDate: data.startDate,
         endDate: data.endDate,
-        registrationDeadline: data.registrationDeadline,
+        registrationStartDate: data.registrationStartDate,
+        registrationEndDate: data.registrationEndDate,
+        registrationDeadline: data.registrationEndDate || data.registrationDeadline, // Backward compatibility
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
@@ -405,7 +411,7 @@ export default function EditTournamentPage() {
               <CardTitle>{t('tournament.dates')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   type="date"
                   label={t('tournament.startDate')}
@@ -418,11 +424,19 @@ export default function EditTournamentPage() {
                   error={errors.endDate?.message}
                   {...register('endDate')}
                 />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   type="date"
-                  label={t('tournament.registrationDeadline')}
-                  error={errors.registrationDeadline?.message}
-                  {...register('registrationDeadline')}
+                  label={t('tournament.registrationStartDate', 'Registration Start')}
+                  error={errors.registrationStartDate?.message}
+                  {...register('registrationStartDate')}
+                />
+                <Input
+                  type="date"
+                  label={t('tournament.registrationEndDate', 'Registration End')}
+                  error={errors.registrationEndDate?.message}
+                  {...register('registrationEndDate')}
                 />
               </div>
             </CardContent>

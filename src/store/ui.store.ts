@@ -63,7 +63,7 @@ const createSafeStorage = () => {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      theme: 'system',
+      theme: 'light',
       language: 'en',
       sidebarOpen: true,
       mobileMenuOpen: false,

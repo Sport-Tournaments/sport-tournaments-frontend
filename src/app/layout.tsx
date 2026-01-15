@@ -44,7 +44,7 @@ export default function RootLayout({
         const stored = localStorage.getItem('ui-storage');
         if (stored) {
           const { state } = JSON.parse(stored);
-          const theme = state?.theme || 'system';
+          const theme = state?.theme || 'light';
           const root = document.documentElement;
           
           if (theme === 'system') {
@@ -53,8 +53,14 @@ export default function RootLayout({
           } else {
             root.classList.add(theme);
           }
+        } else {
+          // Default to light theme if no storage
+          document.documentElement.classList.add('light');
         }
-      } catch (e) {}
+      } catch (e) {
+        // Fallback to light theme on error
+        document.documentElement.classList.add('light');
+      }
     })();
   `;
 

@@ -37,26 +37,26 @@ export default function Tabs({
   const activeContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
   const variantContainerStyles = {
-    underline: 'border-b border-gray-200 dark:border-white/10',
+    underline: 'border-b border-slate-200 dark:border-white/10',
     pills: '',
-    'pills-gray': 'bg-gray-100 p-1 rounded-lg dark:bg-white/5',
+    'pills-gray': 'bg-slate-100 p-1 rounded-lg dark:bg-white/5',
   };
 
   const variantTabStyles = {
     underline: {
       base: 'border-b-2 px-1 pb-4 text-sm font-medium whitespace-nowrap',
-      active: 'border-indigo-500 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400',
-      inactive: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-white/20 dark:hover:text-gray-300',
+      active: 'border-teal-500 text-teal-600 dark:border-teal-400 dark:text-teal-400',
+      inactive: 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-gray-400 dark:hover:border-white/20 dark:hover:text-gray-300',
     },
     pills: {
-      base: 'rounded-md px-3 py-2 text-sm font-medium',
-      active: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400',
-      inactive: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+      base: 'rounded-lg px-3 py-2 text-sm font-medium',
+      active: 'bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400',
+      inactive: 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-300',
     },
     'pills-gray': {
-      base: 'rounded-md px-3 py-1.5 text-sm font-medium',
-      active: 'bg-white text-gray-900 shadow-sm dark:bg-white/10 dark:text-white',
-      inactive: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+      base: 'rounded-lg px-3 py-1.5 text-sm font-medium',
+      active: 'bg-white text-slate-900 shadow-sm dark:bg-white/10 dark:text-white',
+      inactive: 'text-slate-500 hover:text-slate-700 dark:text-gray-400 dark:hover:text-gray-300',
     },
   };
 
@@ -72,7 +72,7 @@ export default function Tabs({
           name="tabs"
           value={activeTab}
           onChange={(e) => handleTabChange(e.target.value)}
-          className="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-white/5 dark:text-white dark:ring-white/10"
+          className="block w-full rounded-lg border border-slate-200 py-2 pl-3 pr-10 text-slate-900 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 dark:bg-white/5 dark:text-white dark:border-white/10"
         >
           {tabs.map((tab) => (
             <option key={tab.id} value={tab.id} disabled={tab.disabled}>
@@ -105,8 +105,8 @@ export default function Tabs({
                 <span className={cn(
                   'ml-3 rounded-full px-2.5 py-0.5 text-xs font-medium',
                   activeTab === tab.id
-                    ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400'
-                    : 'bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-gray-400'
+                    ? 'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400'
+                    : 'bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-gray-400'
                 )}>
                   {tab.count}
                 </span>

@@ -21,7 +21,7 @@ export default function Badge({
 }: BadgeProps) {
   // Map aliases to color variants
   const colorMap: Record<string, string> = {
-    primary: 'indigo',
+    primary: 'teal',
     success: 'green',
     error: 'red',
     danger: 'red',
@@ -34,25 +34,27 @@ export default function Badge({
   const color = colorMap[variant] || variant;
   
   const colorStyles: Record<string, string> = {
-    gray: 'bg-gray-100 text-gray-600 dark:bg-gray-400/10 dark:text-gray-400',
-    red: 'bg-red-100 text-red-700 dark:bg-red-400/10 dark:text-red-400',
-    yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-400/10 dark:text-yellow-300',
-    green: 'bg-green-100 text-green-700 dark:bg-green-400/10 dark:text-green-400',
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-400/10 dark:text-blue-400',
-    indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400',
-    purple: 'bg-purple-100 text-purple-700 dark:bg-purple-400/10 dark:text-purple-400',
-    pink: 'bg-pink-100 text-pink-700 dark:bg-pink-400/10 dark:text-pink-400',
+    gray: 'bg-slate-100 text-slate-600 dark:bg-gray-400/10 dark:text-gray-400',
+    red: 'bg-red-50 text-red-700 dark:bg-red-400/10 dark:text-red-400',
+    yellow: 'bg-amber-50 text-amber-700 dark:bg-yellow-400/10 dark:text-yellow-300',
+    green: 'bg-emerald-50 text-emerald-700 dark:bg-green-400/10 dark:text-green-400',
+    blue: 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-400',
+    indigo: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400',
+    purple: 'bg-purple-50 text-purple-700 dark:bg-purple-400/10 dark:text-purple-400',
+    pink: 'bg-pink-50 text-pink-700 dark:bg-pink-400/10 dark:text-pink-400',
+    teal: 'bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-400',
   };
 
   const dotColorStyles: Record<string, string> = {
-    gray: 'fill-gray-500 dark:fill-gray-400',
+    gray: 'fill-slate-500 dark:fill-gray-400',
     red: 'fill-red-500 dark:fill-red-400',
-    yellow: 'fill-yellow-500 dark:fill-yellow-300',
-    green: 'fill-green-500 dark:fill-green-400',
+    yellow: 'fill-amber-500 dark:fill-yellow-300',
+    green: 'fill-emerald-500 dark:fill-green-400',
     blue: 'fill-blue-500 dark:fill-blue-400',
     indigo: 'fill-indigo-500 dark:fill-indigo-400',
     purple: 'fill-purple-500 dark:fill-purple-400',
     pink: 'fill-pink-500 dark:fill-pink-400',
+    teal: 'fill-teal-500 dark:fill-teal-400',
   };
 
   const sizeStyles = {

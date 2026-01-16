@@ -268,24 +268,7 @@ test.describe('Cross-Role Access Control', () => {
   });
 });
 
-test.describe('Theme and Language Switching', () => {
-  test('should toggle dark/light theme', async ({ page }) => {
-    await page.goto('/main/tournaments');
-
-    // Find and click theme toggle
-    const themeToggle = page.locator('button[aria-label*="theme"], button:has([class*="sun"]), button:has([class*="moon"])').first();
-    if (await themeToggle.isVisible()) {
-      const htmlBefore = await page.locator('html').getAttribute('class');
-      await themeToggle.click();
-      await page.waitForTimeout(500);
-      const htmlAfter = await page.locator('html').getAttribute('class');
-
-      // Classes should change (dark mode toggle)
-      // This is flexible as implementation varies
-      expect(htmlBefore !== htmlAfter || true).toBe(true);
-    }
-  });
-
+test.describe('Language Switching', () => {
   test('should have language selector', async ({ page }) => {
     await page.goto('/main/tournaments');
     await page.waitForLoadState('networkidle');

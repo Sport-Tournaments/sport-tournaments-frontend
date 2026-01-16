@@ -103,3 +103,49 @@ export interface BulkReviewResult {
     error: string;
   }>;
 }
+
+// Document types for registration
+export enum DocumentType {
+  MEDICAL_DECLARATION = 'MEDICAL_DECLARATION',
+  PARENTAL_CONSENT = 'PARENTAL_CONSENT',
+  INSURANCE = 'INSURANCE',
+  ID_DOCUMENT = 'ID_DOCUMENT',
+  OTHER = 'OTHER',
+}
+
+export interface RegistrationDocument {
+  id: string;
+  registrationId: string;
+  documentType: DocumentType;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  notes?: string;
+  fileKey?: string;
+}
+
+export interface UploadDocumentDto {
+  documentType: DocumentType;
+  notes?: string;
+}
+
+// Fitness confirmation types
+export interface ConfirmFitnessDto {
+  coachConfirmation: boolean;
+  notes?: string;
+}
+
+export interface FitnessStatus {
+  fitnessConfirmed: boolean;
+  confirmedById?: string;
+  confirmedAt?: string;
+  notes?: string;
+}
+
+// Extended registration with documents and fitness status
+export interface RegistrationWithDetails extends Registration {
+  documents?: RegistrationDocument[];
+  fitnessStatus?: FitnessStatus;
+}

@@ -10,6 +10,7 @@ import { tournamentService, registrationService, clubService, fileService } from
 import { Tournament, TournamentStatus, Registration, Club } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { useAuthStore } from '@/store';
+import { RegistrationWizard, RegistrationStatus } from '@/components/registration';
 
 export default function TournamentDetailPage() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function TournamentDetailPage() {
   const [userClubs, setUserClubs] = useState<Club[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [showClubModal, setShowClubModal] = useState(false);
+  const [showRegistrationWizard, setShowRegistrationWizard] = useState(false);
   const [loadingClubs, setLoadingClubs] = useState(false);
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
   const [hasValidInvite, setHasValidInvite] = useState(false);
@@ -125,6 +127,21 @@ export default function TournamentDetailPage() {
   };
 
   const handleRegister = async () => {
+    if (!isAuthenticated) {
+      window.location.href = '/auth/login';
+      return;
+    }
+
+    // Open the registration wizard for the full flow
+    setShowRegistrationWizard(true);
+  };
+
+  const handleRegistrationSuccess = (registration: Registration) => {
+    fetchTournament();
+    setShowRegistrationWizard(false);
+  };
+
+  const handleSimpleRegister = async () => {
     if (!isAuthenticated) {
       window.location.href = '/auth/login';
       return;
@@ -689,6 +706,16 @@ export default function TournamentDetailPage() {
           ))}
         </div>
       </Modal>
+
+      {/* Registration Wizard Modal */}
+      {tournament && (
+        <RegistrationWizard
+          tournament={tournament}
+          isOpen={showRegistrationWizard}
+          onClose={() => setShowRegistrationWizard(false)}
+          onSuccess={handleRegistrationSuccess}
+        />
+      )}
     </MainLayout>
   );
 }

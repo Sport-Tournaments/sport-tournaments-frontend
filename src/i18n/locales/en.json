@@ -619,7 +619,7 @@
       "subtitle": "The all-in-one platform for organizing, managing, and participating in youth football tournaments worldwide.",
       "browseTournaments": "Browse Tournaments",
       "getStarted": "Get Started Free",
-      "platformName": "Worldwide Football",
+      "platformName": "tournamente.com",
       "platformTagline": "Where Champions Begin"
     },
     "stats": {
@@ -657,7 +657,7 @@
     },
     "cta": {
       "title": "Ready to Get Started?",
-      "subtitle": "Join thousands of clubs and organizers already using Worldwide Football",
+      "subtitle": "Join thousands of clubs and organizers already using tournamente.com",
       "createAccount": "Create Free Account",
       "contactUs": "Contact Us",
       "organizer": "I'm an Organizer",
@@ -913,7 +913,7 @@
       },
       "cta": {
         "title": "Ready to Get Started?",
-        "subtitle": "Join thousands of tournament organizers using Worldwide Football to manage their competitions.",
+        "subtitle": "Join thousands of tournament organizers using tournamente.com to manage their competitions.",
         "signUpNow": "Sign Up Now",
         "browseTournaments": "Browse Tournaments"
       }
@@ -1069,7 +1069,7 @@
       },
       "faqs": {
         "q1": {
-          "question": "How much does it cost to use Worldwide Football?",
+          "question": "How much does it cost to use tournamente.com?",
           "answer": "We offer a free Basic plan with limited features, as well as Professional and Enterprise plans with unlimited tournaments and advanced features. Visit our Pricing page for more details."
         },
         "q2": {
@@ -1107,8 +1107,8 @@
         "gettingStarted": {
           "title": "Getting Started",
           "q1": {
-            "question": "What is Worldwide Football?",
-            "answer": "Worldwide Football is a comprehensive platform for managing tournaments, clubs, and teams. It allows organizers to schedule matches, manage registrations, track standings, and communicate with participants."
+            "question": "What is tournamente.com?",
+            "answer": "tournamente.com is a comprehensive platform for managing tournaments, clubs, and teams. It allows organizers to schedule matches, manage registrations, track standings, and communicate with participants."
           },
           "q2": {
             "question": "Do I need to create an account?",
@@ -1249,7 +1249,7 @@
       "methods": {
         "email": {
           "title": "Email",
-          "value": "support@worldwidefootball.com",
+          "value": "support@tournamente.com",
           "description": "For general inquiries and support"
         },
         "phone": {
@@ -1274,7 +1274,7 @@
       "subtitle": "General Data Protection Regulation Information",
       "commitment": {
         "title": "Our Commitment to GDPR",
-        "description1": "Worldwide Football is committed to complying with the General Data Protection Regulation (GDPR), which protects the personal data and privacy of individuals in the European Union (EU) and European Economic Area (EEA).",
+        "description1": "tournamente.com is committed to complying with the General Data Protection Regulation (GDPR), which protects the personal data and privacy of individuals in the European Union (EU) and European Economic Area (EEA).",
         "description2": "This page provides information about how we comply with GDPR requirements and explains your rights under GDPR."
       },
       "legalBasis": {
@@ -1350,7 +1350,7 @@
       "exercise": {
         "title": "How to Exercise Your Rights",
         "description": "To exercise any of your GDPR rights, please:",
-        "step1": "Send an email to privacy@worldwidefootball.com or dpo@worldwidefootball.com",
+        "step1": "Send an email to privacy@tournamente.com or dpo@tournamente.com",
         "step2": "Include your full name, email address, and specific request",
         "step3": "Provide proof of identity (for security purposes)",
         "step4": "We will respond to your request within 30 days",

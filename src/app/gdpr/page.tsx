@@ -129,7 +129,7 @@ export default function GDPRPage() {
               {t('pages.gdpr.dpo.description')}
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>{t('pages.gdpr.dpo.email')}:</strong> dpo@worldwidefootball.com</p>
+              <p className="text-gray-700"><strong>{t('pages.gdpr.dpo.email')}:</strong> dpo@tournamente.com</p>
               <p className="text-gray-700"><strong>{t('pages.gdpr.dpo.subject')}:</strong> {t('pages.gdpr.dpo.subjectLine')}</p>
             </div>
           </section>

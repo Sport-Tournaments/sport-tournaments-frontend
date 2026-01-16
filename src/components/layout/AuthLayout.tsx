@@ -39,7 +39,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
         <div className="container mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">⚽</span>
-            <span className="font-bold text-xl text-primary">Worldwide Football</span>
+            <span className="font-bold text-xl text-primary">tournamente.com</span>
           </Link>
           <button
             onClick={toggleLanguage}

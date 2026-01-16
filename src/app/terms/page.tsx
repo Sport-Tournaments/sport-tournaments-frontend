@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - Worldwide Football',
-  description: 'Terms and conditions for using the Worldwide Football tournament management platform.',
+  title: 'Terms of Service - tournamente.com',
+  description: 'Terms and conditions for using the tournamente.com tournament management platform.',
 };
 
 export default function TermsPage() {
@@ -24,7 +24,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Agreement to Terms</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to Worldwide Football. By accessing or using our platform, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
+              Welcome to tournamente.com. By accessing or using our platform, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
             </p>
             <p className="text-gray-700">
               These Terms apply to all users of the platform, including tournament organizers, clubs, teams, players, and spectators.
@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Definitions</h2>
             <ul className="space-y-2 text-gray-700">
-              <li><strong>"Platform"</strong> refers to the Worldwide Football website and services</li>
+              <li><strong>"Platform"</strong> refers to the tournamente.com website and services</li>
               <li><strong>"User"</strong> means any person who accesses or uses the Platform</li>
               <li><strong>"Organizer"</strong> means a user who creates and manages tournaments</li>
               <li><strong>"Participant"</strong> means teams, clubs, or players participating in tournaments</li>
@@ -145,7 +145,7 @@ export default function TermsPage() {
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">7.1 Our Rights</h3>
             <p className="text-gray-700 mb-4">
-              The Platform and its original content, features, and functionality are owned by Worldwide Football and are protected by international copyright, trademark, and other intellectual property laws.
+              The Platform and its original content, features, and functionality are owned by tournamente.com and are protected by international copyright, trademark, and other intellectual property laws.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">7.2 Your Content</h3>
@@ -155,7 +155,7 @@ export default function TermsPage() {
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">7.3 Copyright Infringement</h3>
             <p className="text-gray-700">
-              We respect intellectual property rights. If you believe your work has been infringed, please contact us at copyright@worldwidefootball.com with details of the alleged infringement.
+              We respect intellectual property rights. If you believe your work has been infringed, please contact us at copyright@tournamente.com with details of the alleged infringement.
             </p>
           </section>
 
@@ -175,7 +175,7 @@ export default function TermsPage() {
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">8.3 Limitation of Liability</h3>
             <p className="text-gray-700">
-              To the maximum extent permitted by law, Worldwide Football shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
+              To the maximum extent permitted by law, tournamente.com shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the Platform.
             </p>
           </section>
 
@@ -183,7 +183,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Indemnification</h2>
             <p className="text-gray-700">
-              You agree to indemnify and hold Worldwide Football harmless from any claims, damages, losses, or expenses (including legal fees) arising from your violation of these Terms or your use of the Platform.
+              You agree to indemnify and hold tournamente.com harmless from any claims, damages, losses, or expenses (including legal fees) arising from your violation of these Terms or your use of the Platform.
             </p>
           </section>
 
@@ -225,7 +225,7 @@ export default function TermsPage() {
               For questions about these Terms of Service, please contact us:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> legal@worldwidefootball.com</p>
+              <p className="text-gray-700"><strong>Email:</strong> legal@tournamente.com</p>
               <p className="text-gray-700"><strong>Phone:</strong> +1 (555) 123-4567</p>
               <p className="text-gray-700"><strong>Address:</strong> 123 Football Street, New York, NY 10001</p>
             </div>
@@ -235,7 +235,7 @@ export default function TermsPage() {
           <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptance of Terms</h2>
             <p className="text-gray-700">
-              By using Worldwide Football, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+              By using tournamente.com, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
             </p>
           </section>
         </div>

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy - Worldwide Football',
-  description: 'Learn about how Worldwide Football uses cookies and similar tracking technologies.',
+  title: 'Cookie Policy - tournamente.com',
+  description: 'Learn about how tournamente.com uses cookies and similar tracking technologies.',
 };
 
 export default function CookiesPage() {
@@ -189,7 +189,7 @@ export default function CookiesPage() {
               If you have questions about our use of cookies, please contact us:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@worldwidefootball.com</p>
+              <p className="text-gray-700"><strong>Email:</strong> privacy@tournamente.com</p>
               <p className="text-gray-700"><strong>Subject Line:</strong> Cookie Policy Inquiry</p>
             </div>
           </section>

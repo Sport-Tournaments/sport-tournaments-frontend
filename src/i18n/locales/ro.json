@@ -546,7 +546,7 @@
       "subtitle": "Platforma completă pentru organizarea, gestionarea și participarea la turnee de fotbal pentru tineret din Europa.",
       "browseTournaments": "Explorează turnee",
       "getStarted": "Începe gratuit",
-      "platformName": "Worldwide Football",
+      "platformName": "tournamente.com",
       "platformTagline": "Unde începe succesul"
     },
     "stats": {
@@ -584,7 +584,7 @@
     },
     "cta": {
       "title": "Pregătit să începi?",
-      "subtitle": "Alătură-te miilor de cluburi și organizatori care folosesc deja Worldwide Football",
+      "subtitle": "Alătură-te miilor de cluburi și organizatori care folosesc deja tournamente.com",
       "createAccount": "Creează cont gratuit",
       "contactUs": "Contactează-ne",
       "organizer": "Sunt organizator",
@@ -1020,7 +1020,7 @@
       },
       "cta": {
         "title": "Pregătit să începi?",
-        "subtitle": "Alătură-te miilor de organizatori de turnee care folosesc Worldwide Football pentru a gestiona competițiile lor.",
+        "subtitle": "Alătură-te miilor de organizatori de turnee care folosesc tournamente.com pentru a gestiona competițiile lor.",
         "signUpNow": "Înregistrează-te acum",
         "browseTournaments": "Explorează turnee"
       }
@@ -1176,7 +1176,7 @@
       },
       "faqs": {
         "q1": {
-          "question": "Cât costă să folosești Worldwide Football?",
+          "question": "Cât costă să folosești tournamente.com?",
           "answer": "Oferim un plan Basic gratuit cu funcții limitate, precum și planuri Profesional și Enterprise cu turnee nelimitate și funcții avansate. Vizitează pagina noastră de Prețuri pentru mai multe detalii."
         },
         "q2": {
@@ -1214,8 +1214,8 @@
         "gettingStarted": {
           "title": "Începe",
           "q1": {
-            "question": "Ce este Worldwide Football?",
-            "answer": "Worldwide Football este o platformă completă pentru gestionarea turneelor, cluburilor și echipelor. Permite organizatorilor să programeze meciuri, să gestioneze înregistrările, să urmărească clasamentele și să comunice cu participanții."
+            "question": "Ce este tournamente.com?",
+            "answer": "tournamente.com este o platformă completă pentru gestionarea turneelor, cluburilor și echipelor. Permite organizatorilor să programeze meciuri, să gestioneze înregistrările, să urmărească clasamentele și să comunice cu participanții."
           },
           "q2": {
             "question": "Trebuie să creez un cont?",
@@ -1356,7 +1356,7 @@
       "methods": {
         "email": {
           "title": "Email",
-          "value": "support@worldwidefootball.com",
+          "value": "support@tournamente.com",
           "description": "Pentru întrebări generale și suport"
         },
         "phone": {
@@ -1381,7 +1381,7 @@
       "subtitle": "Informații despre Regulamentul General privind Protecția Datelor",
       "commitment": {
         "title": "Angajamentul nostru față de GDPR",
-        "description1": "Worldwide Football se angajează să respecte Regulamentul General privind Protecția Datelor (GDPR), care protejează datele personale și confidențialitatea persoanelor din Uniunea Europeană (UE) și Spațiul Economic European (SEE).",
+        "description1": "tournamente.com se angajează să respecte Regulamentul General privind Protecția Datelor (GDPR), care protejează datele personale și confidențialitatea persoanelor din Uniunea Europeană (UE) și Spațiul Economic European (SEE).",
         "description2": "Această pagină oferă informații despre modul în care respectăm cerințele GDPR și vă explică drepturile dvs. conform GDPR."
       },
       "legalBasis": {
@@ -1457,7 +1457,7 @@
       "exercise": {
         "title": "Cum să vă exercitați drepturile",
         "description": "Pentru a vă exercita oricare dintre drepturile GDPR, vă rugăm:",
-        "step1": "Trimiteți un email la privacy@worldwidefootball.com sau dpo@worldwidefootball.com",
+        "step1": "Trimiteți un email la privacy@tournamente.com sau dpo@tournamente.com",
         "step2": "Includeți numele complet, adresa de email și solicitarea specifică",
         "step3": "Furnizați o dovadă a identității (din motive de securitate)",
         "step4": "Vom răspunde la solicitarea dvs. în termen de 30 de zile",

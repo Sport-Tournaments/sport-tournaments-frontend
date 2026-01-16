@@ -36,8 +36,10 @@ export default function DashboardHeader() {
             </button>
 
             {/* Optional: Show logo on mobile */}
-            <Link href="/" className="lg:hidden flex items-center gap-2">
-              <span className="text-2xl">⚽</span>
+            <Link href="/" className="lg:hidden flex items-center">
+              <span className="text-xl font-black tracking-tight text-gray-900 dark:text-white">
+                tournamente
+              </span>
             </Link>
           </div>
 

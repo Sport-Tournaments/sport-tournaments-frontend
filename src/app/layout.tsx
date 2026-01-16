@@ -8,23 +8,23 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    default: 'Worldwide Football - Tournament Management Platform',
-    template: '%s | Worldwide Football',
+    default: 'tournamente.com - Tournament Management Platform',
+    template: '%s | tournamente.com',
   },
   description: 'The ultimate platform for organizing and participating in youth football tournaments across Europe.',
   keywords: ['football', 'tournament', 'youth football', 'soccer', 'competition', 'sports management'],
-  authors: [{ name: 'Worldwide Football' }],
+  authors: [{ name: 'tournamente.com' }],
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://football-eu.com',
-    siteName: 'Worldwide Football',
-    title: 'Worldwide Football - Tournament Management Platform',
+    url: 'https://tournamente.com',
+    siteName: 'tournamente.com',
+    title: 'tournamente.com - Tournament Management Platform',
     description: 'The ultimate platform for organizing and participating in youth football tournaments worldwide.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Worldwide Football - Tournament Management Platform',
+    title: 'tournamente.com - Tournament Management Platform',
     description: 'The ultimate platform for organizing and participating in youth football tournaments worldwide.',
   },
   robots: {

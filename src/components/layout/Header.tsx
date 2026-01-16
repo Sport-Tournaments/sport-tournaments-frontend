@@ -49,10 +49,9 @@ export default function Header() {
               </svg>
             </button>
 
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl">⚽</span>
-              <span className="font-bold text-xl text-indigo-600 hidden sm:inline">
-                Worldwide Football
+            <Link href="/" className="flex items-center">
+              <span className="text-2xl font-black tracking-tight text-gray-900">
+                tournamente
               </span>
             </Link>
           </div>

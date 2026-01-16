@@ -18,7 +18,7 @@ vi.mock('react-i18next', () => ({
         'home.hero.subtitle': 'The complete platform for organizing and managing youth football tournaments worldwide',
         'home.hero.browseTournaments': 'Browse Tournaments',
         'home.hero.getStarted': 'Get Started',
-        'home.hero.platformName': 'Worldwide Football',
+        'home.hero.platformName': 'tournamente.com',
         'home.hero.platformTagline': 'Your Tournament Platform',
         'home.stats.tournaments': 'Tournaments',
         'home.stats.clubs': 'Clubs',

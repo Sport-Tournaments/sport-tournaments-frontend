@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Help Center - Worldwide Football',
-  description: 'Get help with Worldwide Football. Find answers to common questions and troubleshooting guides.',
+  title: 'Help Center - tournamente.com',
+  description: 'Get help with tournamente.com. Find answers to common questions and troubleshooting guides.',
 };
 
 const helpCategories = [
@@ -74,7 +74,7 @@ const helpCategories = [
 
 const faqs = [
   {
-    question: 'How much does it cost to use Worldwide Football?',
+    question: 'How much does it cost to use tournamente.com?',
     answer: 'We offer a free Basic plan with limited features, as well as Professional and Enterprise plans with unlimited tournaments and advanced features. Visit our Pricing page for more details.',
   },
   {

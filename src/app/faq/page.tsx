@@ -2,8 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FAQ - Worldwide Football',
-  description: 'Frequently asked questions about the Worldwide Football platform.',
+  title: 'FAQ - tournamente.com',
+  description: 'Frequently asked questions about the tournamente.com platform.',
 };
 
 const faqCategories = [
@@ -11,8 +11,8 @@ const faqCategories = [
     title: 'Getting Started',
     faqs: [
       {
-        question: 'What is Worldwide Football?',
-        answer: 'Worldwide Football is a comprehensive platform for managing tournaments, clubs, and teams. It allows organizers to schedule matches, manage registrations, track standings, and communicate with participants.',
+        question: 'What is tournamente.com?',
+        answer: 'tournamente.com is a comprehensive platform for managing tournaments, clubs, and teams. It allows organizers to schedule matches, manage registrations, track standings, and communicate with participants.',
       },
       {
         question: 'Do I need to create an account?',
@@ -151,7 +151,7 @@ export default function FAQPage() {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
           <p className="text-xl text-indigo-100">
-            Find answers to common questions about Worldwide Football
+            Find answers to common questions about tournamente.com
           </p>
         </div>
       </div>

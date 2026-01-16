@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Pricing - Worldwide Football',
+  title: 'Pricing - tournamente.com',
   description: 'View our pricing plans for tournament management and participation.',
 };
 
@@ -183,7 +183,7 @@ export default function PricingPage() {
             Ready to Start?
           </h2>
           <p className="text-gray-600 mb-6">
-            Join thousands of tournament organizers managing their competitions on Worldwide Football.
+            Join thousands of tournament organizers managing their competitions on tournamente.com.
           </p>
           <Link
             href="/auth/register"

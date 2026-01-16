@@ -125,9 +125,10 @@ export default function Sidebar() {
         <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4">
           {/* Logo */}
           <div className="flex h-16 shrink-0 items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl">⚽</span>
-              <span className="font-bold text-xl text-white">Worldwide Football</span>
+            <Link href="/" className="flex items-center">
+              <span className="text-2xl font-black tracking-tight text-white">
+                tournamente
+              </span>
             </Link>
             <button
               onClick={closeSidebar}

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'How It Works - Worldwide Football',
+  title: 'How It Works - tournamente.com',
   description: 'Learn how our platform works for tournament organizers and participants.',
 };
 
@@ -138,7 +138,7 @@ export default function HowItWorksPage() {
             Ready to Get Started?
           </h2>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Join thousands of tournament organizers using Worldwide Football to manage their competitions.
+            Join thousands of tournament organizers using tournamente.com to manage their competitions.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

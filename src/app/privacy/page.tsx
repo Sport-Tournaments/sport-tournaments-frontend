@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Worldwide Football',
-  description: 'Learn how Worldwide Football collects, uses, and protects your personal information.',
+  title: 'Privacy Policy - tournamente.com',
+  description: 'Learn how tournamente.com collects, uses, and protects your personal information.',
 };
 
 export default function PrivacyPage() {
@@ -24,10 +24,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to Worldwide Football ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our tournament management platform.
+              Welcome to tournamente.com ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our tournament management platform.
             </p>
             <p className="text-gray-700">
-              By using Worldwide Football, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our services.
+              By using tournamente.com, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our services.
             </p>
           </section>
 
@@ -138,7 +138,7 @@ export default function PrivacyPage() {
               <li>Lodge a complaint with a supervisory authority</li>
             </ul>
             <p className="text-gray-700 mt-4">
-              To exercise these rights, please contact us at privacy@worldwidefootball.com
+              To exercise these rights, please contact us at privacy@tournamente.com
             </p>
           </section>
 
@@ -181,7 +181,7 @@ export default function PrivacyPage() {
               If you have questions or concerns about this Privacy Policy, please contact us:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@worldwidefootball.com</p>
+              <p className="text-gray-700"><strong>Email:</strong> privacy@tournamente.com</p>
               <p className="text-gray-700"><strong>Phone:</strong> +1 (555) 123-4567</p>
               <p className="text-gray-700"><strong>Address:</strong> 123 Football Street, New York, NY 10001</p>
             </div>

@@ -13,6 +13,11 @@ import type {
   RegistrationStatistics,
   ApiResponse,
   PaginatedResponse,
+  RegistrationDocument,
+  UploadDocumentDto,
+  ConfirmFitnessDto,
+  FitnessStatus,
+  RegistrationWithDetails,
 } from '@/types';
 
 // Register a team for a tournament
@@ -149,11 +154,73 @@ export async function withdrawRegistration(id: string): Promise<ApiResponse<Regi
   return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/withdraw`);
 }
 
+// Get my registration for a tournament
+export async function getMyRegistration(tournamentId: string): Promise<ApiResponse<RegistrationWithDetails>> {
+  return apiGet<ApiResponse<RegistrationWithDetails>>(`/v1/tournaments/${tournamentId}/my-registration`);
+}
+
+// Document Upload Methods
+export async function uploadDocument(
+  registrationId: string,
+  documentType: string,
+  file: File,
+  notes?: string
+): Promise<ApiResponse<RegistrationDocument>> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('documentType', documentType);
+  if (notes) {
+    formData.append('notes', notes);
+  }
+  
+  // Use fetch directly for multipart/form-data
+  // Import the cookie helper to get the token
+  const { getTokenFromCookie } = await import('@/utils/cookies');
+  const token = getTokenFromCookie('accessToken');
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api';
+  
+  const response = await fetch(`${apiUrl}/v1/registrations/${registrationId}/documents`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to upload document');
+  }
+  
+  return response.json();
+}
+
+export async function getDocuments(registrationId: string): Promise<ApiResponse<RegistrationDocument[]>> {
+  return apiGet<ApiResponse<RegistrationDocument[]>>(`/v1/registrations/${registrationId}/documents`);
+}
+
+export async function deleteDocument(registrationId: string, documentId: string): Promise<ApiResponse<void>> {
+  return apiDelete<ApiResponse<void>>(`/v1/registrations/${registrationId}/documents/${documentId}`);
+}
+
+// Fitness Confirmation Methods
+export async function confirmFitness(
+  registrationId: string,
+  data: ConfirmFitnessDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(`/v1/registrations/${registrationId}/confirm-fitness`, data);
+}
+
+export async function getFitnessStatus(registrationId: string): Promise<ApiResponse<FitnessStatus>> {
+  return apiGet<ApiResponse<FitnessStatus>>(`/v1/registrations/${registrationId}/fitness`);
+}
+
 export const registrationService = {
   registerForTournament,
   getTournamentRegistrations,
   getRegistrationStatistics,
   getMyRegistrations,
+  getMyRegistration,
   getRegistrationById,
   updateRegistration,
   adminUpdateRegistration,
@@ -164,6 +231,13 @@ export const registrationService = {
   bulkApproveRegistrations,
   bulkRejectRegistrations,
   withdrawRegistration,
+  // Document methods
+  uploadDocument,
+  getDocuments,
+  deleteDocument,
+  // Fitness methods
+  confirmFitness,
+  getFitnessStatus,
 };
 
 export default registrationService;

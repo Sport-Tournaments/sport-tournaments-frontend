@@ -611,7 +611,10 @@
     "liveMatchUpdates": "Live Match Updates",
     "liveMatchUpdatesDesc": "Real-time score updates",
     "chatMessages": "Chat Messages",
-    "chatMessagesDesc": "Notify when you receive new messages"
+    "chatMessagesDesc": "Notify when you receive new messages",
+    "accountType": "Account Type",
+    "accountTypeLabel": "Your Role",
+    "accountTypeDescription": "Change your account type to access different features. Organizers can create and manage tournaments, while Participants can register clubs and join tournaments."
   },
   "home": {
     "hero": {

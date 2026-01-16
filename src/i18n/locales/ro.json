@@ -685,7 +685,10 @@
     "liveMatchUpdates": "Actualizări live meciuri",
     "liveMatchUpdatesDesc": "Actualizări în timp real ale scorurilor",
     "chatMessages": "Mesaje chat",
-    "chatMessagesDesc": "Notifică-mă când primesc mesaje noi"
+    "chatMessagesDesc": "Notifică-mă când primesc mesaje noi",
+    "accountType": "Tip de cont",
+    "accountTypeLabel": "Rolul tău",
+    "accountTypeDescription": "Schimbă tipul de cont pentru a accesa funcționalități diferite. Organizatorii pot crea și gestiona turnee, în timp ce Participanții pot înregistra cluburi și se pot înscrie la turnee."
   },
   "dashboard": {
     "title": "Panou control",

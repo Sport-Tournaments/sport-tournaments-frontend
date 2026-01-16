@@ -93,12 +93,6 @@ describe('Register Page', () => {
       expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
     });
 
-    it('should render role select', () => {
-      render(<RegisterPage />);
-
-      expect(screen.getByLabelText(/account type/i)).toBeInTheDocument();
-    });
-
     it('should render login link', () => {
       render(<RegisterPage />);
 

@@ -56,6 +56,9 @@ export type { ColorPickerProps } from './ColorPicker';
 export { default as LocationAutocomplete } from './LocationAutocomplete';
 export type { LocationAutocompleteProps } from './LocationAutocomplete';
 
+export { default as CountryAutocomplete } from './CountryAutocomplete';
+export type { CountryAutocompleteProps } from './CountryAutocomplete';
+
 export { default as InvitationCodeManager } from './InvitationCodeManager';
 export type { InvitationCodeManagerProps } from './InvitationCodeManager';
 

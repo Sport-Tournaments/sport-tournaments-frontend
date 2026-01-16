@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { AuthLayout } from '@/components/layout';
-import { Button, Input, Select, Alert } from '@/components/ui';
+import { Button, Input, Alert, CountryAutocomplete } from '@/components/ui';
 import { useAuthStore } from '@/store';
 import type { UserRole } from '@/types';
 
@@ -101,10 +101,7 @@ export default function RegisterPage() {
     }
   };
 
-  const roleOptions = [
-    { value: 'PARTICIPANT', label: t('auth.roleParticipant') },
-    { value: 'ORGANIZER', label: t('auth.roleOrganizer') },
-  ];
+  // Role is now always PARTICIPANT by default - account type selection moved to dashboard
 
   return (
     <AuthLayout
@@ -151,18 +148,11 @@ export default function RegisterPage() {
           {...register('phone')}
         />
 
-        <Input
+        <CountryAutocomplete
           label={t('auth.country')}
-          placeholder="Romania"
+          placeholder="Start typing a country..."
           error={errors.country?.message}
           {...register('country')}
-        />
-
-        <Select
-          label={t('auth.accountType')}
-          options={roleOptions}
-          error={errors.role?.message}
-          {...register('role')}
         />
 
         <Input

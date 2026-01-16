@@ -210,6 +210,27 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Account Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('settings.accountType')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                label={t('settings.accountTypeLabel')}
+                options={[
+                  { value: 'PARTICIPANT', label: t('auth.roleParticipant') },
+                  { value: 'ORGANIZER', label: t('auth.roleOrganizer') },
+                ]}
+                error={profileErrors.role?.message}
+                {...registerProfile('role')}
+              />
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {t('settings.accountTypeDescription')}
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Location */}
           <Card>
             <CardHeader>

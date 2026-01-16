@@ -58,6 +58,38 @@ export function RegistrationWizard({
     }
   }, [isOpen]);
 
+  // Auto-fill fields when club is selected
+  useEffect(() => {
+    if (selectedClub) {
+      // Auto-fill contact phone as emergency contact
+      if (selectedClub.contactPhone) {
+        setEmergencyContact(selectedClub.contactPhone);
+      } else if (selectedClub.phone) {
+        setEmergencyContact(selectedClub.phone);
+      }
+      
+      // Auto-fill coach info from club owner if available
+      if (selectedClub.owner) {
+        const ownerName = `${selectedClub.owner.firstName} ${selectedClub.owner.lastName}`.trim();
+        if (ownerName) {
+          setCoachName(ownerName);
+        }
+      }
+      
+      // Auto-fill coach phone from contact phone
+      if (selectedClub.contactPhone) {
+        setCoachPhone(selectedClub.contactPhone);
+      } else if (selectedClub.phone) {
+        setCoachPhone(selectedClub.phone);
+      }
+      
+      // Auto-fill number of players from member count if available
+      if (selectedClub.memberCount && selectedClub.memberCount > 0) {
+        setNumberOfPlayers(selectedClub.memberCount);
+      }
+    }
+  }, [selectedClub]);
+
   // Reset on close
   useEffect(() => {
     if (!isOpen) {

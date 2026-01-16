@@ -50,7 +50,7 @@ const CountryAutocomplete = forwardRef<HTMLInputElement, CountryAutocompleteProp
     // Fetch suggestions when query changes
     useEffect(() => {
       async function fetchCountrySuggestions() {
-        if (!debouncedQuery || debouncedQuery.length < 2) {
+        if (!debouncedQuery || debouncedQuery.length < 3) {
           setSuggestions([]);
           return;
         }

@@ -19,6 +19,7 @@ const profileSchema = z.object({
   bio: z.string().max(500, 'Bio must be under 500 characters').optional(),
   city: z.string().optional(),
   country: z.string().optional(),
+  role: z.enum(['PARTICIPANT', 'ORGANIZER']).optional(),
 });
 
 const passwordSchema = z.object({
@@ -70,6 +71,7 @@ export default function SettingsPage() {
         bio: (user as any).bio || '',
         city: (user as any).city || '',
         country: user.country || '',
+        role: user.role || 'PARTICIPANT',
       });
     }
   }, [user, resetProfile]);
@@ -203,6 +205,27 @@ export default function SettingsPage() {
                 error={profileErrors.bio?.message}
                 {...registerProfile('bio')}
               />
+            </CardContent>
+          </Card>
+
+          {/* Account Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('settings.accountType')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                label={t('settings.accountTypeLabel')}
+                options={[
+                  { value: 'PARTICIPANT', label: t('auth.roleParticipant') },
+                  { value: 'ORGANIZER', label: t('auth.roleOrganizer') },
+                ]}
+                error={profileErrors.role?.message}
+                {...registerProfile('role')}
+              />
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                {t('settings.accountTypeDescription')}
+              </p>
             </CardContent>
           </Card>
 

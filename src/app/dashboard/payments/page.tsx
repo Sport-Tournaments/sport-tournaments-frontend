@@ -66,10 +66,10 @@ export default function PaymentsPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {t('nav.payments')}
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             {t('payments.subtitle')}
           </p>
         </div>
@@ -84,10 +84,10 @@ export default function PaymentsPage() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('payments.noPayments')}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-gray-500 mb-4">
                 {t('payments.noPaymentsDesc')}
               </p>
               <Link href="/main/tournaments" className="text-primary hover:underline">
@@ -103,20 +103,20 @@ export default function PaymentsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                           {registration.tournament?.name || 'Tournament'}
                         </h3>
                         <Badge variant={getPaymentStatusBadge(registration.paymentStatus)}>
                           {registration.paymentStatus}
                         </Badge>
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                      <div className="text-sm text-gray-500 space-y-1">
                         <p>Club: {registration.club?.name || 'N/A'}</p>
                         <p>Registered: {formatDateTime(registration.createdAt)}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-2xl font-bold text-gray-900">
                         {formatCurrency(registration.tournament?.participationFee || 0)}
                       </p>
                       <Link
@@ -137,33 +137,33 @@ export default function PaymentsPage() {
         {registrations.length > 0 && (
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 {t('payments.summary')}
               </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div className="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-center p-3 sm:p-4 bg-gray-50 rounded-lg">
+                  <p className="text-2xl font-bold text-gray-900">
                     {registrations.length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.total')}</p>
+                  <p className="text-sm text-gray-500">{t('payments.total')}</p>
                 </div>
-                <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <p className="text-2xl font-bold text-yellow-600">
                     {registrations.filter(r => r.paymentStatus === 'PENDING').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.pending')}</p>
+                  <p className="text-sm text-gray-500">{t('payments.pending')}</p>
                 </div>
-                <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <p className="text-2xl font-bold text-green-600">
                     {registrations.filter(r => r.paymentStatus === 'COMPLETED').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.completed')}</p>
+                  <p className="text-sm text-gray-500">{t('payments.completed')}</p>
                 </div>
-                <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <p className="text-2xl font-bold text-red-600">
                     {registrations.filter(r => r.paymentStatus === 'FAILED').length}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('payments.failed')}</p>
+                  <p className="text-sm text-gray-500">{t('payments.failed')}</p>
                 </div>
               </div>
             </CardContent>

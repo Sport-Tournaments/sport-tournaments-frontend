@@ -109,7 +109,7 @@ export default function Sidebar() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-white/80 backdrop-blur-sm lg:hidden"
           onClick={closeSidebar}
           aria-hidden="true"
         />
@@ -118,21 +118,21 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto dark:bg-gray-900 dark:border-gray-800',
+          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4">
           {/* Logo */}
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 dark:border-gray-800">
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-black tracking-tight text-teal-600 dark:text-white">
+              <span className="text-2xl font-black tracking-tight text-teal-600">
                 tournamente
               </span>
             </Link>
             <button
               onClick={closeSidebar}
-              className="lg:hidden rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+              className="lg:hidden rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               aria-label="Close sidebar"
             >
               <svg className="size-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -156,13 +156,13 @@ export default function Sidebar() {
                           className={cn(
                             'group flex gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-colors',
                             isActive
-                              ? 'bg-teal-50 text-teal-700 dark:bg-gray-800 dark:text-white'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
+                              ? 'bg-teal-50 text-teal-700'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                           )}
                         >
                           <span className={cn(
                             'shrink-0 size-5',
-                            isActive ? 'text-teal-600 dark:text-white' : 'text-slate-400 group-hover:text-slate-600 dark:text-gray-400 dark:group-hover:text-white'
+                            isActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-slate-600'
                           )}>
                             {item.icon}
                           </span>
@@ -178,17 +178,17 @@ export default function Sidebar() {
 
           {/* User info at bottom */}
           {user && (
-            <div className="-mx-2 mt-auto border-t border-slate-100 pt-4 dark:border-gray-800">
-              <div className="flex items-center gap-x-4 rounded-lg px-2 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:text-white dark:hover:bg-gray-800">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700 font-semibold dark:bg-gray-800 dark:text-indigo-400 dark:ring-1 dark:ring-gray-700">
+            <div className="-mx-2 mt-auto border-t border-slate-100 pt-4">
+              <div className="flex items-center gap-x-4 rounded-lg px-2 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700 font-semibold">
                   {user.firstName.charAt(0)}
                   {user.lastName.charAt(0)}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-slate-900 font-semibold dark:text-white">
+                  <p className="truncate text-slate-900 font-semibold">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="truncate text-xs text-slate-500 dark:text-gray-400">{user.email}</p>
+                  <p className="truncate text-xs text-slate-500">{user.email}</p>
                 </div>
               </div>
             </div>

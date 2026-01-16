@@ -160,7 +160,7 @@ export default function AdminSettingsPage() {
           <CardContent className="space-y-6">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="font-medium text-gray-700 dark:text-gray-300">Allow Public Registration</p>
+                <p className="font-medium text-gray-700">Allow Public Registration</p>
                 <p className="text-sm text-gray-500">Allow new users to register on the platform</p>
               </div>
               <input
@@ -173,7 +173,7 @@ export default function AdminSettingsPage() {
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="font-medium text-gray-700 dark:text-gray-300">Require Email Verification</p>
+                <p className="font-medium text-gray-700">Require Email Verification</p>
                 <p className="text-sm text-gray-500">Require users to verify their email before accessing the platform</p>
               </div>
               <input
@@ -199,7 +199,7 @@ export default function AdminSettingsPage() {
             <CardContent>
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">Enable Maintenance Mode</p>
+                  <p className="font-medium text-gray-700">Enable Maintenance Mode</p>
                   <p className="text-sm text-gray-500">
                     When enabled, only admins can access the platform. Users will see a maintenance page.
                   </p>
@@ -224,21 +224,21 @@ export default function AdminSettingsPage() {
               <CardTitle>Database Operations</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Clear Cache</p>
+                  <p className="font-medium text-gray-900">Clear Cache</p>
                   <p className="text-sm text-gray-500">Clear all cached data</p>
                 </div>
                 <Button variant="outline">Clear Cache</Button>
               </div>
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">Export Data</p>
+                  <p className="font-medium text-gray-900">Export Data</p>
                   <p className="text-sm text-gray-500">Export all platform data as JSON</p>
                 </div>
                 <Button variant="outline">Export</Button>
               </div>
-              <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-900 rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
                 <div>
                   <p className="font-medium text-red-600">Reset Database</p>
                   <p className="text-sm text-gray-500">This will delete all data. Use with caution.</p>
@@ -315,10 +315,10 @@ export default function AdminSettingsPage() {
 
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               Platform Settings
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-gray-600 mt-1">
               Configure platform-wide settings
             </p>
           </div>

@@ -97,7 +97,7 @@ export default function LoginPage() {
               type="checkbox"
               className="rounded border-gray-300 text-primary focus:ring-primary"
             />
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-600">
               {t('auth.rememberMe')}
             </span>
           </label>
@@ -118,7 +118,7 @@ export default function LoginPage() {
           {t('auth.login')}
         </Button>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
+        <p className="text-center text-sm text-gray-600 mt-6">
           {t('auth.noAccount')}{' '}
           <Link href="/auth/register" className="text-primary hover:underline font-medium">
             {t('auth.register')}

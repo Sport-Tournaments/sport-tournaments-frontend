@@ -172,7 +172,7 @@ export default function ClubDetailPage() {
                 {teams.map((team) => (
                   <div
                     key={team.id}
-                    className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="p-4 bg-white border border-gray-200 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       <Avatar
@@ -238,7 +238,7 @@ export default function ClubDetailPage() {
                 )}
                 <div className="flex-1 text-center sm:text-left pb-2">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white drop-shadow-lg">
+                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 drop-shadow-lg">
                       {club.name}
                     </h1>
                     {club.verified && (
@@ -250,7 +250,7 @@ export default function ClubDetailPage() {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm text-gray-700 dark:text-gray-200 font-medium drop-shadow">
+                  <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm text-gray-700 font-medium drop-shadow">
                     {club.city && (
                       <div className="flex items-center gap-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -298,7 +298,7 @@ export default function ClubDetailPage() {
               />
               <div className="flex-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                     {club.name}
                   </h1>
                   {club.verified && (
@@ -310,7 +310,7 @@ export default function ClubDetailPage() {
                     </Badge>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                   {club.city && (
                     <div className="flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -83,27 +83,27 @@ export function RegistrationReviewCard({
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium text-gray-900 dark:text-white truncate">
+              <h4 className="font-medium text-gray-900 truncate">
                 {registration.club?.name || 'Unknown Club'}
               </h4>
               <Badge variant={statusColors[registration.status] || 'gray'}>
                 {registration.status}
               </Badge>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500">
               {registration.club?.city}, {registration.club?.country}
             </p>
             {registration.coachName && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 Coach: {registration.coachName}
               </p>
             )}
             {registration.notes && (
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 italic">
+              <p className="text-sm text-gray-600 mt-2 italic">
                 &quot;{registration.notes}&quot;
               </p>
             )}
@@ -134,7 +134,7 @@ export function RegistrationReviewCard({
           )}
 
           {registration.status !== 'PENDING' && registration.reviewedAt && (
-            <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-right text-sm text-gray-500">
               <p>Reviewed {new Date(registration.reviewedAt).toLocaleDateString()}</p>
               {registration.reviewer && (
                 <p>
@@ -146,16 +146,16 @@ export function RegistrationReviewCard({
         </div>
 
         {registration.rejectionReason && (
-          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-md">
-            <p className="text-sm text-red-700 dark:text-red-300">
+          <div className="mt-3 p-3 bg-red-50 rounded-md">
+            <p className="text-sm text-red-700">
               <strong>Rejection reason:</strong> {registration.rejectionReason}
             </p>
           </div>
         )}
 
         {registration.reviewNotes && registration.status !== 'PENDING' && (
-          <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-md">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="mt-3 p-3 bg-white border border-gray-200 rounded-md">
+            <p className="text-sm text-gray-600">
               <strong>Review notes:</strong> {registration.reviewNotes}
             </p>
           </div>
@@ -169,7 +169,7 @@ export function RegistrationReviewCard({
         title="Reject Registration"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             Please provide a reason for rejecting this registration. This will be visible to
             the team.
           </p>
@@ -304,7 +304,7 @@ export function BulkRegistrationReview({
 
   if (pendingRegistrations.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      <div className="text-center py-8 text-gray-500">
         No pending registrations to review
       </div>
     );
@@ -314,7 +314,7 @@ export function BulkRegistrationReview({
     <>
       <div className="space-y-4">
         {/* Bulk actions bar */}
-        <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+        <div className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3">
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -322,7 +322,7 @@ export function BulkRegistrationReview({
               onChange={toggleSelectAll}
               className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
-            <span className="text-sm text-gray-600 dark:text-gray-300">
+            <span className="text-sm text-gray-600">
               {selectedIds.size} of {pendingRegistrations.length} selected
             </span>
           </div>
@@ -355,10 +355,10 @@ export function BulkRegistrationReview({
             <div
               key={registration.id}
               className={cn(
-                'flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border transition-colors',
+                'flex items-center gap-4 p-4 bg-white rounded-lg border transition-colors',
                 selectedIds.has(registration.id)
-                  ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20'
-                  : 'border-gray-200 dark:border-gray-700'
+                  ? 'border-indigo-500 bg-indigo-50/50'
+                  : 'border-gray-200'
               )}
             >
               <input
@@ -368,10 +368,10 @@ export function BulkRegistrationReview({
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
               />
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-gray-900 dark:text-white truncate">
+                <h4 className="font-medium text-gray-900 truncate">
                   {registration.club?.name || 'Unknown Club'}
                 </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500">
                   {registration.club?.city}, {registration.club?.country}
                 </p>
               </div>
@@ -390,7 +390,7 @@ export function BulkRegistrationReview({
         title={`Reject ${selectedIds.size} Registrations`}
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             Please provide a reason for rejecting these registrations. This will be visible to
             all selected teams.
           </p>

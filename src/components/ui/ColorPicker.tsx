@@ -74,7 +74,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
           <label
             htmlFor={inputId}
             className={cn(
-              'block text-sm/6 font-medium text-gray-900 dark:text-white',
+              'block text-sm/6 font-medium text-gray-900',
               required && "after:content-['*'] after:ml-0.5 after:text-red-500"
             )}
           >
@@ -86,7 +86,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
           <div className="relative">
             <div
               className={cn(
-                'h-10 w-10 rounded-lg border-2 border-gray-300 cursor-pointer transition-all hover:border-indigo-500 dark:border-gray-600',
+                'h-10 w-10 rounded-lg border-2 border-gray-300 cursor-pointer transition-all hover:border-indigo-500',
                 error && 'border-red-500'
               )}
               style={{ backgroundColor: (value as string) || '#ffffff' }}
@@ -120,7 +120,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
             }}
             placeholder="#000000"
             className={cn(
-              'block w-28 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500 uppercase font-mono',
+              'block w-28 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 uppercase font-mono',
               error && 'outline-red-300 focus:outline-red-600'
             )}
           />
@@ -137,7 +137,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
                   'w-6 h-6 rounded-md border transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
                   (value as string)?.toLowerCase() === color.toLowerCase()
                     ? 'ring-2 ring-indigo-500 ring-offset-2'
-                    : 'border-gray-300 dark:border-gray-600'
+                    : 'border-gray-300'
                 )}
                 style={{ backgroundColor: color }}
                 onClick={() => handlePresetClick(color)}
@@ -152,7 +152,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
           <p
             className={cn(
               'text-sm',
-              error ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
+              error ? 'text-red-600' : 'text-gray-500'
             )}
           >
             {error || helperText}

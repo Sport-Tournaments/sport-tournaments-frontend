@@ -109,8 +109,8 @@ export default function InvitationCodeManager({
 
   if (!isPrivate) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <p className="text-sm text-gray-500">
           This tournament is public. Invitation codes are only available for private tournaments.
         </p>
       </div>
@@ -120,9 +120,9 @@ export default function InvitationCodeManager({
   const isExpired = expiresAt ? new Date(expiresAt) < new Date() : false;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+        <h3 className="text-sm font-medium text-gray-900">
           Invitation Code
         </h3>
         {!code && !isLoading && (
@@ -138,10 +138,10 @@ export default function InvitationCodeManager({
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                'flex-1 bg-gray-50 dark:bg-gray-900 rounded-lg px-4 py-3 font-mono text-lg tracking-wider text-center select-all',
+                'flex-1 bg-white border border-gray-200 rounded-lg px-4 py-3 font-mono text-lg tracking-wider text-center select-all',
                 isExpired
-                  ? 'text-red-600 dark:text-red-400 line-through'
-                  : 'text-gray-900 dark:text-white'
+                  ? 'text-red-600 line-through'
+                  : 'text-gray-900'
               )}
             >
               {code}
@@ -170,8 +170,8 @@ export default function InvitationCodeManager({
               className={cn(
                 'text-sm',
                 isExpired
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-gray-500 dark:text-gray-400'
+                  ? 'text-red-600'
+                  : 'text-gray-500'
               )}
             >
               {isExpired ? 'Expired' : 'Expires'} on{' '}
@@ -183,7 +183,7 @@ export default function InvitationCodeManager({
 
           {/* Invitation Link Display */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="text-sm font-medium text-gray-700">
               Invitation Link
             </label>
             <div className="flex items-center gap-2">
@@ -192,10 +192,10 @@ export default function InvitationCodeManager({
                 readOnly
                 value={`${typeof window !== 'undefined' ? window.location.origin : ''}/main/tournaments/join?code=${code}`}
                 className={cn(
-                  'flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm font-mono',
+                  'flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono',
                   isExpired
-                    ? 'text-red-600 dark:text-red-400 line-through'
-                    : 'text-gray-700 dark:text-gray-300'
+                    ? 'text-red-600 line-through'
+                    : 'text-gray-700'
                 )}
               />
               <Button
@@ -218,7 +218,7 @@ export default function InvitationCodeManager({
           </div>
 
           {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
             <div className="relative">
               <Button
                 variant="outline"
@@ -239,28 +239,28 @@ export default function InvitationCodeManager({
 
               {/* Expiration options dropdown */}
               {showExpirationOptions && (
-                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10">
+                <div className="absolute bottom-full left-0 mb-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                   <div className="p-2 space-y-1">
                     <button
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() => handleRegenerate(7)}
                     >
                       Expires in 7 days
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() => handleRegenerate(30)}
                     >
                       Expires in 30 days
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() => handleRegenerate(90)}
                     >
                       Expires in 90 days
                     </button>
                     <button
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 rounded"
                       onClick={() => handleRegenerate(undefined)}
                     >
                       Never expires
@@ -274,7 +274,7 @@ export default function InvitationCodeManager({
           {/* Share section */}
           {tournamentName && (
             <div className="pt-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500">
                 Share this code with teams you want to invite to &quot;{tournamentName}&quot;
               </p>
             </div>

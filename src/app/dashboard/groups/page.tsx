@@ -120,10 +120,10 @@ export default function GroupsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('groups.title')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('groups.subtitle', 'Manage tournament groups and draw')}
             </p>
           </div>
@@ -164,15 +164,15 @@ export default function GroupsPage() {
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('groups.noTournaments', 'No Tournaments Found')}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-gray-500 mb-4">
                 {t('groups.noTournamentsDesc', 'Create a tournament first to manage groups')}
               </p>
               <Link href="/dashboard/tournaments/create">
@@ -202,48 +202,48 @@ export default function GroupsPage() {
                 <CardContent>
                   {group.teams && group.teams.length > 0 ? (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <table className="min-w-full divide-y divide-gray-200">
                         <thead>
                           <tr>
-                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                               {t('groups.team')}
                             </th>
-                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500">
                               {t('groups.played')}
                             </th>
-                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500">
                               {t('groups.won')}
                             </th>
-                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500">
                               {t('groups.drawn')}
                             </th>
-                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500">
                               {t('groups.lost')}
                             </th>
-                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+                            <th className="px-2 py-2 text-center text-xs font-medium text-gray-500">
                               {t('groups.points')}
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody className="divide-y divide-gray-200">
                           {group.teams.map((team: any, index: number) => (
                             <tr key={team.id || index}>
-                              <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                              <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                                 {team.name || team.clubName || `Team ${index + 1}`}
                               </td>
-                              <td className="px-2 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-2 py-2 text-center text-sm text-gray-500">
                                 {team.played || 0}
                               </td>
-                              <td className="px-2 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-2 py-2 text-center text-sm text-gray-500">
                                 {team.won || 0}
                               </td>
-                              <td className="px-2 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-2 py-2 text-center text-sm text-gray-500">
                                 {team.drawn || 0}
                               </td>
-                              <td className="px-2 py-2 text-center text-sm text-gray-500 dark:text-gray-400">
+                              <td className="px-2 py-2 text-center text-sm text-gray-500">
                                 {team.lost || 0}
                               </td>
-                              <td className="px-2 py-2 text-center text-sm font-medium text-gray-900 dark:text-white">
+                              <td className="px-2 py-2 text-center text-sm font-medium text-gray-900">
                                 {team.points || 0}
                               </td>
                             </tr>
@@ -252,7 +252,7 @@ export default function GroupsPage() {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
+                    <p className="text-gray-500 text-sm text-center py-4">
                       {t('groups.noTeams', 'No teams in this group')}
                     </p>
                   )}
@@ -263,15 +263,15 @@ export default function GroupsPage() {
         ) : selectedTournament ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('groups.noGroups', 'No Groups Yet')}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
+              <p className="text-gray-500 mb-4">
                 {t('groups.noGroupsDesc', 'Execute a draw to create groups for this tournament')}
               </p>
               <Button variant="primary" onClick={handleExecuteDraw}>

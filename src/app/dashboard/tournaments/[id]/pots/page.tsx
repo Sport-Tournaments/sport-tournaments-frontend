@@ -251,17 +251,17 @@ export default function PotManagementPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
                 <p className="text-sm text-gray-600">Total Teams</p>
                 <p className="text-2xl font-bold">{registrations.length}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
                 <p className="text-sm text-gray-600">Teams Assigned</p>
                 <p className="text-2xl font-bold">
                   {getTotalAssigned()} / {registrations.length}
                 </p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
+              <div className="p-4 bg-white border border-gray-200 rounded-lg">
                 <label className="text-sm text-gray-600 block mb-2">Number of Groups</label>
                 <input
                   type="number"
@@ -311,7 +311,7 @@ export default function PotManagementPage() {
                 ${pot.potNumber === 1 ? 'bg-yellow-50' : ''}
                 ${pot.potNumber === 2 ? 'bg-blue-50' : ''}
                 ${pot.potNumber === 3 ? 'bg-green-50' : ''}
-                ${pot.potNumber === 4 ? 'bg-gray-50' : ''}
+                ${pot.potNumber === 4 ? 'bg-white' : ''}
               `}>
                 <CardTitle className="flex items-center justify-between">
                   <span>Pot {pot.potNumber}</span>
@@ -334,7 +334,7 @@ export default function PotManagementPage() {
                     {pot.teams.map((team) => (
                       <li
                         key={team.registrationId}
-                        className="text-sm p-2 bg-white border rounded hover:bg-gray-50"
+                        className="text-sm p-2 bg-white border rounded hover:bg-primary/5"
                       >
                         <p className="font-medium">{team.clubName}</p>
                         <p className="text-xs text-gray-600">{team.coachName}</p>
@@ -362,7 +362,7 @@ export default function PotManagementPage() {
                 return (
                   <div
                     key={reg.id}
-                    className="flex items-center justify-between p-4 bg-white border rounded-lg hover:bg-gray-50"
+                    className="flex items-center justify-between p-4 bg-white border rounded-lg hover:bg-primary/5"
                   >
                     <div className="flex-1">
                       <p className="font-medium">{reg.club?.name || 'Unknown Club'}</p>
@@ -401,7 +401,7 @@ export default function PotManagementPage() {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-white/80 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">

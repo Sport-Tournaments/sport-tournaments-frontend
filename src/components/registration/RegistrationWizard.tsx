@@ -233,7 +233,7 @@ export function RegistrationWizard({
       case 'club':
         return (
           <div className="space-y-6">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               {t('registration.wizard.selectClubDesc', 'Select the club you want to register for this tournament and provide team details.')}
             </p>
 
@@ -248,7 +248,7 @@ export function RegistrationWizard({
             ) : (
               <>
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium text-gray-900 dark:text-white">
+                  <label className="block text-sm font-medium text-gray-900">
                     {t('registration.wizard.yourClub', 'Your Club')} *
                   </label>
                   {clubs.map((club) => (
@@ -257,8 +257,8 @@ export function RegistrationWizard({
                       className={cn(
                         'flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors',
                         selectedClub?.id === club.id
-                          ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          ? 'border-primary bg-primary/5'
+                          : 'border-gray-200 hover:border-gray-300'
                       )}
                     >
                       <input
@@ -270,8 +270,8 @@ export function RegistrationWizard({
                         className="w-4 h-4 text-primary"
                       />
                       <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white">{club.name}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="font-medium text-gray-900">{club.name}</p>
+                        <p className="text-sm text-gray-500">
                           {club.city}, {club.country}
                         </p>
                       </div>
@@ -283,8 +283,8 @@ export function RegistrationWizard({
                 </div>
 
                 {selectedClub && (
-                  <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                  <div className="space-y-4 pt-4 border-t border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-900">
                       {t('registration.wizard.additionalInfo', 'Additional Information (Optional)')}
                     </h4>
                     
@@ -327,7 +327,7 @@ export function RegistrationWizard({
       case 'documents':
         return (
           <div className="space-y-6">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               {t('registration.wizard.documentsDesc', 'Upload the required documents. Medical declaration is mandatory for all participants.')}
             </p>
 
@@ -368,11 +368,11 @@ export function RegistrationWizard({
       case 'fitness':
         return (
           <div className="space-y-6">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               {t('registration.wizard.fitnessDesc', 'As the coach or team representative, please confirm that all players are fit to participate.')}
             </p>
 
-            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-4">
+            <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -381,10 +381,10 @@ export function RegistrationWizard({
                   className="mt-1 w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
                 />
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-gray-900">
                     {t('registration.wizard.fitnessConfirmLabel', 'I confirm that all team members are medically fit to participate')}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-gray-500 mt-1">
                     {t('registration.wizard.fitnessConfirmDesc', 'By checking this box, you declare that all players have been cleared by a medical professional and are fit to participate in competitive football.')}
                   </p>
                 </div>
@@ -392,7 +392,7 @@ export function RegistrationWizard({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
                 {t('registration.wizard.fitnessNotes', 'Additional Notes (Optional)')}
               </label>
               <textarea
@@ -400,7 +400,7 @@ export function RegistrationWizard({
                 onChange={(e) => setFitnessNotes(e.target.value)}
                 placeholder={t('registration.wizard.fitnessNotesPlaceholder', 'Any additional information about team fitness or medical considerations...')}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -414,46 +414,46 @@ export function RegistrationWizard({
             </Alert>
 
             <div className="space-y-4">
-              <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h4 className="text-lg font-medium text-gray-900">
                 {t('registration.wizard.summary', 'Registration Summary')}
               </h4>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
+              <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.tournament', 'Tournament')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{tournament.name}</span>
+                  <span className="text-gray-500">{t('registration.wizard.tournament', 'Tournament')}</span>
+                  <span className="font-medium text-gray-900">{tournament.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.club', 'Club')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{selectedClub?.name}</span>
+                  <span className="text-gray-500">{t('registration.wizard.club', 'Club')}</span>
+                  <span className="font-medium text-gray-900">{selectedClub?.name}</span>
                 </div>
                 {coachName && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.coach', 'Coach')}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{coachName}</span>
+                    <span className="text-gray-500">{t('registration.wizard.coach', 'Coach')}</span>
+                    <span className="font-medium text-gray-900">{coachName}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.documents', 'Documents')}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="text-gray-500">{t('registration.wizard.documents', 'Documents')}</span>
+                  <span className="font-medium text-gray-900">
                     {documents.length} {t('registration.wizard.uploaded', 'uploaded')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.fitness', 'Fitness')}</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">
+                  <span className="text-gray-500">{t('registration.wizard.fitness', 'Fitness')}</span>
+                  <span className="font-medium text-green-600">
                     {t('registration.wizard.confirmed', 'Confirmed')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500 dark:text-gray-400">{t('registration.wizard.status', 'Status')}</span>
-                  <span className="font-medium text-yellow-600 dark:text-yellow-400">
+                  <span className="text-gray-500">{t('registration.wizard.status', 'Status')}</span>
+                  <span className="font-medium text-yellow-600">
                     {t('registration.wizard.pendingReview', 'Pending Review')}
                   </span>
                 </div>
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 {t('registration.wizard.nextSteps', "You will receive a notification once your registration has been reviewed. You can track your registration status in your dashboard.")}
               </p>
             </div>
@@ -484,7 +484,7 @@ export function RegistrationWizard({
                     ? 'bg-primary text-white'
                     : index === currentStepIndex
                     ? 'bg-primary text-white ring-4 ring-primary/20'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                    : 'bg-white border border-gray-200 text-gray-500'
                 )}>
                   {index < currentStepIndex ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -497,7 +497,7 @@ export function RegistrationWizard({
                 {index < STEPS.length - 1 && (
                   <div className={cn(
                     'w-full h-1 mx-2',
-                    index < currentStepIndex ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
+                    index < currentStepIndex ? 'bg-primary' : 'bg-gray-200'
                   )} style={{ width: '80px' }} />
                 )}
               </div>
@@ -505,7 +505,7 @@ export function RegistrationWizard({
           </div>
           <div className="flex justify-between mt-2">
             {STEPS.map((step) => (
-              <span key={step} className="text-xs text-gray-500 dark:text-gray-400 text-center w-24">
+              <span key={step} className="text-xs text-gray-500 text-center w-24">
                 {getStepTitle(step)}
               </span>
             ))}
@@ -525,7 +525,7 @@ export function RegistrationWizard({
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between pt-4 border-t border-gray-200">
           {currentStep !== 'club' && currentStep !== 'review' ? (
             <Button variant="outline" onClick={handleBack} disabled={loading}>
               {t('common.back', 'Back')}

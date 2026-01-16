@@ -128,7 +128,7 @@ export function DocumentUpload({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <label className="block text-sm font-medium text-gray-900 dark:text-white">
+      <label className="block text-sm font-medium text-gray-900">
         {getDocumentTypeName(documentType)}
       </label>
 
@@ -140,24 +140,24 @@ export function DocumentUpload({
 
       {existingDocument ? (
         // Document already uploaded
-        <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               {existingDocument.mimeType?.startsWith('image/') ? (
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               ) : (
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4z"/>
                 </svg>
               )}
             </div>
             <div>
-              <p className="font-medium text-green-800 dark:text-green-200">
+              <p className="font-medium text-green-800">
                 {existingDocument.fileName}
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400">
+              <p className="text-sm text-green-600">
                 {formatFileSize(existingDocument.fileSize)} • {t('registration.document.uploaded', 'Uploaded successfully')}
               </p>
             </div>
@@ -170,7 +170,7 @@ export function DocumentUpload({
               onClick={handleDelete}
               isLoading={deleting === existingDocument.id}
               disabled={disabled || uploading}
-              className="text-red-600 hover:text-red-700 dark:text-red-400"
+              className="text-red-600 hover:text-red-700"
             >
               {t('common.delete', 'Delete')}
             </Button>
@@ -179,9 +179,9 @@ export function DocumentUpload({
       ) : (
         // Upload zone
         <div className={cn(
-          'relative border-2 border-dashed rounded-lg p-6 text-center transition-colors',
-          disabled ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-not-allowed' :
-          'border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary cursor-pointer'
+          'relative border-2 border-dashed rounded-lg p-6 text-center transition-colors bg-white',
+          disabled ? 'border-gray-200 cursor-not-allowed' :
+          'border-gray-300 hover:border-primary cursor-pointer'
         )}>
           <input
             type="file"
@@ -194,7 +194,7 @@ export function DocumentUpload({
           {uploading ? (
             <div className="flex flex-col items-center gap-2">
               <Loading size="md" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 {t('registration.document.uploading', 'Uploading...')}
               </p>
             </div>
@@ -205,13 +205,13 @@ export function DocumentUpload({
             </div>
           ) : (
             <>
-              <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+              <p className="text-sm text-gray-600 mb-1">
                 {t('registration.document.dropOrClick', 'Drop file here or click to upload')}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
+              <p className="text-xs text-gray-500">
                 {t('registration.document.allowedTypes', 'PDF, JPG, PNG, WebP (max 10MB)')}
               </p>
             </>

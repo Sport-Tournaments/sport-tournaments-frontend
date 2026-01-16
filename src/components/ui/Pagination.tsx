@@ -62,10 +62,10 @@ export default function Pagination({
 
   const visiblePages = getVisiblePages();
 
-  const buttonBase = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-white/10';
-  const buttonInactive = 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/10';
-  const buttonActive = 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500';
-  const buttonDisabled = 'text-gray-400 cursor-not-allowed dark:text-gray-500';
+  const buttonBase = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0';
+  const buttonInactive = 'text-gray-900 hover:bg-primary/5';
+  const buttonActive = 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
+  const buttonDisabled = 'text-gray-400 cursor-not-allowed';
 
   return (
     <nav
@@ -112,7 +112,7 @@ export default function Pagination({
           page === 'ellipsis' ? (
             <span 
               key={`ellipsis-${index}`} 
-              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 dark:text-gray-400 dark:ring-white/10"
+              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300"
             >
               ...
             </span>
@@ -134,7 +134,7 @@ export default function Pagination({
       </span>
 
       {/* Mobile: show current page indicator */}
-      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 sm:hidden dark:text-gray-300 dark:ring-white/10">
+      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 sm:hidden">
         {currentPage} / {totalPages}
       </span>
 

@@ -43,7 +43,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           <label
             htmlFor={selectId}
             className={cn(
-              'block text-sm font-medium text-gray-900 dark:text-white',
+              'block text-sm font-medium text-gray-900',
               required && "after:content-['*'] after:ml-0.5 after:text-red-500"
             )}
           >
@@ -61,9 +61,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               error 
                 ? 'outline-red-500 focus:outline-2 focus:-outline-offset-2 focus:outline-red-600' 
                 : 'outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600',
-              'dark:bg-white/5 dark:text-white',
-              error ? 'dark:outline-red-500' : 'dark:outline-white/10',
-              disabled && 'cursor-not-allowed bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
+              disabled && 'cursor-not-allowed bg-white text-gray-500',
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -82,14 +80,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
                 key={option.value}
                 value={option.value}
                 disabled={option.disabled}
-                className="dark:bg-gray-800"
+                className="bg-white"
               >
                 {option.label}
               </option>
             ))}
           </select>
           <svg
-            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 size-5 text-gray-500 dark:text-gray-400"
+            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 size-5 text-gray-500"
             viewBox="0 0 16 16"
             fill="currentColor"
             aria-hidden="true"
@@ -102,12 +100,12 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           </svg>
         </div>
         {error && (
-          <p id={`${selectId}-error`} className="text-sm text-red-600 dark:text-red-400">
+          <p id={`${selectId}-error`} className="text-sm text-red-600">
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p id={`${selectId}-helper`} className="text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${selectId}-helper`} className="text-sm text-gray-500">
             {helperText}
           </p>
         )}

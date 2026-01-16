@@ -118,10 +118,10 @@ export default function RegistrationsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('registration.myRegistrations')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('dashboard.manageRegistrations')}
             </p>
           </div>
@@ -144,7 +144,7 @@ export default function RegistrationsPage() {
               className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
                 statusFilter === tab.id
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               {tab.label}
@@ -162,7 +162,7 @@ export default function RegistrationsPage() {
               <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('common.error')}
               </h3>
               <p className="text-gray-500 mb-4">{error.message}</p>
@@ -177,7 +177,7 @@ export default function RegistrationsPage() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('registration.noRegistrations')}
               </h3>
               <p className="text-gray-500 mb-4">
@@ -202,7 +202,7 @@ export default function RegistrationsPage() {
                         <div className="flex items-center gap-3 mb-2">
                           <Link
                             href={`/main/tournaments/${registration.tournamentId}`}
-                            className="font-semibold text-lg text-gray-900 dark:text-white hover:text-primary\"
+                            className="font-semibold text-lg text-gray-900 hover:text-primary"
                           >
                             {registration.tournament?.name || 'Tournament'}
                           </Link>
@@ -233,7 +233,7 @@ export default function RegistrationsPage() {
                           )}
                         </div>
                         {registration.notes && (
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                          <p className="mt-2 text-sm text-gray-600">
                             {registration.notes}
                           </p>
                         )}
@@ -283,7 +283,7 @@ export default function RegistrationsPage() {
         title={t('registration.withdrawTitle', 'Withdraw Registration')}
       >
         <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600">
             {t('registration.withdrawConfirm', 'Are you sure you want to withdraw this registration? This action cannot be undone.')}
           </p>
           <div className="flex justify-end gap-3 pt-4">

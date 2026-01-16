@@ -89,7 +89,7 @@ export default function DataTable<TData, TValue>({
     <div className={cn('w-full', className)}>
       <div className="-mx-4 sm:mx-0 overflow-x-auto">
         <div className="inline-block min-w-full align-middle">
-          <table className="min-w-full divide-y divide-gray-300 dark:divide-white/10">
+          <table className="min-w-full divide-y divide-gray-300">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
@@ -98,8 +98,8 @@ export default function DataTable<TData, TValue>({
                       key={header.id}
                       scope="col"
                       className={cn(
-                        'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-0',
-                        header.column.getCanSort() && 'cursor-pointer select-none hover:bg-gray-50 dark:hover:bg-white/5'
+                        'py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0',
+                        header.column.getCanSort() && 'cursor-pointer select-none hover:bg-primary/5'
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
@@ -126,16 +126,16 @@ export default function DataTable<TData, TValue>({
               </tr>
             ))}
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-white/5">
+            <tbody className="divide-y divide-gray-200">
               {isLoading ? (
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+                    className="py-10 text-center text-sm text-gray-500"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <svg
-                        className="animate-spin size-5 text-indigo-600 dark:text-indigo-400"
+                        className="animate-spin size-5 text-indigo-600"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
@@ -161,7 +161,7 @@ export default function DataTable<TData, TValue>({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+                    className="py-10 text-center text-sm text-gray-500"
                   >
                     {emptyMessage}
                   </td>
@@ -171,14 +171,14 @@ export default function DataTable<TData, TValue>({
                   <tr
                     key={row.id}
                     className={cn(
-                      'hover:bg-gray-50 dark:hover:bg-white/5 transition-colors',
-                      row.getIsSelected() && 'bg-indigo-50 dark:bg-indigo-500/10'
+                      'hover:bg-primary/5 transition-colors',
+                      row.getIsSelected() && 'bg-indigo-50/50'
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-0"
+                        className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-0"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
@@ -193,7 +193,7 @@ export default function DataTable<TData, TValue>({
 
       {showPagination && table.getPageCount() > 1 && (
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-sm text-gray-700">
             Showing <span className="font-medium">{table.getState().pagination.pageIndex * pageSize + 1}</span> to{' '}
             <span className="font-medium">
               {Math.min(
@@ -223,7 +223,7 @@ export function createSelectionColumn<TData>(): ColumnDef<TData> {
         type="checkbox"
         checked={table.getIsAllPageRowsSelected()}
         onChange={table.getToggleAllPageRowsSelectedHandler()}
-        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 dark:border-white/10 dark:bg-white/5 dark:checked:bg-indigo-500 dark:focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
+        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
         aria-label="Select all"
       />
     ),
@@ -232,7 +232,7 @@ export function createSelectionColumn<TData>(): ColumnDef<TData> {
         type="checkbox"
         checked={row.getIsSelected()}
         onChange={row.getToggleSelectedHandler()}
-        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 dark:border-white/10 dark:bg-white/5 dark:checked:bg-indigo-500 dark:focus:ring-indigo-500 dark:focus:ring-offset-gray-900"
+        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
         aria-label="Select row"
       />
     ),

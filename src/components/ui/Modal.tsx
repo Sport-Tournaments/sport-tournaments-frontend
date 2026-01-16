@@ -46,10 +46,10 @@ export default function Modal({
   };
 
   const iconColorStyles = {
-    success: 'bg-green-100 text-green-600 dark:bg-green-600/20 dark:text-green-400',
-    error: 'bg-red-100 text-red-600 dark:bg-red-600/20 dark:text-red-400',
-    warning: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-600/20 dark:text-yellow-400',
-    info: 'bg-blue-100 text-blue-600 dark:bg-blue-600/20 dark:text-blue-400',
+    success: 'bg-green-100 text-green-600',
+    error: 'bg-red-100 text-red-600',
+    warning: 'bg-yellow-100 text-yellow-600',
+    info: 'bg-blue-100 text-blue-600',
   };
 
   const handleEscKey = useCallback(
@@ -85,7 +85,7 @@ export default function Modal({
     <div className="relative z-50">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-gray-500/75 dark:bg-gray-900/80 transition-opacity"
+        className="fixed inset-0 bg-white/80 transition-opacity"
         aria-hidden="true"
       />
       
@@ -100,7 +100,6 @@ export default function Modal({
             ref={contentRef}
             className={cn(
               'relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full',
-              'dark:bg-gray-800 dark:ring-1 dark:ring-inset dark:ring-white/10',
               sizeStyles[size],
               className
             )}
@@ -115,7 +114,7 @@ export default function Modal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-transparent dark:text-gray-400 dark:hover:text-gray-300 dark:focus:ring-offset-gray-800"
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                   aria-label="Close modal"
                 >
                   <span className="sr-only">Close</span>
@@ -127,7 +126,7 @@ export default function Modal({
             )}
 
             {/* Content */}
-            <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 dark:bg-gray-800">
+            <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div className={cn(icon ? 'sm:flex sm:items-start' : '')}>
                 {icon && iconColor && (
                   <div className={cn(
@@ -141,7 +140,7 @@ export default function Modal({
                   {title && (
                     <h3
                       id="modal-title"
-                      className="text-base font-semibold text-gray-900 dark:text-white"
+                      className="text-base font-semibold text-gray-900"
                     >
                       {title}
                     </h3>
@@ -149,7 +148,7 @@ export default function Modal({
                   {description && (
                     <p
                       id="modal-description"
-                      className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+                      className="mt-2 text-sm text-gray-500"
                     >
                       {description}
                     </p>
@@ -165,7 +164,7 @@ export default function Modal({
 
             {/* Footer */}
             {footer && (
-              <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 dark:bg-gray-700/25">
+              <div className="bg-white border-t border-gray-200 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 {footer}
               </div>
             )}

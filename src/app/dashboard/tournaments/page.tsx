@@ -75,10 +75,10 @@ export default function DashboardTournamentsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('nav.myTournaments')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('dashboard.manageTournaments')}
             </p>
           </div>
@@ -103,7 +103,7 @@ export default function DashboardTournamentsPage() {
                 <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   {t('common.error')}
                 </h3>
                 <p className="text-gray-500 mb-4">{error.message}</p>
@@ -116,7 +116,7 @@ export default function DashboardTournamentsPage() {
                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   {t('tournament.noTournaments')}
                 </h3>
                 <p className="text-gray-500 mb-4">{t('tournament.noTournamentsDesc')}</p>
@@ -125,9 +125,9 @@ export default function DashboardTournamentsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="divide-y divide-gray-200">
                 {tournaments.map((tournament) => (
-                  <div key={tournament.id} className="p-4 sm:p-6 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <div key={tournament.id} className="p-4 sm:p-6 hover:bg-gray-50">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex items-start gap-4">
                         {tournament.bannerImage ? (
@@ -141,7 +141,7 @@ export default function DashboardTournamentsPage() {
                         )}
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 dark:text-white hover:text-primary">
+                            <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 hover:text-primary">
                               {tournament.name}
                             </Link>
                             <Badge variant={getStatusBadge(tournament.status)}>

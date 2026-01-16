@@ -71,7 +71,6 @@ export default function Dropdown({
         <div
           className={cn(
             'absolute z-10 mt-2 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none',
-            'dark:bg-gray-800 dark:ring-white/10',
             'animate-slideDown',
             widthStyles[width],
             align === 'left' ? 'left-0' : 'right-0'
@@ -82,7 +81,7 @@ export default function Dropdown({
           <div className="py-1" role="none">
             {items.map((item, index) =>
               item.divider ? (
-                <div key={index} className="my-1 h-px bg-gray-100 dark:bg-white/10" role="separator" />
+                <div key={index} className="my-1 h-px bg-gray-100" role="separator" />
               ) : (
                 <button
                   key={index}
@@ -96,8 +95,8 @@ export default function Dropdown({
                   className={cn(
                     'group flex w-full items-center gap-x-3 px-4 py-2 text-sm',
                     item.danger
-                      ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10',
+                      ? 'text-red-600 hover:bg-red-50'
+                      : 'text-gray-700 hover:bg-gray-100',
                     item.disabled && 'opacity-50 cursor-not-allowed'
                   )}
                   role="menuitem"
@@ -106,8 +105,8 @@ export default function Dropdown({
                     <span className={cn(
                       'shrink-0 size-5',
                       item.danger
-                        ? 'text-red-500 group-hover:text-red-600 dark:text-red-400'
-                        : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400'
+                        ? 'text-red-500 group-hover:text-red-600'
+                        : 'text-gray-400 group-hover:text-gray-500'
                     )}>
                       {item.icon}
                     </span>
@@ -115,7 +114,7 @@ export default function Dropdown({
                   <div className="flex flex-col items-start">
                     <span>{item.label}</span>
                     {item.description && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400">{item.description}</span>
+                      <span className="text-xs text-gray-500">{item.description}</span>
                     )}
                   </div>
                 </button>

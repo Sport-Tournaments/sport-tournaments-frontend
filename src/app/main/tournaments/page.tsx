@@ -107,10 +107,10 @@ export default function TournamentsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               {t('tournament.title')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('tournament.subtitle')}
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function TournamentsPage() {
             <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               {t('common.error')}
             </h3>
             <p className="text-gray-500 mb-4">{error.message}</p>
@@ -176,7 +176,7 @@ export default function TournamentsPage() {
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               {t('tournament.noTournaments')}
             </h3>
             <p className="text-gray-500 mb-4">{t('tournament.noTournamentsDesc')}</p>
@@ -192,7 +192,7 @@ export default function TournamentsPage() {
                 <Link key={tournament.id} href={`/main/tournaments/${tournament.id}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
                     {tournament.bannerImage && (
-                      <div className="relative h-40 bg-gray-200 dark:bg-gray-800 rounded-t-lg overflow-hidden">
+                      <div className="relative h-40 bg-white border-b border-gray-200 rounded-t-lg overflow-hidden">
                         <img
                           src={tournament.bannerImage}
                           alt={tournament.name}
@@ -216,7 +216,7 @@ export default function TournamentsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 line-clamp-2">
+                      <p className="text-gray-600 text-sm mt-2 line-clamp-2">
                         {tournament.description}
                       </p>
                       <div className="mt-4 space-y-2">
@@ -248,7 +248,7 @@ export default function TournamentsPage() {
                         </div>
                       </div>
                       {tournament.registrationFee && tournament.registrationFee > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="mt-4 pt-4 border-t border-gray-200">
                           <span className="text-lg font-bold text-primary">
                             €{tournament.registrationFee}
                           </span>

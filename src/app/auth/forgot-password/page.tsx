@@ -52,12 +52,12 @@ export default function ForgotPasswordPage() {
         subtitle={t('auth.resetEmailSent')}
       >
         <div className="text-center space-y-6">
-          <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {t('auth.resetInstructions')}
           </p>
           <Link href="/auth/login">
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
           {t('auth.sendResetLink')}
         </Button>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-center text-sm text-gray-600">
           {t('auth.rememberedPassword')}{' '}
           <Link href="/auth/login" className="text-primary hover:underline font-medium">
             {t('auth.backToLogin')}

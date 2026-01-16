@@ -98,7 +98,7 @@ export default function JoinTournamentPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12">
+      <div className="min-h-screen bg-white py-12">
         <div className="max-w-md mx-auto px-4">
           <Card>
             <CardHeader>
@@ -110,7 +110,7 @@ export default function JoinTournamentPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+              <p className="text-sm text-gray-600 text-center">
                 {t('tournament.invitation.description', 'Enter the invitation code you received to join a private tournament.')}
               </p>
 
@@ -128,7 +128,7 @@ export default function JoinTournamentPage() {
                       maxLength={12}
                       autoFocus
                     />
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                    <p className="mt-2 text-xs text-gray-500 text-center">
                       {t('tournament.invitation.codeHint', 'The code should look like: ABC123XY')}
                     </p>
                   </div>
@@ -150,28 +150,28 @@ export default function JoinTournamentPage() {
                   </Alert>
 
                   {/* Tournament Info */}
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">
                       {tournament.name}
                     </h3>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('tournament.location')}</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{tournament.location}</p>
+                        <p className="text-gray-500">{t('tournament.location')}</p>
+                        <p className="font-medium text-gray-900">{tournament.location}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('tournament.ageCategory.label')}</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{tournament.ageCategory}</p>
+                        <p className="text-gray-500">{t('tournament.ageCategory.label')}</p>
+                        <p className="font-medium text-gray-900">{tournament.ageCategory}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('tournament.dates')}</p>
-                        <p className="font-medium text-gray-900 dark:text-white">
+                        <p className="text-gray-500">{t('tournament.dates')}</p>
+                        <p className="font-medium text-gray-900">
                           {new Date(tournament.startDate).toLocaleDateString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('common.teams')}</p>
-                        <p className="font-medium text-gray-900 dark:text-white">
+                        <p className="text-gray-500">{t('common.teams')}</p>
+                        <p className="font-medium text-gray-900">
                           {tournament.registeredTeams} / {tournament.maxTeams}
                         </p>
                       </div>
@@ -204,8 +204,8 @@ export default function JoinTournamentPage() {
                 </div>
               )}
 
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm text-gray-500 text-center">
                   {t('tournament.invitation.noCode', "Don't have a code?")}{' '}
                   <Link href="/main/tournaments" className="text-indigo-600 hover:text-indigo-500">
                     {t('tournament.invitation.browsePublic', 'Browse public tournaments')}

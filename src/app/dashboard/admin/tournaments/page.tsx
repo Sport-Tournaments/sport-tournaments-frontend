@@ -129,10 +129,10 @@ export default function AdminTournamentsPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               Tournament Management
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Manage all platform tournaments
             </p>
           </div>
@@ -177,7 +177,7 @@ export default function AdminTournamentsPage() {
               <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('common.error')}
               </h3>
               <p className="text-gray-500 mb-4">{fetchError.message}</p>
@@ -213,7 +213,7 @@ export default function AdminTournamentsPage() {
                           <div className="flex items-center gap-2 mb-1">
                             <Link
                               href={`/tournaments/${tournament.id}`}
-                              className="font-semibold text-lg text-gray-900 dark:text-white hover:text-primary"
+                              className="font-semibold text-lg text-gray-900 hover:text-primary"
                             >
                               {tournament.name}
                             </Link>

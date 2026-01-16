@@ -126,7 +126,7 @@ export function AgeGroupsManager({
   return (
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-base font-semibold text-gray-900">
           {t('tournaments.ageGroups.title', 'Age Categories')}
         </h3>
         <Button
@@ -141,8 +141,8 @@ export function AgeGroupsManager({
       </div>
 
       {ageGroups.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-6 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
+          <p className="text-sm text-gray-500">
             {t('tournaments.ageGroups.empty', 'No age categories defined. Click "Add Category" to create one.')}
           </p>
         </div>
@@ -151,7 +151,7 @@ export function AgeGroupsManager({
           {ageGroups.map((ageGroup, index) => (
             <div
               key={ageGroup.id || `new-${index}`}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+              className="rounded-lg border border-gray-200 bg-white"
             >
               {/* Header - always visible */}
               <div
@@ -159,19 +159,19 @@ export function AgeGroupsManager({
                 onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-gray-900">
                     {getDisplayLabel(ageGroup)}
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                  <span className="text-sm text-gray-500">
                     ({ageGroup.birthYear})
                   </span>
                   {ageGroup.gameSystem && (
-                    <span className="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
                       {ageGroup.gameSystem}
                     </span>
                   )}
                   {ageGroup.teamCount && (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {ageGroup.teamCount} {t('tournaments.teams', 'teams')}
                     </span>
                   )}
@@ -186,7 +186,7 @@ export function AgeGroupsManager({
                       handleRemoveAgeGroup(index);
                     }}
                     disabled={disabled}
-                    className="text-red-600 hover:text-red-700 dark:text-red-400"
+                    className="text-red-600 hover:text-red-700"
                   >
                     {t('common.remove', 'Remove')}
                   </Button>
@@ -206,7 +206,7 @@ export function AgeGroupsManager({
 
               {/* Expandable content */}
               {expandedIndex === index && (
-                <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+                <div className="border-t border-gray-200 p-4 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Birth Year */}
                     <Select

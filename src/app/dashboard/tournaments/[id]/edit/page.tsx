@@ -299,7 +299,7 @@ export default function EditTournamentPage() {
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <svg
             className="w-5 h-5"
@@ -319,10 +319,10 @@ export default function EditTournamentPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('tournament.edit')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {tournament.name}
             </p>
           </div>
@@ -393,12 +393,12 @@ export default function EditTournamentPage() {
                   {...register('isPrivate')}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="isPrivate" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="isPrivate" className="text-sm font-medium text-gray-700">
                   {t('tournament.isPrivate', 'Private Tournament')}
                 </label>
               </div>
               {isPrivate && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-sm text-gray-500 mt-1">
                   {t('tournament.isPrivateHelp', 'Private tournaments require an invitation code to register.')}
                 </p>
               )}
@@ -543,11 +543,11 @@ export default function EditTournamentPage() {
               </div>
 
               {/* Age Categories Divider */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+              <div className="border-t border-gray-200 pt-4">
+                <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   {t('tournaments.ageGroups.title', 'Age Categories')}
                 </h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-gray-500 mb-4">
                   {t('tournaments.ageGroups.description', 'Define specific settings for each age category. Each category can have its own dates, fees, and game format.')}
                 </p>
                 <AgeGroupsManager
@@ -600,15 +600,15 @@ export default function EditTournamentPage() {
                     onRemove={() => setRegulationsFile(null)}
                   />
                 ) : hasExistingRegulations ? (
-                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                          <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
                           </svg>
                         </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-gray-600">
                           {t('tournament.existingRegulations', 'Existing regulations document')}
                         </span>
                       </div>

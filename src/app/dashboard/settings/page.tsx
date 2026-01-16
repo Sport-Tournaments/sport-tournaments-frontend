@@ -225,7 +225,7 @@ export default function SettingsPage() {
                 error={profileErrors.role?.message}
                 {...registerProfile('role')}
               />
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-sm text-gray-500">
                 {t('settings.accountTypeDescription')}
               </p>
             </CardContent>
@@ -308,7 +308,7 @@ export default function SettingsPage() {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
+                  <p className="font-medium text-gray-900">
                     {t('settings.protect2fa')}
                   </p>
                   <p className="text-sm text-gray-500">
@@ -327,15 +327,15 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                       <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{t('settings.currentSession')}</p>
+                      <p className="font-medium text-gray-900">{t('settings.currentSession')}</p>
                       <p className="text-sm text-gray-500">Windows • Chrome</p>
                     </div>
                   </div>
@@ -360,11 +360,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white">{t('settings.emailNotifications')}</h4>
+              <h4 className="font-medium text-gray-900">{t('settings.emailNotifications')}</h4>
               
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.tournamentUpdates')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.tournamentUpdates')}</p>
                   <p className="text-sm text-gray-500">{t('settings.tournamentUpdatesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
@@ -372,7 +372,7 @@ export default function SettingsPage() {
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.registrationStatus')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.registrationStatus')}</p>
                   <p className="text-sm text-gray-500">{t('settings.registrationStatusDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
@@ -380,7 +380,7 @@ export default function SettingsPage() {
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.matchReminders')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.matchReminders')}</p>
                   <p className="text-sm text-gray-500">{t('settings.matchRemindersDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
@@ -388,19 +388,19 @@ export default function SettingsPage() {
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.marketingEmails')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.marketingEmails')}</p>
                   <p className="text-sm text-gray-500">{t('settings.marketingEmailsDesc')}</p>
                 </div>
                 <input type="checkbox" className="w-5 h-5 text-primary rounded" />
               </label>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-              <h4 className="font-medium text-gray-900 dark:text-white">{t('settings.pushNotifications')}</h4>
+            <div className="border-t border-gray-200 pt-6 space-y-4">
+              <h4 className="font-medium text-gray-900">{t('settings.pushNotifications')}</h4>
               
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.liveMatchUpdates')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.liveMatchUpdates')}</p>
                   <p className="text-sm text-gray-500">{t('settings.liveMatchUpdatesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
@@ -408,7 +408,7 @@ export default function SettingsPage() {
 
               <label className="flex items-center justify-between cursor-pointer">
                 <div>
-                  <p className="font-medium text-gray-700 dark:text-gray-300">{t('settings.chatMessages')}</p>
+                  <p className="font-medium text-gray-700">{t('settings.chatMessages')}</p>
                   <p className="text-sm text-gray-500">{t('settings.chatMessagesDesc')}</p>
                 </div>
                 <input type="checkbox" defaultChecked className="w-5 h-5 text-primary rounded" />
@@ -447,7 +447,7 @@ export default function SettingsPage() {
               <CardTitle>{t('settings.dangerZone')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-900 rounded-lg">
+              <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg">
                 <div>
                   <p className="font-medium text-red-600">{t('settings.deleteAccount')}</p>
                   <p className="text-sm text-gray-500">
@@ -467,10 +467,10 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             {t('settings.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-gray-600 mt-1">
             {t('settings.subtitle')}
           </p>
         </div>

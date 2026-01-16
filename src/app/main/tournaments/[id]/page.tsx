@@ -297,19 +297,19 @@ export default function TournamentDetailPage() {
                 <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
                         <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-gray-900">
                         {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {t('tournament.clickToDownload', 'Click to view or download')}
                       </p>
                     </div>
@@ -337,20 +337,20 @@ export default function TournamentDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400">{t('tournament.registrationStart')}</span>
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.registrationStart')}</span>
                   <span className="font-medium">{tournament.registrationStartDate ? formatDateTime(tournament.registrationStartDate) : 'N/A'}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400">{t('tournament.registrationEnd')}</span>
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.registrationEnd')}</span>
                   <span className="font-medium">{tournament.registrationEndDate ? formatDateTime(tournament.registrationEndDate) : 'N/A'}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400">{t('tournament.tournamentStart')}</span>
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.tournamentStart')}</span>
                   <span className="font-medium">{formatDateTime(tournament.startDate)}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400">{t('tournament.tournamentEnd')}</span>
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.tournamentEnd')}</span>
                   <span className="font-medium">{formatDateTime(tournament.endDate)}</span>
                 </div>
               </div>
@@ -375,7 +375,7 @@ export default function TournamentDetailPage() {
                 {registrations.map((registration) => (
                   <div
                     key={registration.id}
-                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                    className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg"
                   >
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                       {registration.club?.logo ? (
@@ -457,14 +457,14 @@ export default function TournamentDetailPage() {
                 alt={tournament.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent" />
             </div>
           )}
 
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-3xl font-bold text-gray-900">
                   {tournament.name}
                 </h1>
                 <Badge variant={getStatusBadge(tournament.status)}>
@@ -473,7 +473,7 @@ export default function TournamentDetailPage() {
               </div>
 
               {/* Quick info */}
-              <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -501,11 +501,11 @@ export default function TournamentDetailPage() {
               <CardContent className="p-6">
                 {/* Private tournament badge */}
                 {tournament.isPrivate && (
-                  <div className="flex items-center gap-2 mb-4 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                    <svg className="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 mb-4 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                    <span className="text-sm font-medium text-amber-700">
                       {t('tournament.privateTournament', 'Private Tournament')}
                     </span>
                   </div>
@@ -546,7 +546,7 @@ export default function TournamentDetailPage() {
                 {/* Age Categories */}
                 {tournament.ageGroups && tournament.ageGroups.length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
                       {t('tournaments.ageGroups.title', 'Age Categories')}
                     </h4>
                     <div className="space-y-2">
@@ -554,14 +554,14 @@ export default function TournamentDetailPage() {
                         const currentYear = new Date().getFullYear();
                         const displayLabel = ag.displayLabel || `U${currentYear - ag.birthYear}`;
                         return (
-                          <div key={ag.id || index} className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                          <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="font-medium text-gray-900 dark:text-white">{displayLabel}</span>
+                              <span className="font-medium text-gray-900">{displayLabel}</span>
                               {ag.gameSystem && (
                                 <Badge variant="info">{ag.gameSystem}</Badge>
                               )}
                             </div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                               <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
                               {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
                               {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
@@ -613,7 +613,7 @@ export default function TournamentDetailPage() {
                         {t('tournament.register')}
                       </Button>
                       {hasValidInvite && (
-                        <p className="text-xs text-center text-green-600 dark:text-green-400 mt-2 flex items-center justify-center gap-1">
+                        <p className="text-xs text-center text-green-600 mt-2 flex items-center justify-center gap-1">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
@@ -675,8 +675,8 @@ export default function TournamentDetailPage() {
               key={club.id}
               className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
                 selectedClubId === club.id
-                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-primary bg-primary/5'
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <input
@@ -688,10 +688,10 @@ export default function TournamentDetailPage() {
                 className="w-4 h-4 text-primary"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900 dark:text-white">
+                <div className="font-medium text-gray-900">
                   {club.name}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-sm text-gray-500">
                   {club.city}, {club.country}
                 </div>
               </div>

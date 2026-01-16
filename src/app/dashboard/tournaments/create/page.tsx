@@ -171,7 +171,7 @@ export default function CreateTournamentPage() {
         <div className="mb-2">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
           >
             <svg
               className="w-4 h-4"
@@ -191,10 +191,10 @@ export default function CreateTournamentPage() {
         </div>
 
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {t('tournament.createNew')}
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             {t('tournament.createDesc')}
           </p>
         </div>
@@ -315,7 +315,7 @@ export default function CreateTournamentPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 {t('tournaments.ageGroups.description', 'Define specific settings for each age category. Each category can have its own dates, fees, and game format.')}
               </p>
             </CardHeader>
@@ -376,10 +376,10 @@ export default function CreateTournamentPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="text-sm font-medium text-gray-700">
                     {t('tournament.privateTournament', 'Private Tournament')}
                   </label>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-500 mt-0.5">
                     {t('tournament.privateDesc', 'Only teams with an invitation code can register')}
                   </p>
                 </div>
@@ -393,7 +393,7 @@ export default function CreateTournamentPage() {
                       aria-checked={field.value}
                       onClick={() => field.onChange(!field.value)}
                       className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                        field.value ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                        field.value ? 'bg-indigo-600' : 'bg-gray-200'
                       }`}
                     >
                       <span
@@ -407,12 +407,12 @@ export default function CreateTournamentPage() {
               </div>
 
               {isPrivate && (
-                <div className="mt-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                <div className="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                    <span className="text-sm font-medium text-indigo-700">
                       {t('tournament.invitationCodeInfo', 'An invitation code will be generated after creation')}
                     </span>
                   </div>

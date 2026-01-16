@@ -33,7 +33,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
       <header className="p-4">
         <div className="container mx-auto flex items-center justify-between">
@@ -43,7 +43,7 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
           </Link>
           <button
             onClick={toggleLanguage}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md hover:bg-primary/10 transition-colors"
           >
             {i18n.language === 'en' ? '🇬🇧 EN' : '🇷🇴 RO'}
           </button>
@@ -53,12 +53,12 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
             {/* Back button - Top Left of Form Container */}
             <div className="mb-6">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-primary/10"
                 aria-label={t('common.back', 'Go back')}
               >
                 <svg
@@ -80,11 +80,11 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
 
             {/* Title */}
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-gray-900">
                 {title}
               </h1>
               {subtitle && (
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-gray-600">
                   {subtitle}
                 </p>
               )}

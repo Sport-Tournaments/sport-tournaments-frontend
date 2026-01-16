@@ -143,7 +143,7 @@ export default function ClubDetailPage() {
               {club.description && (
                 <div>
                   <p className="text-sm text-gray-500 mb-1">{t('common.description')}</p>
-                  <p className="text-gray-700 dark:text-gray-300">{club.description}</p>
+                  <p className="text-gray-700">{club.description}</p>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -184,7 +184,7 @@ export default function ClubDetailPage() {
               
               {/* Club Colors Display */}
               {(club.primaryColor || club.secondaryColor) && (
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-500 mb-3">{t('clubs.colors', 'Club Colors')}</p>
                   <ClubColorStripes primaryColor={club.primaryColor} secondaryColor={club.secondaryColor} className="mb-3" />
                   <ClubColorBadge 
@@ -220,7 +220,7 @@ export default function ClubDetailPage() {
                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No players yet
                 </h3>
                 <p className="text-gray-500 mb-4">Add players to your club roster</p>
@@ -230,8 +230,8 @@ export default function ClubDetailPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         #
@@ -250,7 +250,7 @@ export default function ClubDetailPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {players.map((player) => (
                       <tr key={player.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -259,7 +259,7 @@ export default function ClubDetailPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900 dark:text-white">
+                          <div className="font-medium text-gray-900">
                             {player.firstName} {player.lastName}
                           </div>
                         </td>
@@ -301,7 +301,7 @@ export default function ClubDetailPage() {
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               Tournament Registrations
             </h3>
             <p className="text-gray-500 mb-4">View and manage tournament registrations for this club</p>
@@ -341,7 +341,7 @@ export default function ClubDetailPage() {
                 )}
                 <div>
                   <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white drop-shadow-md">
+                    <h1 className="text-3xl font-bold text-gray-900 drop-shadow-md">
                       {club.name}
                     </h1>
                     {club.verified && (
@@ -353,7 +353,7 @@ export default function ClubDetailPage() {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-gray-700 dark:text-gray-200 mt-1 font-medium drop-shadow">
+                  <p className="text-gray-700 mt-1 font-medium drop-shadow">
                     {club.city}, {club.country}
                   </p>
                 </div>
@@ -396,7 +396,7 @@ export default function ClubDetailPage() {
               )}
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-gray-900">
                     {club.name}
                   </h1>
                   {club.verified && (
@@ -408,7 +408,7 @@ export default function ClubDetailPage() {
                     </Badge>
                   )}
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                <p className="text-gray-600 mt-1">
                   {club.city}, {club.country}
                 </p>
               </div>
@@ -460,11 +460,11 @@ export default function ClubDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Position
                 </label>
                 <select
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2"
                   value={newPlayer.position}
                   onChange={(e) => setNewPlayer({ ...newPlayer, position: e.target.value })}
                 >

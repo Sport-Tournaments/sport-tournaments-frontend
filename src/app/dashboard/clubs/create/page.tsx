@@ -185,7 +185,7 @@ export default function CreateClubPage() {
         <div className="mb-2">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
           >
             <svg
               className="w-4 h-4"
@@ -206,10 +206,10 @@ export default function CreateClubPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('clubs.create')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Create a new club to manage players and register for tournaments
             </p>
           </div>
@@ -287,7 +287,7 @@ export default function CreateClubPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('clubs.colors')}</CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 {t('clubs.colorPicker.chooseFromPopular')}
               </p>
             </CardHeader>
@@ -302,7 +302,7 @@ export default function CreateClubPage() {
 
               {/* Custom Color Pickers */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
                   {t('clubs.colorPicker.custom')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

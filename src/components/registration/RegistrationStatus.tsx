@@ -80,7 +80,7 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
 
   if (loading) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="flex items-center justify-center py-4">
           <Loading size="md" />
         </div>
@@ -90,7 +90,7 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
 
   if (error) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
         <Alert variant="error">{error}</Alert>
         <Button variant="outline" onClick={fetchRegistration} className="mt-4">
           {t('common.retry', 'Retry')}
@@ -101,7 +101,7 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
 
   if (!registration) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="text-center">
           <svg
             className="mx-auto h-12 w-12 text-gray-400"
@@ -116,10 +116,10 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
               d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
             />
           </svg>
-          <h3 className="mt-3 text-lg font-medium text-gray-900 dark:text-white">
+          <h3 className="mt-3 text-lg font-medium text-gray-900">
             {t('registration.status.notRegistered', 'Not Registered')}
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-500">
             {t('registration.status.notRegisteredDesc', "You haven't registered for this tournament yet.")}
           </p>
           {onRegisterClick && (
@@ -137,9 +137,9 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
   const statusLabel = STATUS_LABELS[status] || status;
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-gray-900">
           {t('registration.status.title', 'Your Registration')}
         </h3>
         <Badge variant={statusVariant} size="lg">
@@ -159,10 +159,10 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
               />
             )}
             <div>
-              <p className="font-medium text-gray-900 dark:text-white">
+              <p className="font-medium text-gray-900">
                 {registration.club.name}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 {t('registration.status.registeredAs', 'Registered as team representative')}
               </p>
             </div>
@@ -170,40 +170,40 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
         )}
 
         {/* Registration Details */}
-        <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200">
           {registration.coachName && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
                 {t('registration.status.coach', 'Coach')}
               </p>
-              <p className="mt-1 font-medium text-gray-900 dark:text-white">
+              <p className="mt-1 font-medium text-gray-900">
                 {registration.coachName}
               </p>
             </div>
           )}
           {registration.numberOfPlayers && (
             <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
                 {t('registration.status.players', 'Players')}
               </p>
-              <p className="mt-1 font-medium text-gray-900 dark:text-white">
+              <p className="mt-1 font-medium text-gray-900">
                 {registration.numberOfPlayers}
               </p>
             </div>
           )}
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <p className="text-xs text-gray-500 uppercase tracking-wide">
               {t('registration.status.documents', 'Documents')}
             </p>
-            <p className="mt-1 font-medium text-gray-900 dark:text-white">
+            <p className="mt-1 font-medium text-gray-900">
               {documents.length} {t('registration.status.uploaded', 'uploaded')}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+            <p className="text-xs text-gray-500 uppercase tracking-wide">
               {t('registration.status.fitness', 'Fitness')}
             </p>
-            <p className={`mt-1 font-medium ${fitnessStatus?.fitnessConfirmed ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
+            <p className={`mt-1 font-medium ${fitnessStatus?.fitnessConfirmed ? 'text-green-600' : 'text-yellow-600'}`}>
               {fitnessStatus?.fitnessConfirmed
                 ? t('registration.status.confirmed', 'Confirmed')
                 : t('registration.status.pending', 'Pending')}
@@ -212,7 +212,7 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
         </div>
 
         {/* Registration Date */}
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500">
           {t('registration.status.registeredOn', 'Registered on')}{' '}
           {new Date(registration.createdAt).toLocaleDateString(undefined, {
             year: 'numeric',

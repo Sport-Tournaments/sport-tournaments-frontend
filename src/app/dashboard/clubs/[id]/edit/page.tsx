@@ -228,7 +228,7 @@ export default function EditClubPage() {
         {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <svg
             className="w-5 h-5"
@@ -248,10 +248,10 @@ export default function EditClubPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('clubs.editClub')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {club.name}
             </p>
           </div>
@@ -288,7 +288,7 @@ export default function EditClubPage() {
                     alt={club.name}
                     width={96}
                     height={96}
-                    className="w-24 h-24 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
+                    className="w-24 h-24 object-contain rounded-lg border border-gray-200"
                   />
                   <Button
                     type="button"
@@ -351,7 +351,7 @@ export default function EditClubPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t('clubs.colors')}</CardTitle>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-500 mt-1">
                 {t('clubs.colorPicker.chooseFromPopular')}
               </p>
             </CardHeader>
@@ -366,7 +366,7 @@ export default function EditClubPage() {
 
               {/* Custom Color Pickers */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
                   {t('clubs.colorPicker.custom')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

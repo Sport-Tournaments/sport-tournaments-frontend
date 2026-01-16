@@ -150,7 +150,7 @@ export default function LocationAutocomplete({
       {label && (
         <label
           className={cn(
-            'block text-sm/6 font-medium text-gray-900 dark:text-white mb-2',
+            'block text-sm/6 font-medium text-gray-900 mb-2',
             required && "after:content-['*'] after:ml-0.5 after:text-red-500"
           )}
         >
@@ -168,8 +168,8 @@ export default function LocationAutocomplete({
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
           placeholder={placeholder}
           className={cn(
-            'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500',
-            error && 'outline-red-300 focus:outline-red-600 dark:outline-red-500/50 dark:focus:outline-red-500'
+            'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6',
+            error && 'outline-red-300 focus:outline-red-600'
           )}
         />
 
@@ -226,7 +226,7 @@ export default function LocationAutocomplete({
 
       {/* Suggestions dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+        <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
           {suggestions.map((suggestion, index) => {
             // Format display as: village/city, county, country
             const displayText = suggestion.region 
@@ -239,8 +239,8 @@ export default function LocationAutocomplete({
                 className={cn(
                   'px-4 py-2 cursor-pointer text-sm',
                   index === selectedIndex
-                    ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-200'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-200'
+                    ? 'bg-indigo-50 text-indigo-900'
+                    : 'hover:bg-primary/5 text-gray-900'
                 )}
                 onClick={() => handleSelect(suggestion)}
               >
@@ -256,7 +256,7 @@ export default function LocationAutocomplete({
         <p
           className={cn(
             'mt-2 text-sm',
-            error ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
+            error ? 'text-red-600' : 'text-gray-500'
           )}
         >
           {error || helperText}

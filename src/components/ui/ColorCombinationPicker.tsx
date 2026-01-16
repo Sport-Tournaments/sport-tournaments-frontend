@@ -53,7 +53,7 @@ export function ColorCombinationPicker({ value, onChange, className }: ColorComb
   return (
     <div className={cn('space-y-3', className)}>
       <div>
-        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <h4 className="text-sm font-medium text-gray-700 mb-3">
           {t('clubs.colorPicker.predefined')}
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -69,27 +69,27 @@ export function ColorCombinationPicker({ value, onChange, className }: ColorComb
                   'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
                   isSelected
                     ? 'border-primary bg-primary/5'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    : 'border-gray-200 hover:border-gray-300'
                 )}
               >
                 {/* Color Preview */}
                 <div className="flex items-center gap-2 mb-2">
                   <div
-                    className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-600 shadow-sm"
+                    className="w-8 h-8 rounded-full border-2 border-gray-200 shadow-sm"
                     style={{ backgroundColor: combo.primary }}
                   />
                   <div
-                    className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-600 shadow-sm"
+                    className="w-8 h-8 rounded-full border-2 border-gray-200 shadow-sm"
                     style={{ backgroundColor: combo.secondary }}
                   />
                 </div>
 
                 {/* Name & Description */}
                 <div className="text-left">
-                  <p className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-xs font-medium text-gray-900 truncate">
                     {combo.name}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <p className="text-xs text-gray-500 truncate">
                     {combo.description}
                   </p>
                 </div>
@@ -114,28 +114,28 @@ export function ColorCombinationPicker({ value, onChange, className }: ColorComb
 
       {/* Selected Colors Display */}
       {value && (
-        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
           <div className="flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded border-2 border-gray-300 dark:border-gray-600 shadow"
+              className="w-10 h-10 rounded border-2 border-gray-300 shadow"
               style={{ backgroundColor: value.primary }}
             />
             <div className="text-left">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t('clubs.colorPicker.primary')}</p>
-              <p className="text-xs font-mono font-medium text-gray-900 dark:text-white">
+              <p className="text-xs text-gray-500">{t('clubs.colorPicker.primary')}</p>
+              <p className="text-xs font-mono font-medium text-gray-900">
                 {value.primary}
               </p>
             </div>
           </div>
-          <div className="w-px h-10 bg-gray-300 dark:bg-gray-600" />
+          <div className="w-px h-10 bg-gray-300" />
           <div className="flex items-center gap-2">
             <div
-              className="w-10 h-10 rounded border-2 border-gray-300 dark:border-gray-600 shadow"
+              className="w-10 h-10 rounded border-2 border-gray-300 shadow"
               style={{ backgroundColor: value.secondary }}
             />
             <div className="text-left">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{t('clubs.colorPicker.secondary')}</p>
-              <p className="text-xs font-mono font-medium text-gray-900 dark:text-white">
+              <p className="text-xs text-gray-500">{t('clubs.colorPicker.secondary')}</p>
+              <p className="text-xs font-mono font-medium text-gray-900">
                 {value.secondary}
               </p>
             </div>

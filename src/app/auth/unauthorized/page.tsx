@@ -14,9 +14,9 @@ export default function UnauthorizedPage() {
       subtitle={t('auth.unauthorizedSubtitle', "You don't have permission to access this page")}
     >
       <div className="flex flex-col items-center justify-center py-8 space-y-6">
-        <div className="w-24 h-24 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+        <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center">
           <svg
-            className="w-12 h-12 text-red-600 dark:text-red-400"
+            className="w-12 h-12 text-red-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -31,10 +31,10 @@ export default function UnauthorizedPage() {
         </div>
 
         <div className="text-center space-y-2">
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {t('auth.unauthorizedMessage', 'Your account does not have the required permissions to view this page.')}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500">
+          <p className="text-sm text-gray-500">
             {t('auth.unauthorizedContact', 'If you believe this is an error, please contact support.')}
           </p>
         </div>

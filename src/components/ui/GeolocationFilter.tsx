@@ -126,7 +126,7 @@ export default function GeolocationFilter({
   return (
     <div
       className={cn(
-        'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4',
+        'bg-white rounded-lg border border-gray-200 p-4',
         className
       )}
     >
@@ -151,13 +151,13 @@ export default function GeolocationFilter({
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <h3 className="font-medium text-gray-900 dark:text-white">Location Filter</h3>
+          <h3 className="font-medium text-gray-900">Location Filter</h3>
         </div>
 
         {isEnabled && (
           <button
             onClick={clearLocation}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-gray-500 hover:text-gray-700"
           >
             Clear
           </button>
@@ -166,7 +166,7 @@ export default function GeolocationFilter({
 
       {!isEnabled ? (
         <div className="space-y-3">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500">
             Enable location to find tournaments near you
           </p>
           <Button
@@ -192,13 +192,13 @@ export default function GeolocationFilter({
             Use My Location
           </Button>
           {locationError && (
-            <p className="text-sm text-red-500 dark:text-red-400">{locationError}</p>
+            <p className="text-sm text-red-500">{locationError}</p>
           )}
         </div>
       ) : (
         <div className="space-y-4">
           {/* Location indicator */}
-          <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+          <div className="flex items-center gap-2 text-sm text-green-600">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -211,7 +211,7 @@ export default function GeolocationFilter({
 
           {/* Distance filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Maximum Distance
             </label>
             <div className="flex flex-wrap gap-2">
@@ -220,8 +220,8 @@ export default function GeolocationFilter({
                 className={cn(
                   'px-3 py-1.5 text-sm rounded-full border transition-colors',
                   maxDistance === undefined
-                    ? 'bg-indigo-100 border-indigo-500 text-indigo-700 dark:bg-indigo-900/50 dark:border-indigo-400 dark:text-indigo-300'
-                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-primary/5'
                 )}
               >
                 Any
@@ -233,8 +233,8 @@ export default function GeolocationFilter({
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     maxDistance === distance
-                      ? 'bg-indigo-100 border-indigo-500 text-indigo-700 dark:bg-indigo-900/50 dark:border-indigo-400 dark:text-indigo-300'
-                      : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                      ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
+                      : 'bg-white border-gray-300 text-gray-700 hover:bg-primary/5'
                   )}
                 >
                   {formatDistance(distance)}
@@ -246,7 +246,7 @@ export default function GeolocationFilter({
           {/* Sort by distance toggle */}
           {showSortOption && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-sm text-gray-700">
                 Sort by distance
               </span>
               <button
@@ -255,7 +255,7 @@ export default function GeolocationFilter({
                 onClick={handleSortToggle}
                 className={cn(
                   'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
-                  sortByDistance ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                  sortByDistance ? 'bg-indigo-600' : 'bg-white'
                 )}
               >
                 <span

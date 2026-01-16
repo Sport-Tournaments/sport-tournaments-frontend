@@ -70,7 +70,7 @@ export default function FileUpload({
         'relative border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer',
         'hover:border-primary hover:bg-primary/5',
         isDragActive && !isDragReject && 'border-primary bg-primary/10',
-        isDragReject && 'border-red-500 bg-red-50 dark:bg-red-900/20',
+        isDragReject && 'border-red-500 bg-red-50',
         disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
@@ -98,7 +98,7 @@ export default function FileUpload({
             <p className="text-primary font-medium">Drop files here...</p>
           ) : (
             <>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600">
                 <span className="font-medium text-primary">Click to upload</span> or drag
                 and drop
               </p>
@@ -138,7 +138,7 @@ export function FilePreview({ file, onRemove, showSize = true }: FilePreviewProp
   const preview = isImage ? URL.createObjectURL(file) : null;
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+    <div className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg">
       {isImage && preview ? (
         <img
           src={preview}
@@ -147,7 +147,7 @@ export function FilePreview({ file, onRemove, showSize = true }: FilePreviewProp
           onLoad={() => URL.revokeObjectURL(preview)}
         />
       ) : (
-        <div className="w-12 h-12 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded">
+        <div className="w-12 h-12 flex items-center justify-center bg-white border border-gray-200 rounded">
           <svg
             className="w-6 h-6 text-gray-500"
             fill="none"
@@ -172,7 +172,7 @@ export function FilePreview({ file, onRemove, showSize = true }: FilePreviewProp
       <button
         type="button"
         onClick={onRemove}
-        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+        className="p-1 hover:bg-primary/10 rounded transition-colors"
         aria-label="Remove file"
       >
         <svg

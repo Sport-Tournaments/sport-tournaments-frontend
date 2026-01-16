@@ -69,12 +69,12 @@ export default function ResetPasswordPage() {
         subtitle={t('auth.passwordResetSuccess')}
       >
         <div className="text-center space-y-6">
-          <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
             <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {t('auth.canNowLogin')}
           </p>
           <Link href="/auth/login">
@@ -124,7 +124,7 @@ export default function ResetPasswordPage() {
           {t('auth.resetPassword')}
         </Button>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-center text-sm text-gray-600">
           <Link href="/auth/login" className="text-primary hover:underline font-medium">
             {t('auth.backToLogin')}
           </Link>

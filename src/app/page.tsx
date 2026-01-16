@@ -67,16 +67,16 @@ export default function HomePage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-slate-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
+        <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-slate-50">
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-32">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="text-center lg:text-left">
-              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-slate-900 leading-tight">
                 {t('home.hero.title')}
               </h1>
-              <p className="mt-6 text-xl text-slate-600 dark:text-gray-300">
+              <p className="mt-6 text-xl text-slate-600">
                 {t('home.hero.subtitle')}
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -94,15 +94,15 @@ export default function HomePage() {
               <div className="mt-8 lg:mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 lg:gap-8">
                 <div className="text-center">
                   <p className="text-2xl sm:text-3xl font-bold text-teal-600">1000+</p>
-                  <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400">{t('home.stats.tournaments')}</p>
+                  <p className="text-sm sm:text-base text-slate-600">{t('home.stats.tournaments')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl sm:text-3xl font-bold text-teal-600">5000+</p>
-                  <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400">{t('home.stats.clubs')}</p>
+                  <p className="text-sm sm:text-base text-slate-600">{t('home.stats.clubs')}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl sm:text-3xl font-bold text-teal-600">50K+</p>
-                  <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400">{t('home.stats.players')}</p>
+                  <p className="text-sm sm:text-base text-slate-600">{t('home.stats.players')}</p>
                 </div>
               </div>
             </div>
@@ -124,27 +124,27 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-white dark:bg-gray-900">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white">
+            <h2 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-slate-900">
               {t('home.features.title')}
             </h2>
-            <p className="mt-4 text-xl text-slate-600 dark:text-gray-300">
+            <p className="mt-4 text-xl text-slate-600">
               {t('home.features.subtitle')}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} variant="hover" className="border border-slate-200 hover:border-teal-300 bg-white dark:bg-gray-800">
+              <Card key={index} variant="hover" className="border border-slate-200 hover:border-teal-300 bg-white">
                 <CardContent className="p-6">
-                  <div className="w-14 h-14 bg-teal-50 dark:bg-teal-900/30 rounded-xl flex items-center justify-center text-teal-600 mb-4">
+                  <div className="w-14 h-14 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4">
                     {feature.icon}
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed">{feature.description}</p>
+                  <p className="text-slate-600 text-sm leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}

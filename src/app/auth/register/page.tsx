@@ -178,7 +178,7 @@ export default function RegisterPage() {
             className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
             {...register('acceptTerms')}
           />
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-gray-600">
             {t('auth.acceptTerms')}{' '}
             <Link href="/terms" className="text-primary hover:underline">
               {t('footer.terms')}
@@ -202,7 +202,7 @@ export default function RegisterPage() {
           {t('auth.register')}
         </Button>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-center text-sm text-gray-600">
           {t('auth.alreadyHaveAccount')}{' '}
           <Link href="/auth/login" className="text-primary hover:underline font-medium">
             {t('auth.login')}

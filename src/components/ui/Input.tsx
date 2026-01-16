@@ -78,9 +78,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       [onChange, type]
     );
 
-    const baseInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm transition-colors dark:bg-white/5 dark:text-white dark:border-white/10 dark:placeholder:text-gray-500 dark:focus:ring-teal-500 dark:focus:border-teal-500';
+    const baseInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm transition-colors';
     
-    const errorInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-red-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors dark:bg-white/5 dark:text-white dark:border-red-500/50 dark:placeholder:text-gray-500 dark:focus:ring-red-500 dark:focus:border-red-500';
+    const errorInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-red-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors';
 
     return (
       <div className={cn('space-y-1.5', containerClassName)}>
@@ -88,7 +88,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <label
             htmlFor={inputId}
             className={cn(
-              'block text-sm font-medium text-slate-700 dark:text-white',
+              'block text-sm font-medium text-slate-700',
               required && "after:content-['*'] after:ml-0.5 after:text-red-500"
             )}
           >
@@ -97,7 +97,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-gray-500">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
               {leftIcon}
             </div>
           )}
@@ -120,18 +120,18 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {rightIcon && (
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 dark:text-gray-500">
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
               {rightIcon}
             </div>
           )}
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="text-sm text-red-600 dark:text-red-400">
+          <p id={`${inputId}-error`} className="text-sm text-red-600">
             {error}
           </p>
         )}
         {helpText && !error && (
-          <p id={`${inputId}-helper`} className="text-sm text-gray-500 dark:text-gray-400">
+          <p id={`${inputId}-helper`} className="text-sm text-gray-500">
             {helpText}
           </p>
         )}

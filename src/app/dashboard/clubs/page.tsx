@@ -63,10 +63,10 @@ export default function DashboardClubsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               {t('nav.myClubs')}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Manage your clubs and players
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function DashboardClubsPage() {
               <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('common.error')}
               </h3>
               <p className="text-gray-500 mb-4">{error.message}</p>
@@ -105,7 +105,7 @@ export default function DashboardClubsPage() {
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {t('clubs.noClubs')}
               </h3>
               <p className="text-gray-500 mb-4">{t('clubs.noClubsDesc')}</p>
@@ -137,7 +137,7 @@ export default function DashboardClubsPage() {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/dashboard/clubs/${club.id}`}
-                          className="font-semibold text-gray-900 dark:text-white hover:text-primary"
+                          className="font-semibold text-gray-900 hover:text-primary"
                         >
                           {club.name}
                         </Link>
@@ -159,7 +159,7 @@ export default function DashboardClubsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200">
                       <Link href={`/dashboard/clubs/${club.id}`} className="flex-1">
                         <Button variant="outline" size="sm" className="w-full">
                           {t('common.view')}

@@ -83,7 +83,7 @@ export function ClubColorBanner({
       />
       
       {/* Overlay Gradient for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-gray-900/20 dark:to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/20" />
       
       {/* Content */}
       <div className="relative h-full w-full">

@@ -129,10 +129,10 @@ export default function AdminUsersPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               User Management
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Manage all platform users
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function AdminUsersPage() {
                 <svg className="w-16 h-16 mx-auto text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
                   {t('common.error')}
                 </h3>
                 <p className="text-gray-500 mb-4">{fetchError.message}</p>
@@ -192,8 +192,8 @@ export default function AdminUsersPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         User
@@ -212,9 +212,9 @@ export default function AdminUsersPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <tr key={user.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
                               </span>
                             </div>
                             <div className="ml-4">
-                              <div className="font-medium text-gray-900 dark:text-white">
+                              <div className="font-medium text-gray-900">
                                 {user.firstName} {user.lastName}
                               </div>
                               <div className="text-sm text-gray-500">{user.email}</div>
@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
             {hasMore && (
               <div 
                 ref={sentinelRef} 
-                className="flex justify-center py-8 border-t border-gray-200 dark:border-gray-700"
+                className="flex justify-center py-8 border-t border-gray-200"
               >
                 {isFetchingMore && <Loading size="md" />}
               </div>

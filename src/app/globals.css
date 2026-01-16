@@ -6,11 +6,6 @@
   --color-primary-hover: #4338ca; /* indigo-700 */
 }
 
-.dark {
-  --color-primary: #6366f1; /* indigo-500 */
-  --color-primary-hover: #818cf8; /* indigo-400 */
-}
-
 /* Basic animations */
 @keyframes fadeIn {
   from { opacity: 0; }

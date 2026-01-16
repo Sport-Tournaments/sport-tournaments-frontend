@@ -63,6 +63,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (user) {
+      const normalizedRole = user.role === 'ORGANIZER' ? 'ORGANIZER' : 'PARTICIPANT';
       resetProfile({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
@@ -71,7 +72,7 @@ export default function SettingsPage() {
         bio: (user as any).bio || '',
         city: (user as any).city || '',
         country: user.country || '',
-        role: user.role || 'PARTICIPANT',
+        role: normalizedRole,
       });
     }
   }, [user, resetProfile]);
@@ -81,7 +82,8 @@ export default function SettingsPage() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await userService.updateUserProfile(data);
+      const { role, ...profileData } = data;
+      const response = await userService.updateUserProfile(profileData);
       const updatedUser = response.data;
       
       // Note: Avatar upload would need a separate API endpoint

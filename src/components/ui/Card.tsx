@@ -16,9 +16,9 @@ export function Card({
   ...props
 }: CardProps) {
   const variantStyles = {
-    default: 'overflow-hidden rounded-lg bg-white shadow-sm dark:bg-gray-800/50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10',
-    hover: 'overflow-hidden rounded-lg bg-white shadow-sm transition-all hover:shadow-md cursor-pointer dark:bg-gray-800/50 dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-white/10 dark:hover:ring-white/20',
-    flat: 'overflow-hidden rounded-lg bg-white dark:bg-gray-800/50',
+    default: 'overflow-hidden rounded-xl bg-white shadow-sm border border-slate-100 dark:bg-gray-800/50 dark:shadow-none dark:border-white/10',
+    hover: 'overflow-hidden rounded-xl bg-white shadow-sm border border-slate-100 transition-all hover:shadow-md hover:border-slate-200 cursor-pointer dark:bg-gray-800/50 dark:shadow-none dark:border-white/10 dark:hover:border-white/20',
+    flat: 'overflow-hidden rounded-xl bg-white dark:bg-gray-800/50',
   };
 
   const paddingStyles = {
@@ -46,7 +46,7 @@ export type CardHeaderProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardHeader({ className, children, ...props }: CardHeaderProps) {
   return (
-    <div className={cn('border-b border-gray-200 px-4 py-5 sm:px-6 dark:border-white/10', className)} {...props}>
+    <div className={cn('border-b border-slate-100 px-4 py-5 sm:px-6 dark:border-white/10', className)} {...props}>
       {children}
     </div>
   );
@@ -64,7 +64,7 @@ export function CardTitle({
 }: CardTitleProps) {
   return (
     <Component
-      className={cn('text-base font-semibold text-gray-900 dark:text-white', className)}
+      className={cn('text-base font-semibold text-slate-900 dark:text-white', className)}
       {...props}
     >
       {children}
@@ -81,7 +81,7 @@ export function CardDescription({
 }: CardDescriptionProps) {
   return (
     <p
-      className={cn('mt-1 text-sm text-gray-500 dark:text-gray-400', className)}
+      className={cn('mt-1 text-sm text-slate-500 dark:text-gray-400', className)}
       {...props}
     >
       {children}
@@ -105,7 +105,7 @@ export function CardFooter({ className, children, ...props }: CardFooterProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-4 border-t border-gray-200 bg-gray-50 px-4 py-4 sm:px-6 dark:border-white/10 dark:bg-gray-700/25',
+        'flex items-center gap-4 border-t border-slate-100 bg-slate-50 px-4 py-4 sm:px-6 dark:border-white/10 dark:bg-gray-700/25',
         className
       )}
       {...props}

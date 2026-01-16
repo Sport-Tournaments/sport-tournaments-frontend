@@ -3,18 +3,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n from '@/i18n';
-
-type Theme = 'light' | 'dark';
 type Language = 'en' | 'ro';
 
 interface UIState {
-  theme: Theme;
   language: Language;
   sidebarOpen: boolean;
   mobileMenuOpen: boolean;
   
   // Actions
-  setTheme: (theme: Theme) => void;
   setLanguage: (language: Language) => void;
   toggleSidebar: () => void;
   closeSidebar: () => void;
@@ -63,22 +59,9 @@ const createSafeStorage = () => {
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      theme: 'light',
       language: 'en',
       sidebarOpen: true,
       mobileMenuOpen: false,
-
-      setTheme: (theme) => {
-        // Always force light theme, ignore the parameter
-        set({ theme: 'light' });
-        
-        // Apply light theme to document
-        if (typeof document !== 'undefined') {
-          const root = document.documentElement;
-          root.classList.remove('light', 'dark');
-          root.classList.add('light');
-        }
-      },
 
       setLanguage: (language) => {
         set({ language });
@@ -123,7 +106,6 @@ export const useUIStore = create<UIState>()(
         },
       },
       partialize: (state) => ({
-        theme: state.theme,
         language: state.language,
         sidebarOpen: state.sidebarOpen,
       }) as UIState,

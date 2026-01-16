@@ -81,12 +81,15 @@ vi.mock('@/store/auth.store', () => ({
 
 vi.mock('@/store/ui.store', () => ({
   useUIStore: vi.fn(() => ({
-    theme: 'light',
     language: 'en',
     sidebarOpen: false,
-    setTheme: vi.fn(),
+    mobileMenuOpen: false,
     setLanguage: vi.fn(),
+    toggleSidebar: vi.fn(),
+    closeSidebar: vi.fn(),
     setSidebarOpen: vi.fn(),
+    toggleMobileMenu: vi.fn(),
+    setMobileMenuOpen: vi.fn(),
   })),
 }));
 

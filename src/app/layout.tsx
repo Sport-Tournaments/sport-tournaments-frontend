@@ -43,9 +43,11 @@ export default function RootLayout({
     (function() {
       try {
         // Always use light theme, ignore system color scheme
+        document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
       } catch (e) {
         // Fallback to light theme on error
+        document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
       }
     })();

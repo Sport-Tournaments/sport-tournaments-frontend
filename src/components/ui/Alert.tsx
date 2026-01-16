@@ -1,119 +1,110 @@
-'use client';
-
+import React from 'react';
 import { cn } from '@/utils/helpers';
 
-export interface AlertProps {
-  variant?: 'success' | 'error' | 'warning' | 'info';
+export type AlertVariant = 'success' | 'error' | 'warning' | 'info';
+
+export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: AlertVariant;
   title?: string;
-  children: React.ReactNode;
-  className?: string;
   onClose?: () => void;
   accentBorder?: boolean;
 }
+
+const variantStyles: Record<AlertVariant, { container: string; title: string; text: string; border: string; icon: string }> = {
+  success: {
+    container: 'bg-green-50',
+    title: 'text-green-800',
+    text: 'text-green-700',
+    border: 'border-green-400',
+    icon: 'text-green-500',
+  },
+  error: {
+    container: 'bg-red-50',
+    title: 'text-red-800',
+    text: 'text-red-700',
+    border: 'border-red-400',
+    icon: 'text-red-500',
+  },
+  warning: {
+    container: 'bg-yellow-50',
+    title: 'text-yellow-800',
+    text: 'text-yellow-700',
+    border: 'border-yellow-400',
+    icon: 'text-yellow-500',
+  },
+  info: {
+    container: 'bg-blue-50',
+    title: 'text-blue-800',
+    text: 'text-blue-700',
+    border: 'border-blue-400',
+    icon: 'text-blue-500',
+  },
+};
+
+const icons: Record<AlertVariant, React.ReactNode> = {
+  success: (
+    <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.707a1 1 0 00-1.414-1.414L9 10.172 7.707 8.879a1 1 0 10-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    </svg>
+  ),
+  error: (
+    <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm2.707-10.707a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293a1 1 0 10-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293z" clipRule="evenodd" />
+    </svg>
+  ),
+  warning: (
+    <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.721-1.36 3.486 0l6.516 11.59c.75 1.334-.213 2.999-1.742 2.999H3.483c-1.53 0-2.492-1.665-1.742-2.999L8.257 3.1zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-8a1 1 0 00-.993.883L9 6v4a1 1 0 001.993.117L11 10V6a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+  ),
+  info: (
+    <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM9 9a1 1 0 112 0v5a1 1 0 11-2 0V9zm1-4a1.25 1.25 0 100 2.5A1.25 1.25 0 0010 5z" clipRule="evenodd" />
+    </svg>
+  ),
+};
 
 export default function Alert({
   variant = 'info',
   title,
   children,
-  className,
   onClose,
   accentBorder = false,
+  className,
+  ...props
 }: AlertProps) {
-  const variantStyles = {
-    success: accentBorder
-      ? 'border-l-4 border-green-400 bg-green-50 dark:bg-green-500/10 dark:border-green-500'
-      : 'rounded-md bg-green-50 dark:bg-green-500/10',
-    error: accentBorder
-      ? 'border-l-4 border-red-400 bg-red-50 dark:bg-red-500/10 dark:border-red-500'
-      : 'rounded-md bg-red-50 dark:bg-red-500/10',
-    warning: accentBorder
-      ? 'border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-500/10 dark:border-yellow-500'
-      : 'rounded-md bg-yellow-50 dark:bg-yellow-500/10',
-    info: accentBorder
-      ? 'border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-500/10 dark:border-blue-500'
-      : 'rounded-md bg-blue-50 dark:bg-blue-500/10',
-  };
-
-  const iconColorStyles = {
-    success: 'text-green-400 dark:text-green-500',
-    error: 'text-red-400 dark:text-red-500',
-    warning: 'text-yellow-400 dark:text-yellow-500',
-    info: 'text-blue-400 dark:text-blue-500',
-  };
-
-  const titleColorStyles = {
-    success: 'text-green-800 dark:text-green-400',
-    error: 'text-red-800 dark:text-red-400',
-    warning: 'text-yellow-800 dark:text-yellow-300',
-    info: 'text-blue-800 dark:text-blue-400',
-  };
-
-  const textColorStyles = {
-    success: 'text-green-700 dark:text-green-300',
-    error: 'text-red-700 dark:text-red-300',
-    warning: 'text-yellow-700 dark:text-yellow-200',
-    info: 'text-blue-700 dark:text-blue-300',
-  };
-
-  const closeButtonStyles = {
-    success: 'text-green-500 hover:bg-green-100 focus:ring-green-600 focus:ring-offset-green-50 dark:hover:bg-green-500/20 dark:focus:ring-offset-transparent',
-    error: 'text-red-500 hover:bg-red-100 focus:ring-red-600 focus:ring-offset-red-50 dark:hover:bg-red-500/20 dark:focus:ring-offset-transparent',
-    warning: 'text-yellow-500 hover:bg-yellow-100 focus:ring-yellow-600 focus:ring-offset-yellow-50 dark:hover:bg-yellow-500/20 dark:focus:ring-offset-transparent',
-    info: 'text-blue-500 hover:bg-blue-100 focus:ring-blue-600 focus:ring-offset-blue-50 dark:hover:bg-blue-500/20 dark:focus:ring-offset-transparent',
-  };
-
-  const icons = {
-    success: (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-      </svg>
-    ),
-    error: (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-      </svg>
-    ),
-    warning: (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-      </svg>
-    ),
-    info: (
-      <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
-      </svg>
-    ),
-  };
+  const styles = variantStyles[variant];
 
   return (
-    <div className={cn('p-4', variantStyles[variant], className)} role="alert">
-      <div className="flex">
-        <div className={cn('shrink-0', iconColorStyles[variant])}>{icons[variant]}</div>
-        <div className="ml-3 flex-1">
-          {title && <h3 className={cn('text-sm font-medium', titleColorStyles[variant])}>{title}</h3>}
-          <div className={cn('text-sm', textColorStyles[variant], title && 'mt-2')}>{children}</div>
-        </div>
-        {onClose && (
-          <div className="ml-auto pl-3">
-            <div className="-mx-1.5 -my-1.5">
-              <button
-                type="button"
-                onClick={onClose}
-                className={cn(
-                  'inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
-                  closeButtonStyles[variant]
-                )}
-                aria-label="Dismiss"
-              >
-                <span className="sr-only">Dismiss</span>
-                <svg className="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
+    <div
+      role="alert"
+      className={cn(
+        'relative flex gap-3 p-4',
+        accentBorder ? 'border-l-4' : 'rounded-md',
+        styles.container,
+        accentBorder && styles.border,
+        className
+      )}
+      {...props}
+    >
+      <div className={cn('shrink-0', styles.icon)}>{icons[variant]}</div>
+      <div className={cn('flex-1 text-sm', styles.text)}>
+        {title && <h3 className={cn('font-medium', styles.title)}>{title}</h3>}
+        <div className={cn(title && 'mt-1')}>{children}</div>
       </div>
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Dismiss"
+          className="ml-3 inline-flex h-6 w-6 items-center justify-center rounded-md text-gray-400 hover:text-gray-600"
+        >
+          <span className="sr-only">Dismiss</span>
+          <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

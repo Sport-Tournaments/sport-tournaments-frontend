@@ -19,10 +19,10 @@ const tournamentSchema = z.object({
   location: z.string().min(2, 'Location is required'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
-  registrationStartDate: z.string().min(1, 'Registration start date is required'),
-  registrationEndDate: z.string().min(1, 'Registration end date is required'),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  registrationStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  registrationEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   rules: z.string().optional(),
   isPrivate: z.boolean().default(false),
   invitationCodeExpirationDays: z.coerce.number().min(1).max(365).optional(),
@@ -283,13 +283,13 @@ export default function CreateTournamentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label={t('tournament.registrationStartDate')}
-                  type="datetime-local"
+                  type="date"
                   error={errors.registrationStartDate?.message}
                   {...register('registrationStartDate')}
                 />
                 <Input
                   label={t('tournament.registrationEndDate')}
-                  type="datetime-local"
+                  type="date"
                   error={errors.registrationEndDate?.message}
                   {...register('registrationEndDate')}
                 />
@@ -297,13 +297,13 @@ export default function CreateTournamentPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label={t('tournament.startDate')}
-                  type="datetime-local"
+                  type="date"
                   error={errors.startDate?.message}
                   {...register('startDate')}
                 />
                 <Input
                   label={t('tournament.endDate')}
-                  type="datetime-local"
+                  type="date"
                   error={errors.endDate?.message}
                   {...register('endDate')}
                 />

@@ -4,11 +4,11 @@ import { cn } from '@/utils/helpers';
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 export interface ToastProps {
-  id?: string;
+  id: string;
   type?: ToastType;
   title?: string;
   message: string;
-  onClose?: (id?: string) => void;
+  onClose?: (id: string) => void;
 }
 
 export interface ToastContainerProps {

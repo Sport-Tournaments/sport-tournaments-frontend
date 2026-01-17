@@ -20,11 +20,23 @@ export default function TermsPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
+          {/* Company Information */}
+          <section className="bg-indigo-50 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Company Information</h2>
+            <div className="text-gray-700 space-y-1">
+              <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
+              <p>CUI: 53125536</p>
+              <p>Trade Registry: J2025098025007</p>
+              <p>EUID: ROONRC.J2025098025007</p>
+              <p>Address: Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
+            </div>
+          </section>
+
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Agreement to Terms</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to tournamente.com. By accessing or using our platform, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
+              Welcome to tournamente.com, operated by SPORT INTELLIGENCE TECHNOLOGY S.R.L. By accessing or using our platform, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
             </p>
             <p className="text-gray-700">
               These Terms apply to all users of the platform, including tournament organizers, clubs, teams, players, and spectators.
@@ -193,7 +205,7 @@ export default function TermsPage() {
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">10.1 Governing Law</h3>
             <p className="text-gray-700 mb-4">
-              These Terms are governed by the laws of [Your Jurisdiction], without regard to conflict of law principles.
+              These Terms are governed by the laws of Romania, without regard to conflict of law principles. Any disputes shall be subject to the exclusive jurisdiction of the courts of Brașov, Romania.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">10.2 Arbitration</h3>
@@ -225,9 +237,10 @@ export default function TermsPage() {
               For questions about these Terms of Service, please contact us:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> legal@tournamente.com</p>
-              <p className="text-gray-700"><strong>Phone:</strong> +1 (555) 123-4567</p>
-              <p className="text-gray-700"><strong>Address:</strong> 123 Football Street, New York, NY 10001</p>
+              <p className="text-gray-700"><strong>Company:</strong> SPORT INTELLIGENCE TECHNOLOGY S.R.L.</p>
+              <p className="text-gray-700"><strong>Email:</strong> contact@tournamente.com</p>
+              <p className="text-gray-700"><strong>Address:</strong> Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
+              <p className="text-gray-700"><strong>CUI:</strong> 53125536</p>
             </div>
           </section>
 

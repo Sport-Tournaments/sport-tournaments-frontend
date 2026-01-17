@@ -20,6 +20,18 @@ export default function CookiesPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
+          {/* Data Controller */}
+          <section className="bg-indigo-50 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Controller</h2>
+            <div className="text-gray-700 space-y-1">
+              <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
+              <p>CUI: 53125536</p>
+              <p>Trade Registry: J2025098025007</p>
+              <p>Address: Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
+              <p>Email: contact@tournamente.com</p>
+            </div>
+          </section>
+
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. What Are Cookies?</h2>
@@ -27,7 +39,7 @@ export default function CookiesPage() {
               Cookies are small text files that are placed on your device (computer, smartphone, or tablet) when you visit our website. They help us provide you with a better experience by remembering your preferences and understanding how you use our platform.
             </p>
             <p className="text-gray-700">
-              This Cookie Policy explains what cookies are, how we use them, and how you can control them.
+              This Cookie Policy explains what cookies are, how we use them, and how you can control them. This policy complies with the EU Cookie Law (ePrivacy Directive) and GDPR requirements.
             </p>
           </section>
 
@@ -128,12 +140,45 @@ export default function CookiesPage() {
             <p className="text-gray-700 mb-3">
               We use services from third parties that may also set cookies on your device:
             </p>
-            <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li><strong>Google Analytics:</strong> Helps us understand how users interact with our website</li>
-              <li><strong>Payment Processors:</strong> Secure payment processing for tournament registrations</li>
-              <li><strong>Social Media Platforms:</strong> Enable social sharing and login features</li>
-              <li><strong>Content Delivery Networks (CDNs):</strong> Improve website performance and speed</li>
-            </ul>
+
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Google Analytics (Analytics)</h3>
+                <p className="text-gray-700 mb-2">
+                  We use Google Analytics to understand how visitors interact with our website. This service collects information about your use of our site, including pages visited, time spent, and navigation patterns.
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Provider:</strong> Google LLC<br />
+                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a><br />
+                  <strong>Data Transfer:</strong> Data may be transferred to the United States under Standard Contractual Clauses
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Google Search Console (Performance Monitoring)</h3>
+                <p className="text-gray-700 mb-2">
+                  We use Google Search Console to monitor and optimize our website's presence in Google Search results. This helps us improve site visibility and user experience.
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Provider:</strong> Google LLC<br />
+                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Processors</h3>
+                <p className="text-gray-700">
+                  Secure payment processing for tournament registrations. Payment data is processed directly by our payment providers and is not stored on our servers.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content Delivery Networks (CDNs)</h3>
+                <p className="text-gray-700">
+                  We use CDNs to improve website performance and loading speed for users worldwide.
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* Managing Cookies */}
@@ -189,7 +234,9 @@ export default function CookiesPage() {
               If you have questions about our use of cookies, please contact us:
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@tournamente.com</p>
+              <p className="text-gray-700"><strong>Company:</strong> SPORT INTELLIGENCE TECHNOLOGY S.R.L.</p>
+              <p className="text-gray-700"><strong>Email:</strong> contact@tournamente.com</p>
+              <p className="text-gray-700"><strong>Address:</strong> Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
               <p className="text-gray-700"><strong>Subject Line:</strong> Cookie Policy Inquiry</p>
             </div>
           </section>

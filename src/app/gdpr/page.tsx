@@ -19,6 +19,19 @@ export default function GDPRPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
+          {/* Data Controller */}
+          <section className="bg-indigo-50 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages.gdpr.dataController.title')}</h2>
+            <div className="text-gray-700 space-y-1">
+              <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
+              <p>CUI: 53125536</p>
+              <p>{t('pages.gdpr.dataController.tradeRegistry')}: J2025098025007</p>
+              <p>EUID: ROONRC.J2025098025007</p>
+              <p>{t('pages.gdpr.dataController.address')}: Str. Independenței, Nr. 70, Ap. 1, Brașov, {t('pages.gdpr.dataController.county')} Brașov, Romania</p>
+              <p>Email: contact@tournamente.com</p>
+            </div>
+          </section>
+
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages.gdpr.commitment.title')}</h2>
@@ -154,6 +167,52 @@ export default function GDPRPage() {
             <p className="text-gray-700">
               {t('pages.gdpr.dataBreach.description')}
             </p>
+          </section>
+
+          {/* Consent Management */}
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages.gdpr.consent.title')}</h2>
+            <p className="text-gray-700 mb-4">
+              {t('pages.gdpr.consent.description')}
+            </p>
+
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">{t('pages.gdpr.consent.essential.title')}</h3>
+                <p className="text-gray-700 mb-2">
+                  {t('pages.gdpr.consent.essential.description')}
+                </p>
+                <p className="text-sm text-gray-600 italic">
+                  {t('pages.gdpr.consent.essential.examples')}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">{t('pages.gdpr.consent.analytics.title')}</h3>
+                <p className="text-gray-700 mb-2">
+                  {t('pages.gdpr.consent.analytics.description')}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>{t('pages.gdpr.consent.analytics.provider')}:</strong> Google LLC<br />
+                  <strong>{t('pages.gdpr.consent.analytics.service')}:</strong> Google Analytics, Google Search Console<br />
+                  <strong>{t('pages.gdpr.consent.analytics.purpose')}:</strong> {t('pages.gdpr.consent.analytics.purposeDesc')}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-gray-900 mb-2">{t('pages.gdpr.consent.functional.title')}</h3>
+                <p className="text-gray-700">
+                  {t('pages.gdpr.consent.functional.description')}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 border border-indigo-200 rounded-lg bg-indigo-50">
+              <h4 className="font-semibold text-gray-900 mb-2">{t('pages.gdpr.consent.withdraw.title')}</h4>
+              <p className="text-gray-700">
+                {t('pages.gdpr.consent.withdraw.description')}
+              </p>
+            </div>
           </section>
 
           {/* Exercising Your Rights */}

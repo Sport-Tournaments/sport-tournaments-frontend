@@ -1382,6 +1382,12 @@
     "gdpr": {
       "title": "Conformitate GDPR",
       "subtitle": "Informații despre Regulamentul General privind Protecția Datelor",
+      "dataController": {
+        "title": "Operator de date",
+        "tradeRegistry": "Nr. Înregistrare",
+        "address": "Adresă",
+        "county": "Județul"
+      },
       "commitment": {
         "title": "Angajamentul nostru față de GDPR",
         "description1": "tournamente.com se angajează să respecte Regulamentul General privind Protecția Datelor (GDPR), care protejează datele personale și confidențialitatea persoanelor din Uniunea Europeană (UE) și Spațiul Economic European (SEE).",
@@ -1457,19 +1463,45 @@
         "title": "Notificare încălcare a datelor",
         "description": "În cazul unei încălcări a datelor care ar putea rezulta într-un risc pentru drepturile și libertățile dvs., vă vom notifica pe dvs. și autoritatea de supraveghere relevantă în termen de 72 de ore de la conștientizarea încălcării, conform cerințelor articolelor 33 și 34 din GDPR."
       },
+      "consent": {
+        "title": "Gestionarea consimțământului",
+        "description": "Obținem consimțământul dvs. pentru procesarea datelor personale acolo unde este necesar conform GDPR. Puteți gestiona preferințele de consimțământ în orice moment. Mai jos sunt categoriile de procesare a datelor care necesită consimțământul dvs.:",
+        "essential": {
+          "title": "Cookie-uri esențiale (Obligatorii)",
+          "description": "Aceste cookie-uri sunt strict necesare pentru funcționarea site-ului și nu pot fi dezactivate. Sunt de obicei setate ca răspuns la acțiunile pe care le efectuați, cum ar fi setarea preferințelor de confidențialitate, autentificarea sau completarea formularelor.",
+          "examples": "Exemple: Cookie-uri de sesiune, token-uri de autentificare, cookie-uri de securitate"
+        },
+        "analytics": {
+          "title": "Analiză și performanță",
+          "description": "Utilizăm servicii de analiză pentru a înțelege cum interacționează vizitatorii cu site-ul nostru. Acest lucru ne ajută să îmbunătățim serviciile și experiența utilizatorului. Aceste servicii colectează date anonimizate despre vizitele paginilor, timpul petrecut și tiparele de navigare.",
+          "provider": "Furnizor",
+          "service": "Servicii",
+          "purpose": "Scop",
+          "purposeDesc": "Analiza traficului web, informații despre comportamentul utilizatorilor, optimizarea performanței în căutări"
+        },
+        "functional": {
+          "title": "Cookie-uri funcționale",
+          "description": "Aceste cookie-uri permit funcționalități îmbunătățite și personalizare, cum ar fi memorarea preferinței de limbă, locație și setările de afișare. Dacă nu permiteți aceste cookie-uri, este posibil ca unele sau toate aceste funcții să nu funcționeze corect."
+        },
+        "withdraw": {
+          "title": "Retragerea consimțământului",
+          "description": "Puteți retrage consimțământul în orice moment ajustând preferințele de cookie-uri prin banner-ul nostru de cookie-uri, ștergând cookie-urile browserului sau contactându-ne la contact@tournamente.com. Retragerea consimțământului nu afectează legalitatea procesării bazate pe consimțământ înainte de retragerea acestuia."
+        }
+      },
       "exercise": {
         "title": "Cum să vă exercitați drepturile",
         "description": "Pentru a vă exercita oricare dintre drepturile GDPR, vă rugăm:",
-        "step1": "Trimiteți un email la privacy@tournamente.com sau dpo@tournamente.com",
+        "step1": "Trimiteți un email la contact@tournamente.com",
         "step2": "Includeți numele complet, adresa de email și solicitarea specifică",
         "step3": "Furnizați o dovadă a identității (din motive de securitate)",
         "step4": "Vom răspunde la solicitarea dvs. în termen de 30 de zile",
-        "complaint": "Dacă nu sunteți mulțumit de răspunsul nostru, aveți dreptul de a depune o plângere la autoritatea locală de supraveghere."
+        "complaint": "Dacă nu sunteți mulțumit de răspunsul nostru, aveți dreptul de a depune o plângere la Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP) sau la autoritatea locală de supraveghere."
       },
       "supervisory": {
         "title": "Autoritatea de supraveghere",
-        "description": "Aveți dreptul de a depune o plângere la o autoritate de supraveghere, în special în statul membru UE al reședinței dvs. obișnuite, locului de muncă sau locului presupusei încălcări.",
-        "link": "Pentru o listă a autorităților de supraveghere, vă rugăm să vizitați"
+        "description": "Aveți dreptul de a depune o plângere la o autoritate de supraveghere. Ca firmă românească, autoritatea noastră principală de supraveghere este Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP). Puteți contacta și autoritatea de supraveghere din statul membru UE al reședinței dvs. obișnuite sau locului de muncă.",
+        "link": "Pentru o listă a autorităților de supraveghere, vă rugăm să vizitați",
+        "romanianAuthority": "Autoritatea Română (ANSPDCP): www.dataprotection.ro"
       },
       "updates": {
         "title": "Actualizări ale conformității GDPR",

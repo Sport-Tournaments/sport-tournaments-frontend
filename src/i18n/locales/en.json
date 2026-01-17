@@ -1275,6 +1275,12 @@
     "gdpr": {
       "title": "GDPR Compliance",
       "subtitle": "General Data Protection Regulation Information",
+      "dataController": {
+        "title": "Data Controller",
+        "tradeRegistry": "Trade Registry",
+        "address": "Address",
+        "county": "County"
+      },
       "commitment": {
         "title": "Our Commitment to GDPR",
         "description1": "tournamente.com is committed to complying with the General Data Protection Regulation (GDPR), which protects the personal data and privacy of individuals in the European Union (EU) and European Economic Area (EEA).",
@@ -1350,19 +1356,45 @@
         "title": "Data Breach Notification",
         "description": "In the event of a data breach that is likely to result in a risk to your rights and freedoms, we will notify you and the relevant supervisory authority within 72 hours of becoming aware of the breach, as required by GDPR Article 33 and 34."
       },
+      "consent": {
+        "title": "Consent Management",
+        "description": "We obtain your consent for processing personal data where required by GDPR. You can manage your consent preferences at any time. Below are the categories of data processing that require your consent:",
+        "essential": {
+          "title": "Essential Cookies (Required)",
+          "description": "These cookies are strictly necessary for the website to function and cannot be switched off. They are usually set in response to actions you take such as setting your privacy preferences, logging in, or filling in forms.",
+          "examples": "Examples: Session cookies, authentication tokens, security cookies"
+        },
+        "analytics": {
+          "title": "Analytics & Performance",
+          "description": "We use analytics services to understand how visitors interact with our website. This helps us improve our services and user experience. These services collect anonymized data about page visits, time spent, and navigation patterns.",
+          "provider": "Provider",
+          "service": "Services",
+          "purpose": "Purpose",
+          "purposeDesc": "Website traffic analysis, user behavior insights, search performance optimization"
+        },
+        "functional": {
+          "title": "Functional Cookies",
+          "description": "These cookies enable enhanced functionality and personalization, such as remembering your language preference, location, and display settings. If you do not allow these cookies, some or all of these features may not function properly."
+        },
+        "withdraw": {
+          "title": "Withdrawing Consent",
+          "description": "You can withdraw your consent at any time by adjusting your cookie preferences through our cookie banner, clearing your browser cookies, or contacting us at contact@tournamente.com. Withdrawing consent does not affect the lawfulness of processing based on consent before its withdrawal."
+        }
+      },
       "exercise": {
         "title": "How to Exercise Your Rights",
         "description": "To exercise any of your GDPR rights, please:",
-        "step1": "Send an email to privacy@tournamente.com or dpo@tournamente.com",
+        "step1": "Send an email to contact@tournamente.com",
         "step2": "Include your full name, email address, and specific request",
         "step3": "Provide proof of identity (for security purposes)",
         "step4": "We will respond to your request within 30 days",
-        "complaint": "If you are not satisfied with our response, you have the right to lodge a complaint with your local supervisory authority."
+        "complaint": "If you are not satisfied with our response, you have the right to lodge a complaint with the Romanian National Supervisory Authority (ANSPDCP) or your local supervisory authority."
       },
       "supervisory": {
         "title": "Supervisory Authority",
-        "description": "You have the right to lodge a complaint with a supervisory authority, in particular in the EU member state of your habitual residence, place of work, or place of the alleged infringement.",
-        "link": "For a list of supervisory authorities, please visit"
+        "description": "You have the right to lodge a complaint with a supervisory authority. As a Romanian company, our lead supervisory authority is the Romanian National Supervisory Authority for Personal Data Processing (ANSPDCP). You may also contact the supervisory authority in your EU member state of habitual residence or place of work.",
+        "link": "For a list of supervisory authorities, please visit",
+        "romanianAuthority": "Romanian Authority (ANSPDCP): www.dataprotection.ro"
       },
       "updates": {
         "title": "Updates to GDPR Compliance",

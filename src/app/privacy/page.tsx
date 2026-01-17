@@ -20,11 +20,24 @@ export default function PrivacyPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
+          {/* Data Controller */}
+          <section className="bg-indigo-50 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Controller</h2>
+            <div className="text-gray-700 space-y-1">
+              <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
+              <p>CUI: 53125536</p>
+              <p>Trade Registry: J2025098025007</p>
+              <p>EUID: ROONRC.J2025098025007</p>
+              <p>Address: Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
+              <p>Email: contact@tournamente.com</p>
+            </div>
+          </section>
+
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Introduction</h2>
             <p className="text-gray-700 mb-4">
-              Welcome to tournamente.com ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our tournament management platform.
+              Welcome to tournamente.com, operated by SPORT INTELLIGENCE TECHNOLOGY S.R.L. ("we," "our," or "us"). We are committed to protecting your personal information and your right to privacy in accordance with the General Data Protection Regulation (GDPR) and Romanian data protection laws. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our tournament management platform.
             </p>
             <p className="text-gray-700">
               By using tournamente.com, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our services.
@@ -174,16 +187,30 @@ export default function PrivacyPage() {
             </p>
           </section>
 
-          {/* Contact */}
+          {/* Supervisory Authority */}
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Contact Us</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Supervisory Authority</h2>
             <p className="text-gray-700 mb-4">
-              If you have questions or concerns about this Privacy Policy, please contact us:
+              If you believe that we have not complied with your data protection rights, you have the right to lodge a complaint with the Romanian National Supervisory Authority for Personal Data Processing (ANSPDCP):
             </p>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-gray-700"><strong>Email:</strong> privacy@tournamente.com</p>
-              <p className="text-gray-700"><strong>Phone:</strong> +1 (555) 123-4567</p>
-              <p className="text-gray-700"><strong>Address:</strong> 123 Football Street, New York, NY 10001</p>
+              <p className="text-gray-700"><strong>Authority:</strong> Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</p>
+              <p className="text-gray-700"><strong>Address:</strong> B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, 010336, București, Romania</p>
+              <p className="text-gray-700"><strong>Website:</strong> <a href="https://www.dataprotection.ro" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">www.dataprotection.ro</a></p>
+            </div>
+          </section>
+
+          {/* Contact */}
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Contact Us</h2>
+            <p className="text-gray-700 mb-4">
+              If you have questions or concerns about this Privacy Policy or wish to exercise your data protection rights, please contact us:
+            </p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-gray-700"><strong>Company:</strong> SPORT INTELLIGENCE TECHNOLOGY S.R.L.</p>
+              <p className="text-gray-700"><strong>Email:</strong> contact@tournamente.com</p>
+              <p className="text-gray-700"><strong>Address:</strong> Str. Independenței, Nr. 70, Ap. 1, Brașov, County Brașov, Romania</p>
+              <p className="text-gray-700"><strong>CUI:</strong> 53125536</p>
             </div>
           </section>
         </div>

@@ -70,3 +70,6 @@ export type { GeolocationFilterProps, GeolocationFilterCompactProps } from './Ge
 
 export { default as AgeGroupsManager } from './AgeGroupsManager';
 export type { AgeGroupFormData } from './AgeGroupsManager';
+
+export { default as TournamentCalendar } from './TournamentCalendar';
+export { default as TournamentMap } from './TournamentMap';

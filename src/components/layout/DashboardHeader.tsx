@@ -85,6 +85,11 @@ export default function DashboardHeader() {
                 }
                 items={[
                   {
+                    label: t('nav.browseLabel', 'Browse Site'),
+                    onClick: () => {},
+                    header: true,
+                  },
+                  {
                     label: t('nav.home'),
                     onClick: () => {
                       window.location.href = '/';
@@ -103,6 +108,11 @@ export default function DashboardHeader() {
                     },
                   },
                   { label: '', onClick: () => {}, divider: true },
+                  {
+                    label: t('nav.accountLabel', 'Account'),
+                    onClick: () => {},
+                    header: true,
+                  },
                   {
                     label: t('nav.settings'),
                     onClick: () => {

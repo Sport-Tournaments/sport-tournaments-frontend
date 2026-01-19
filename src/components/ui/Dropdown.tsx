@@ -11,6 +11,7 @@ export interface DropdownItemType {
   danger?: boolean;
   divider?: boolean;
   description?: string;
+  header?: boolean;
 }
 
 export interface DropdownProps {
@@ -82,6 +83,13 @@ export default function Dropdown({
             {items.map((item, index) =>
               item.divider ? (
                 <div key={index} className="my-1 h-px bg-gray-100" role="separator" />
+              ) : item.header ? (
+                <div
+                  key={index}
+                  className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                >
+                  {item.label}
+                </div>
               ) : (
                 <button
                   key={index}

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Tournament } from '@/types';
@@ -33,79 +32,90 @@ export default function LeafletMap({
   defaultZoom = 6,
 }: LeafletMapProps) {
   const { t } = useTranslation();
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
+    // Only run on client
     setMapReady(true);
   }, []);
 
-  // Calculate bounds to fit all markers
-  const getBounds = (): L.LatLngBoundsExpression | undefined => {
-    if (tournaments.length === 0) return undefined;
-    if (tournaments.length === 1) return undefined; // Use center for single marker
-    
-    const lats = tournaments.map(t => t.latitude!);
-    const lngs = tournaments.map(t => t.longitude!);
-    
-    return [
-      [Math.min(...lats), Math.min(...lngs)],
-      [Math.max(...lats), Math.max(...lngs)]
-    ];
-  };
+  useEffect(() => {
+    if (!mapReady || !mapContainerRef.current) return;
 
-  const mapCenter: [number, number] = tournaments.length > 0 
-    ? [tournaments[0].latitude!, tournaments[0].longitude!]
-    : defaultCenter;
+    // Clean up any existing map
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
 
-  const bounds = getBounds();
+    // Calculate center and bounds
+    const mapCenter: L.LatLngExpression = tournaments.length > 0 
+      ? [tournaments[0].latitude as number, tournaments[0].longitude as number]
+      : defaultCenter;
+
+    // Create new map
+    const map = L.map(mapContainerRef.current).setView(mapCenter, defaultZoom);
+    mapRef.current = map;
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Add markers
+    const markers: L.Marker[] = [];
+    tournaments.forEach((tournament) => {
+      const marker = L.marker(
+        [tournament.latitude as number, tournament.longitude as number],
+        { icon: customIcon }
+      ).addTo(map);
+
+      marker.bindPopup(`
+        <div style="max-width: 250px;">
+          <h3 style="font-weight: 600; color: #111827; margin-bottom: 4px;">${tournament.name}</h3>
+          <p style="font-size: 14px; color: #4B5563; margin-bottom: 8px;">
+            ${formatDate(tournament.startDate)} - ${formatDate(tournament.endDate)}
+          </p>
+          <p style="font-size: 14px; color: #6B7280; margin-bottom: 12px;">${tournament.location || ''}</p>
+          <span style="display: inline-block; padding: 2px 8px; font-size: 12px; background-color: ${tournament.status === 'PUBLISHED' ? '#DBEAFE' : '#F3F4F6'}; color: ${tournament.status === 'PUBLISHED' ? '#1E40AF' : '#374151'}; border-radius: 4px; margin-bottom: 12px;">
+            ${tournament.status}
+          </span>
+          <br/>
+          <a href="/main/tournaments/${tournament.id}" style="display: inline-block; padding: 6px 12px; font-size: 14px; font-weight: 500; color: white; background-color: #2563EB; border-radius: 4px; text-decoration: none;">
+            ${t('common.viewDetails', 'View Details')}
+          </a>
+        </div>
+      `);
+
+      markers.push(marker);
+    });
+
+    // Fit bounds if multiple markers
+    if (markers.length > 1) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    // Cleanup function
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [mapReady, tournaments, defaultCenter, defaultZoom, t]);
 
   if (!mapReady) {
     return null;
   }
 
   return (
-    <div className="rounded-lg overflow-hidden border border-gray-200" style={{ height: '500px' }}>
-      <MapContainer
-        center={mapCenter}
-        zoom={defaultZoom}
-        bounds={bounds}
-        boundsOptions={{ padding: [50, 50] }}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {tournaments.map((tournament) => (
-          <Marker
-            key={tournament.id}
-            position={[tournament.latitude!, tournament.longitude!]}
-            icon={customIcon}
-          >
-            <Popup>
-              <div className="max-w-xs">
-                <h3 className="font-semibold text-gray-900 mb-1">{tournament.name}</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
-                </p>
-                <p className="text-sm text-gray-500 mb-3">{tournament.location}</p>
-                <div className="mb-3">
-                  <Badge variant={tournament.status === 'PUBLISHED' ? 'info' : 'default'}>
-                    {tournament.status}
-                  </Badge>
-                </div>
-                <Link
-                  href={`/main/tournaments/${tournament.id}`}
-                  className="inline-block px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
-                >
-                  {t('common.viewDetails', 'View Details')}
-                </Link>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
+    <div 
+      ref={mapContainerRef}
+      className="rounded-lg overflow-hidden border border-gray-200" 
+      style={{ height: '500px', width: '100%' }}
+    />
   );
 }

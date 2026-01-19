@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import dynamic from 'next/dynamic';
 import { Tournament } from '@/types';
@@ -35,10 +36,22 @@ export function TournamentMap({
 }: TournamentMapProps) {
   const { t } = useTranslation();
 
-  // Filter tournaments with valid coordinates
-  const tournamentsWithCoords = tournaments.filter(
-    (tournament) => typeof tournament.latitude === 'number' && typeof tournament.longitude === 'number' && !isNaN(tournament.latitude) && !isNaN(tournament.longitude)
-  );
+  // Filter tournaments with valid coordinates (handle both string and number types)
+  const tournamentsWithCoords = useMemo(() => tournaments.filter((tournament) => {
+    const lat = typeof tournament.latitude === 'string' ? parseFloat(tournament.latitude) : tournament.latitude;
+    const lng = typeof tournament.longitude === 'string' ? parseFloat(tournament.longitude) : tournament.longitude;
+    return typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng);
+  }).map((tournament) => ({
+    ...tournament,
+    latitude: typeof tournament.latitude === 'string' ? parseFloat(tournament.latitude) : tournament.latitude,
+    longitude: typeof tournament.longitude === 'string' ? parseFloat(tournament.longitude) : tournament.longitude,
+  })), [tournaments]);
+
+  // Generate a unique key for the map to force remount when tournaments change
+  const mapKey = useMemo(() => {
+    const ids = tournamentsWithCoords.map(t => t.id).sort().join('-');
+    return `tournament-map-${ids || 'empty'}`;
+  }, [tournamentsWithCoords]);
 
   if (tournamentsWithCoords.length === 0) {
     return (
@@ -53,8 +66,9 @@ export function TournamentMap({
   }
 
   return (
-    <div className={className}>
+    <div className={className} key={mapKey}>
       <LeafletMap 
+        key={mapKey}
         tournaments={tournamentsWithCoords}
         defaultCenter={defaultCenter}
         defaultZoom={defaultZoom}

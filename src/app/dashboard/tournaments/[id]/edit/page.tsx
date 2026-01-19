@@ -139,6 +139,7 @@ export default function EditTournamentPage() {
           minTeams: ag.minTeams,
           startDate: ag.startDate,
           endDate: ag.endDate,
+          locationId: ag.locationId,
           participationFee: ag.participationFee,
           groupsCount: ag.groupsCount,
           teamsPerGroup: ag.teamsPerGroup,
@@ -556,6 +557,7 @@ export default function EditTournamentPage() {
                   tournamentStartDate={watch('startDate')}
                   tournamentEndDate={watch('endDate')}
                   tournamentParticipationFee={watch('entryFee')}
+                  locations={tournament?.locations?.map(loc => ({ id: loc.id || '', venueName: loc.venueName })) || []}
                   disabled={saving}
                 />
               </div>

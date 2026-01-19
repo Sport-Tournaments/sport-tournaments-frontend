@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardContent, Badge, Button, Input, Select, Loading, GeolocationFilterCompact } from '@/components/ui';
+import { Card, CardContent, Badge, Button, Input, Select, Loading, GeolocationFilterCompact, TournamentCalendar, TournamentMap } from '@/components/ui';
 import { tournamentService } from '@/services';
 import { formatDistance } from '@/services/location.service';
 import { Tournament, TournamentStatus, GeolocationFilters } from '@/types';
@@ -13,11 +13,14 @@ import { useDebounce, useInfiniteScroll } from '@/hooks';
 
 const PAGE_SIZE = 12;
 
+type ViewMode = 'list' | 'calendar' | 'map';
+
 export default function TournamentsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [geoFilters, setGeoFilters] = useState<GeolocationFilters>({});
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const debouncedSearch = useDebounce(search, 300);
 
   const fetchTournaments = useCallback(async (page: number) => {
@@ -151,6 +154,55 @@ export default function TournamentsPage() {
           />
         </div>
 
+        {/* View Toggle Buttons */}
+        <div className="flex items-center gap-2 mb-6">
+          <span className="text-sm text-gray-500 mr-2">{t('common.view', 'View')}:</span>
+          <div className="flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title={t('tournaments.listView', 'List view')}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              <span className="hidden sm:inline">{t('common.list', 'List')}</span>
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title={t('tournaments.calendarView', 'Calendar view')}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden sm:inline">{t('common.calendar', 'Calendar')}</span>
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                viewMode === 'map'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title={t('tournaments.mapView', 'Map view')}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <span className="hidden sm:inline">{t('common.map', 'Map')}</span>
+            </button>
+          </div>
+        </div>
+
         {/* Loading state */}
         {isLoading && tournaments.length === 0 ? (
           <div className="flex justify-center py-12">
@@ -184,6 +236,12 @@ export default function TournamentsPage() {
               <Button variant="primary">{t('tournament.createFirst')}</Button>
             </Link>
           </div>
+        ) : viewMode === 'calendar' ? (
+          /* Calendar View */
+          <TournamentCalendar tournaments={tournaments} />
+        ) : viewMode === 'map' ? (
+          /* Map View */
+          <TournamentMap tournaments={tournaments} />
         ) : (
           /* Tournament grid with infinite scroll */
           <>

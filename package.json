@@ -1,5 +1,5 @@
 {
-  "name": "football-tournament-frontend",
+  "name": "@monorepo/frontend",
   "version": "1.0.0",
   "description": "Football Tournament Platform Frontend - Next.js 16",
   "private": true,
@@ -26,7 +26,6 @@
   "dependencies": {
     "@googlemaps/js-api-loader": "1.16.6",
     "@hookform/resolvers": "3.4.2",
-    "@react-google-maps/api": "2.20.5",
     "@tanstack/react-query": "5.64.1",
     "@tanstack/react-table": "8.20.6",
     "axios": "1.7.7",
@@ -34,6 +33,7 @@
     "clsx": "2.1.1",
     "date-fns": "3.6.0",
     "i18next": "^25.0.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",
     "next": "16.0.7",
     "next-i18n-router": "5.5.0",
@@ -42,6 +42,7 @@
     "react-dropzone": "14.3.5",
     "react-hook-form": "7.53.0",
     "react-i18next": "^15.0.0",
+    "react-leaflet": "4.2.1",
     "zod": "3.23.8",
     "zustand": "4.5.5"
   },
@@ -55,6 +56,7 @@
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.0.1",
     "@testing-library/user-event": "14.5.2",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "20.14.14",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",

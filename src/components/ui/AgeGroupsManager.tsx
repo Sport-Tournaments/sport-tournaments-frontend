@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import Input from './Input';
 import Select from './Select';
+import Modal from './Modal';
 import { cn } from '@/utils/helpers';
 
 // Game systems for football based on player count (field players + goalkeeper)
@@ -35,10 +36,16 @@ export interface AgeGroupFormData {
   guaranteedMatches?: number;
   startDate?: string;
   endDate?: string;
+  locationId?: string;
   participationFee?: number;
   groupsCount?: number;
   teamsPerGroup?: number;
   numberOfMatches?: number;
+}
+
+interface LocationOption {
+  id: string;
+  venueName: string;
 }
 
 interface AgeGroupsManagerProps {
@@ -47,6 +54,7 @@ interface AgeGroupsManagerProps {
   tournamentStartDate?: string;
   tournamentEndDate?: string;
   tournamentParticipationFee?: number;
+  locations?: LocationOption[];
   disabled?: boolean;
   className?: string;
 }
@@ -66,11 +74,13 @@ export function AgeGroupsManager({
   tournamentStartDate,
   tournamentEndDate,
   tournamentParticipationFee,
+  locations = [],
   disabled = false,
   className,
 }: AgeGroupsManagerProps) {
   const { t } = useTranslation();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
   const handleAddAgeGroup = useCallback(() => {
     // Find the next birth year not already used
@@ -98,7 +108,16 @@ export function AgeGroupsManager({
     } else if (expandedIndex !== null && expandedIndex > index) {
       setExpandedIndex(expandedIndex - 1);
     }
+    setDeleteConfirmIndex(null);
   }, [ageGroups, onChange, expandedIndex]);
+
+  const handleRemoveClick = useCallback((index: number) => {
+    setDeleteConfirmIndex(index);
+  }, []);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmIndex(null);
+  }, []);
 
   const handleUpdateAgeGroup = useCallback((index: number, updates: Partial<AgeGroupFormData>) => {
     const newAgeGroups = ageGroups.map((ag, i) => {
@@ -183,7 +202,7 @@ export function AgeGroupsManager({
                     size="xs"
                     onClick={(e: MouseEvent<HTMLButtonElement>) => {
                       e.stopPropagation();
-                      handleRemoveAgeGroup(index);
+                      handleRemoveClick(index);
                     }}
                     disabled={disabled}
                     className="text-red-600 hover:text-red-700"
@@ -261,6 +280,32 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.minTeamsHelp', 'Minimum to run this category')}
                     />
 
+                    {/* Teams Per Group - moved here per issue #73 */}
+                    <Input
+                      type="number"
+                      label={t('tournaments.ageGroups.teamsPerGroup', 'Teams Per Group')}
+                      value={ageGroup.teamsPerGroup || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { teamsPerGroup: e.target.value ? parseInt(e.target.value) : undefined })}
+                      min={2}
+                      max={8}
+                      step={1}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.teamsPerGroupHelp', 'Usually 4 teams per group')}
+                    />
+
+                    {/* Number of Groups - moved here per issue #73 */}
+                    <Input
+                      type="number"
+                      label={t('tournaments.ageGroups.groupsCount', 'Number of Groups')}
+                      value={ageGroup.groupsCount || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { groupsCount: e.target.value ? parseInt(e.target.value) : undefined })}
+                      min={1}
+                      max={16}
+                      step={1}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
+                    />
+
                     {/* Max Teams */}
                     <Input
                       type="number"
@@ -318,31 +363,20 @@ export function AgeGroupsManager({
                       disabled={disabled}
                     />
 
-                    {/* Teams Per Group */}
-                    <Input
-                      type="number"
-                      label={t('tournaments.ageGroups.teamsPerGroup', 'Teams Per Group')}
-                      value={ageGroup.teamsPerGroup || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { teamsPerGroup: e.target.value ? parseInt(e.target.value) : undefined })}
-                      min={2}
-                      max={8}
-                      step={1}
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.teamsPerGroupHelp', 'Usually 4 teams per group')}
-                    />
-
-                    {/* Number of Groups */}
-                    <Input
-                      type="number"
-                      label={t('tournaments.ageGroups.groupsCount', 'Number of Groups')}
-                      value={ageGroup.groupsCount || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { groupsCount: e.target.value ? parseInt(e.target.value) : undefined })}
-                      min={1}
-                      max={16}
-                      step={1}
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
-                    />
+                    {/* Location Override */}
+                    {locations.length > 0 && (
+                      <Select
+                        label={t('tournaments.ageGroups.location', 'Game Location')}
+                        options={[
+                          { value: '', label: t('tournaments.ageGroups.useDefaultLocation', 'Use tournament default') },
+                          ...locations.map(loc => ({ value: loc.id, label: loc.venueName }))
+                        ]}
+                        value={ageGroup.locationId || ''}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { locationId: e.target.value || undefined })}
+                        disabled={disabled}
+                        helperText={t('tournaments.ageGroups.locationHelp', 'Override the default tournament venue for this category')}
+                      />
+                    )}
                   </div>
                 </div>
               )}
@@ -350,6 +384,47 @@ export function AgeGroupsManager({
           ))}
         </div>
       )}
+
+      {/* Confirmation Dialog for Remove Category */}
+      <Modal
+        isOpen={deleteConfirmIndex !== null}
+        onClose={handleCancelDelete}
+        title={t('tournaments.ageGroups.removeConfirmTitle', 'Remove Age Category?')}
+        description={t('tournaments.ageGroups.removeConfirmDescription', 'Are you sure you want to remove this category? This action cannot be undone.')}
+        size="sm"
+        icon={
+          <svg className="size-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+        }
+        iconColor="warning"
+        footer={
+          <div className="flex gap-3 w-full sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelDelete}
+              className="flex-1 sm:flex-none"
+            >
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => deleteConfirmIndex !== null && handleRemoveAgeGroup(deleteConfirmIndex)}
+              className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            >
+              {t('common.remove', 'Remove')}
+            </Button>
+          </div>
+        }
+      >
+        {deleteConfirmIndex !== null && ageGroups[deleteConfirmIndex] && (
+          <p className="text-sm text-gray-600">
+            {t('tournaments.ageGroups.removeConfirmCategory', 'Category')}: <strong>{getDisplayLabel(ageGroups[deleteConfirmIndex])}</strong> ({ageGroups[deleteConfirmIndex].birthYear})
+          </p>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -7,9 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, FileUpload, FilePreview, ColorPicker, ColorCombinationPicker, LocationAutocomplete } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Alert, FileUpload, FilePreview, ColorPicker, ColorCombinationPicker, LocationAutocomplete } from '@/components/ui';
 import { clubService } from '@/services';
-import { getCurrentLocation } from '@/services/location.service';
 import type { LocationSuggestion } from '@/types';
 
 const clubSchema = z.object({
@@ -36,7 +35,6 @@ const clubSchema = z.object({
     }),
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
-  address: z.string().optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
   website: z.string().optional().or(z.literal('')).transform((val) => {
@@ -65,7 +63,7 @@ export default function CreateClubPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationQuery, setLocationQuery] = useState('');
   const errorRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to error message when error is set
@@ -89,7 +87,6 @@ export default function CreateClubPage() {
   } = useForm<ClubFormData>({
     resolver: zodResolver(clubSchema),
     defaultValues: {
-      country: 'Romania',
       primaryColor: '#1E40AF',
       secondaryColor: '#FFFFFF',
     },
@@ -97,30 +94,16 @@ export default function CreateClubPage() {
 
   const primaryColor = watch('primaryColor');
   const secondaryColor = watch('secondaryColor');
+  const locationError = errors.city?.message || errors.country?.message;
 
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
-    setValue('address', location.formattedAddress);
+    setLocationQuery(location.formattedAddress);
     if (location.city) setValue('city', location.city);
     if (location.country) setValue('country', location.country);
     if (location.latitude && location.longitude) {
       setValue('latitude', location.latitude);
       setValue('longitude', location.longitude);
-    }
-  };
-
-  // Handle getting current device location
-  const handleGetDeviceLocation = async () => {
-    setIsGettingLocation(true);
-    try {
-      const location = await getCurrentLocation();
-      setValue('latitude', location.latitude);
-      setValue('longitude', location.longitude);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get location';
-      setError(message);
-    } finally {
-      setIsGettingLocation(false);
     }
   };
 
@@ -164,19 +147,6 @@ export default function CreateClubPage() {
       setLoading(false);
     }
   };
-
-  const countryOptions = [
-    { value: 'Romania', label: 'Romania' },
-    { value: 'Bulgaria', label: 'Bulgaria' },
-    { value: 'Hungary', label: 'Hungary' },
-    { value: 'Serbia', label: 'Serbia' },
-    { value: 'Moldova', label: 'Moldova' },
-    { value: 'Ukraine', label: 'Ukraine' },
-    { value: 'Germany', label: 'Germany' },
-    { value: 'France', label: 'France' },
-    { value: 'Italy', label: 'Italy' },
-    { value: 'Spain', label: 'Spain' },
-  ];
 
   return (
     <DashboardLayout>
@@ -329,50 +299,25 @@ export default function CreateClubPage() {
               <CardTitle>{t('common.location')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex-1">
-                  <LocationAutocomplete
-                    label={t('clubs.locationSearch', 'Search Location')}
-                    placeholder="Search for city or address..."
-                    onSelect={handleLocationSelect}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGetDeviceLocation}
-                    isLoading={isGettingLocation}
-                    className="whitespace-nowrap"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    {t('common.useMyLocation', 'Use My Location')}
-                  </Button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label={t('common.city')}
-                  placeholder="Bucharest"
-                  error={errors.city?.message}
-                  {...register('city')}
-                />
-                <Select
-                  label={t('common.country')}
-                  options={countryOptions}
-                  error={errors.country?.message}
-                  {...register('country')}
-                />
-              </div>
-              <Input
-                label={t('common.address')}
-                placeholder="Street address"
-                error={errors.address?.message}
-                {...register('address')}
+              <LocationAutocomplete
+                label={t('clubs.locationSearch', 'Search Location')}
+                placeholder="Search for city or address..."
+                value={locationQuery}
+                required
+                error={locationError}
+                onChange={(value) => {
+                  setLocationQuery(value);
+                  setValue('city', '');
+                  setValue('country', '');
+                  setValue('latitude', undefined);
+                  setValue('longitude', undefined);
+                }}
+                onSelect={handleLocationSelect}
               />
+              <input type="hidden" {...register('city')} />
+              <input type="hidden" {...register('country')} />
+              <input type="hidden" {...register('latitude')} />
+              <input type="hidden" {...register('longitude')} />
             </CardContent>
           </Card>
 

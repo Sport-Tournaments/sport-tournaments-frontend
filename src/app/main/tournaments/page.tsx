@@ -20,6 +20,21 @@ export default function TournamentsPage() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [geoFilters, setGeoFilters] = useState<GeolocationFilters>({});
+  const [ageCategory, setAgeCategory] = useState<string>('');
+  const [level, setLevel] = useState<string>('');
+  const [country, setCountry] = useState('');
+  const [gameSystem, setGameSystem] = useState('');
+  const [startDateFrom, setStartDateFrom] = useState('');
+  const [startDateTo, setStartDateTo] = useState('');
+  const [numberOfMatchesMin, setNumberOfMatchesMin] = useState('');
+  const [numberOfMatchesMax, setNumberOfMatchesMax] = useState('');
+  const [isPremium, setIsPremium] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [hasAvailableSpots, setHasAvailableSpots] = useState(false);
+  const [isPrivateFilter, setIsPrivateFilter] = useState('');
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('ASC');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const debouncedSearch = useDebounce(search, 300);
 
@@ -30,6 +45,22 @@ export default function TournamentsPage() {
     };
     if (debouncedSearch) params.search = debouncedSearch;
     if (status) params.status = status;
+    if (ageCategory) params.ageCategory = ageCategory;
+    if (level) params.level = level;
+    if (country) params.country = country;
+    if (gameSystem) params.gameSystem = gameSystem;
+    if (startDateFrom) params.startDateFrom = startDateFrom;
+    if (startDateTo) params.startDateTo = startDateTo;
+    if (numberOfMatchesMin) params.numberOfMatchesMin = Number(numberOfMatchesMin);
+    if (numberOfMatchesMax) params.numberOfMatchesMax = Number(numberOfMatchesMax);
+    if (isPremium) params.isPremium = true;
+    if (isFeatured) params.isFeatured = true;
+    if (hasAvailableSpots) params.hasAvailableSpots = true;
+    if (isPrivateFilter) params.isPrivate = isPrivateFilter === 'true';
+    if (sortBy) {
+      params.sortBy = sortBy;
+      params.sortOrder = sortOrder;
+    }
     
     // Add geolocation params
     if (geoFilters.userLatitude && geoFilters.userLongitude) {
@@ -69,7 +100,25 @@ export default function TournamentsPage() {
       hasMore: page < totalPages,
       totalPages,
     };
-  }, [debouncedSearch, status, geoFilters]);
+  }, [
+    debouncedSearch,
+    status,
+    geoFilters,
+    ageCategory,
+    level,
+    country,
+    gameSystem,
+    startDateFrom,
+    startDateTo,
+    numberOfMatchesMin,
+    numberOfMatchesMax,
+    isPremium,
+    isFeatured,
+    hasAvailableSpots,
+    isPrivateFilter,
+    sortBy,
+    sortOrder,
+  ]);
 
   const {
     items: tournaments,
@@ -81,7 +130,25 @@ export default function TournamentsPage() {
     retry,
   } = useInfiniteScroll<Tournament>({
     fetchData: fetchTournaments,
-    dependencies: [debouncedSearch, status, geoFilters],
+    dependencies: [
+      debouncedSearch,
+      status,
+      geoFilters,
+      ageCategory,
+      level,
+      country,
+      gameSystem,
+      startDateFrom,
+      startDateTo,
+      numberOfMatchesMin,
+      numberOfMatchesMax,
+      isPremium,
+      isFeatured,
+      hasAvailableSpots,
+      isPrivateFilter,
+      sortBy,
+      sortOrder,
+    ],
   });
 
   const statusOptions = [
@@ -92,6 +159,75 @@ export default function TournamentsPage() {
     { value: 'COMPLETED' as TournamentStatus, label: t('tournament.status.completed') },
     { value: 'CANCELLED' as TournamentStatus, label: t('tournament.status.cancelled') },
   ];
+
+  const ageCategoryOptions = [
+    { value: '', label: t('common.all') },
+    { value: 'U8', label: t('tournament.ageCategory.U8') },
+    { value: 'U10', label: t('tournament.ageCategory.U10') },
+    { value: 'U12', label: t('tournament.ageCategory.U12') },
+    { value: 'U14', label: t('tournament.ageCategory.U14') },
+    { value: 'U16', label: t('tournament.ageCategory.U16') },
+    { value: 'U18', label: t('tournament.ageCategory.U18') },
+    { value: 'U21', label: t('tournament.ageCategory.U21') },
+    { value: 'SENIOR', label: t('tournament.ageCategory.SENIOR') },
+    { value: 'VETERANS', label: t('tournament.ageCategory.VETERANS') },
+  ];
+
+  const levelOptions = [
+    { value: '', label: t('common.all') },
+    { value: 'I', label: t('tournament.level.I') },
+    { value: 'II', label: t('tournament.level.II') },
+    { value: 'III', label: t('tournament.level.III') },
+  ];
+
+  const gameSystemOptions = [
+    { value: '', label: t('common.all') },
+    { value: '5+1', label: '5+1' },
+    { value: '6+1', label: '6+1' },
+    { value: '7+1', label: '7+1' },
+    { value: '8+1', label: '8+1' },
+    { value: '9+1', label: '9+1' },
+    { value: '10+1', label: '10+1' },
+    { value: '11+1', label: '11+1' },
+  ];
+
+  const privateOptions = [
+    { value: '', label: t('tournament.filters.any') },
+    { value: 'false', label: t('tournament.filters.public') },
+    { value: 'true', label: t('tournament.filters.private') },
+  ];
+
+  const sortByOptions = [
+    { value: '', label: t('tournament.filters.sort.default') },
+    { value: 'startDate', label: t('tournament.filters.sort.startDate') },
+    { value: 'name', label: t('tournament.filters.sort.name') },
+    { value: 'participationFee', label: t('tournament.filters.sort.fee') },
+    { value: 'maxTeams', label: t('tournament.filters.sort.maxTeams') },
+    { value: 'createdAt', label: t('tournament.filters.sort.createdAt') },
+    { value: 'distance', label: t('tournament.filters.sort.distance') },
+  ];
+
+  const sortOrderOptions = [
+    { value: 'ASC', label: t('common.ascending') },
+    { value: 'DESC', label: t('common.descending') },
+  ];
+
+  const clearAdvancedFilters = () => {
+    setAgeCategory('');
+    setLevel('');
+    setCountry('');
+    setGameSystem('');
+    setStartDateFrom('');
+    setStartDateTo('');
+    setNumberOfMatchesMin('');
+    setNumberOfMatchesMax('');
+    setIsPremium(false);
+    setIsFeatured(false);
+    setHasAvailableSpots(false);
+    setIsPrivateFilter('');
+    setSortBy('');
+    setSortOrder('ASC');
+  };
 
   const getStatusBadge = (tournamentStatus: TournamentStatus) => {
     const variants: Partial<Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'>> = {
@@ -152,7 +288,134 @@ export default function TournamentsPage() {
             value={geoFilters}
             onChange={setGeoFilters}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAdvancedFilters((prev) => !prev)}
+          >
+            {showAdvancedFilters
+              ? t('tournament.filters.hide')
+              : t('tournament.filters.more')}
+          </Button>
         </div>
+
+        {showAdvancedFilters && (
+          <div className="mb-6 rounded-lg border border-gray-200 bg-white p-4">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {t('tournament.filters.title')}
+              </h3>
+              <Button variant="outline" size="sm" onClick={clearAdvancedFilters}>
+                {t('common.clear')}
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Select
+                label={t('tournament.ageCategory.label')}
+                options={ageCategoryOptions}
+                value={ageCategory}
+                onChange={(e) => setAgeCategory(e.target.value)}
+              />
+              <Select
+                label={t('tournament.level.label')}
+                options={levelOptions}
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+              />
+              <Input
+                label={t('common.country')}
+                placeholder={t('common.country')}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+              />
+              <Select
+                label={t('tournament.filters.gameSystem')}
+                options={gameSystemOptions}
+                value={gameSystem}
+                onChange={(e) => setGameSystem(e.target.value)}
+              />
+              <Input
+                label={t('tournament.filters.startDateFrom')}
+                type="date"
+                value={startDateFrom}
+                onChange={(e) => setStartDateFrom(e.target.value)}
+              />
+              <Input
+                label={t('tournament.filters.startDateTo')}
+                type="date"
+                value={startDateTo}
+                onChange={(e) => setStartDateTo(e.target.value)}
+              />
+              <Input
+                label={t('tournament.filters.matchesMin')}
+                type="number"
+                min={0}
+                value={numberOfMatchesMin}
+                onChange={(e) => setNumberOfMatchesMin(e.target.value)}
+              />
+              <Input
+                label={t('tournament.filters.matchesMax')}
+                type="number"
+                min={0}
+                value={numberOfMatchesMax}
+                onChange={(e) => setNumberOfMatchesMax(e.target.value)}
+              />
+              <Select
+                label={t('tournament.filters.privacy')}
+                options={privateOptions}
+                value={isPrivateFilter}
+                onChange={(e) => setIsPrivateFilter(e.target.value)}
+              />
+              <Select
+                label={t('common.sortBy')}
+                options={sortByOptions}
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              />
+              <Select
+                label={t('tournament.filters.sortOrder')}
+                options={sortOrderOptions}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as 'ASC' | 'DESC')}
+                disabled={!sortBy}
+              />
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-900">
+                  {t('tournament.filters.flags')}
+                </label>
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      checked={hasAvailableSpots}
+                      onChange={(e) => setHasAvailableSpots(e.target.checked)}
+                    />
+                    {t('tournament.filters.availableSpots')}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      checked={isPremium}
+                      onChange={(e) => setIsPremium(e.target.checked)}
+                    />
+                    {t('tournament.filters.premium')}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      checked={isFeatured}
+                      onChange={(e) => setIsFeatured(e.target.checked)}
+                    />
+                    {t('tournament.filters.featured')}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* View Toggle Buttons */}
         <div className="flex items-center gap-2 mb-6">

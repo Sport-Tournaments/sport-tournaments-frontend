@@ -567,6 +567,34 @@
       },
       "registration": {
         "title": "Înregistrare simplă",
+    "filters": {
+      "title": "Filtre",
+      "more": "Mai multe filtre",
+      "hide": "Ascunde filtre",
+      "any": "Oricare",
+      "public": "Public",
+      "private": "Privat",
+      "privacy": "Confidențialitate",
+      "gameSystem": "Sistem de joc",
+      "startDateFrom": "Data de început (de la)",
+      "startDateTo": "Data de început (până la)",
+      "matchesMin": "Meciuri minime",
+      "matchesMax": "Meciuri maxime",
+      "availableSpots": "Doar cu locuri disponibile",
+      "premium": "Turnee premium",
+      "featured": "Turnee recomandate",
+      "sortOrder": "Ordine sortare",
+      "flags": "Evidențieri",
+      "sort": {
+        "default": "Implicit",
+        "startDate": "Data de început",
+        "name": "Nume",
+        "fee": "Taxă de participare",
+        "maxTeams": "Echipe maxime",
+        "createdAt": "Data creării",
+        "distance": "Distanță"
+      }
+    },
         "description": "Proces de înregistrare simplificat pentru cluburi. Validare automată și gestionarea documentelor."
       },
       "groups": {
@@ -844,6 +872,34 @@
       "COMPLETED": "Finalizat",
       "cancelled": "Anulat",
       "CANCELLED": "Anulat"
+    },
+    "filters": {
+      "title": "Filtre",
+      "more": "Mai multe filtre",
+      "hide": "Ascunde filtre",
+      "any": "Oricare",
+      "public": "Public",
+      "private": "Privat",
+      "privacy": "Confidențialitate",
+      "gameSystem": "Sistem de joc",
+      "startDateFrom": "Data de început (de la)",
+      "startDateTo": "Data de început (până la)",
+      "matchesMin": "Meciuri minime",
+      "matchesMax": "Meciuri maxime",
+      "availableSpots": "Doar cu locuri disponibile",
+      "premium": "Turnee premium",
+      "featured": "Turnee recomandate",
+      "sortOrder": "Ordine sortare",
+      "flags": "Evidențieri",
+      "sort": {
+        "default": "Implicit",
+        "startDate": "Data de început",
+        "name": "Nume",
+        "fee": "Taxă de participare",
+        "maxTeams": "Echipe maxime",
+        "createdAt": "Data creării",
+        "distance": "Distanță"
+      }
     },
     "private": "Privat",
     "public": "Public",

@@ -326,6 +326,7 @@ export default function CreateTournamentPage() {
                 tournamentStartDate={watchedStartDate}
                 tournamentEndDate={watchedEndDate}
                 tournamentParticipationFee={watchedRegistrationFee}
+                tournamentLocation={watch('location')}
                 disabled={isLoading}
               />
             </CardContent>

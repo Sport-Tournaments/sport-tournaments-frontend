@@ -17,6 +17,8 @@ export interface LocationAutocompleteProps {
   onChange?: (location: string) => void;
   onSelect?: (location: LocationSuggestion) => void;
   onCoordinatesChange?: (lat: number, lng: number) => void;
+  displayMode?: 'city' | 'address';
+  searchContext?: string;
 }
 
 export default function LocationAutocomplete({
@@ -30,6 +32,8 @@ export default function LocationAutocomplete({
   onChange,
   onSelect,
   onCoordinatesChange,
+  displayMode = 'city',
+  searchContext,
 }: LocationAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
@@ -49,9 +53,20 @@ export default function LocationAutocomplete({
         return;
       }
 
+      const normalizedContext = searchContext?.trim();
+      const normalizedQuery = debouncedQuery.trim();
+      const hasContext = !!normalizedContext;
+      const contextIncluded = hasContext
+        ? normalizedQuery.toLowerCase().includes(normalizedContext!.toLowerCase())
+        : false;
+
+      const searchQuery = hasContext && !contextIncluded
+        ? `${normalizedQuery}, ${normalizedContext}`
+        : normalizedQuery;
+
       setIsLoading(true);
       try {
-        const response = await searchLocations(debouncedQuery);
+        const response = await searchLocations(searchQuery);
         if (response.success) {
           // Remove duplicates based on city + region + country
           const uniqueSuggestions = response.data.reduce((acc, current) => {
@@ -228,10 +243,12 @@ export default function LocationAutocomplete({
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
           {suggestions.map((suggestion, index) => {
-            // Format display as: village/city, county, country
-            const displayText = suggestion.region 
+            const cityLine = suggestion.region
               ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
               : `${suggestion.city}, ${suggestion.country}`;
+            const displayText = displayMode === 'address'
+              ? suggestion.formattedAddress
+              : cityLine;
             
             return (
               <li
@@ -245,6 +262,9 @@ export default function LocationAutocomplete({
                 onClick={() => handleSelect(suggestion)}
               >
                 <div className="font-medium">{displayText}</div>
+                {displayMode === 'address' && suggestion.city && (
+                  <div className="text-xs text-gray-500 mt-0.5">{cityLine}</div>
+                )}
               </li>
             );
           })}

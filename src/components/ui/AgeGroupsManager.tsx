@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import Input from './Input';
 import Select from './Select';
+import LocationAutocomplete from './LocationAutocomplete';
 import Modal from './Modal';
 import { cn } from '@/utils/helpers';
 
@@ -37,15 +38,11 @@ export interface AgeGroupFormData {
   startDate?: string;
   endDate?: string;
   locationId?: string;
+  locationAddress?: string;
   participationFee?: number;
   groupsCount?: number;
   teamsPerGroup?: number;
   numberOfMatches?: number;
-}
-
-interface LocationOption {
-  id: string;
-  venueName: string;
 }
 
 interface AgeGroupsManagerProps {
@@ -54,7 +51,7 @@ interface AgeGroupsManagerProps {
   tournamentStartDate?: string;
   tournamentEndDate?: string;
   tournamentParticipationFee?: number;
-  locations?: LocationOption[];
+  tournamentLocation?: string;
   disabled?: boolean;
   className?: string;
   mode?: 'create' | 'edit'; // New prop to control field visibility
@@ -75,7 +72,7 @@ export function AgeGroupsManager({
   tournamentStartDate,
   tournamentEndDate,
   tournamentParticipationFee,
-  locations = [],
+  tournamentLocation,
   disabled = false,
   className,
   mode = 'create', // Default to create mode for backward compatibility
@@ -373,20 +370,27 @@ export function AgeGroupsManager({
                       disabled={disabled}
                     />
 
-                    {/* Location Override */}
-                    {locations.length > 0 && (
-                      <Select
-                        label={t('tournaments.ageGroups.location', 'Game Location')}
-                        options={[
-                          { value: '', label: t('tournaments.ageGroups.useDefaultLocation', 'Use tournament default') },
-                          ...locations.map(loc => ({ value: loc.id, label: loc.venueName }))
-                        ]}
-                        value={ageGroup.locationId || ''}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { locationId: e.target.value || undefined })}
-                        disabled={disabled}
-                        helperText={t('tournaments.ageGroups.locationHelp', 'Override the default tournament venue for this category')}
-                      />
-                    )}
+                    {/* Location Override Address */}
+                    <LocationAutocomplete
+                      label={t('tournaments.ageGroups.locationAddress', 'Game Location Address')}
+                      placeholder={t('tournaments.ageGroups.locationAddressPlaceholder', 'Search for address...')}
+                      value={ageGroup.locationAddress || ''}
+                      onChange={(value) =>
+                        handleUpdateAgeGroup(index, {
+                          locationAddress: value || undefined,
+                          locationId: undefined,
+                        })
+                      }
+                      onSelect={(location) =>
+                        handleUpdateAgeGroup(index, {
+                          locationAddress: location.formattedAddress,
+                          locationId: undefined,
+                        })
+                      }
+                      helperText={t('tournaments.ageGroups.locationAddressHelp', 'Override the default tournament location for this category')}
+                      displayMode="address"
+                      searchContext={tournamentLocation}
+                    />
                   </div>
                 </div>
               )}

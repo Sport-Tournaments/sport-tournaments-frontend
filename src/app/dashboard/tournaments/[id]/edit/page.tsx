@@ -501,6 +501,7 @@ export default function EditTournamentPage() {
                 tournamentParticipationFee={0}
                 locations={tournament?.locations?.map(loc => ({ id: loc.id || '', venueName: loc.venueName })) || []}
                 disabled={saving}
+                mode="edit"
               />
             </CardContent>
           </Card>

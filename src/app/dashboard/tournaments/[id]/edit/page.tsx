@@ -35,14 +35,9 @@ const tournamentSchema = z.object({
   venue: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
-  maxTeams: z.number().min(2, 'Minimum 2 teams').max(128, 'Maximum 128 teams').optional(),
-  minTeams: z.number().min(2, 'Minimum 2 teams').optional(),
-  numberOfMatches: z.number().min(1, 'At least 1 match').max(20, 'Maximum 20 matches').optional(),
   ageCategory: z.enum(AGE_CATEGORIES).optional(),
   level: z.enum(TOURNAMENT_LEVELS).optional(),
   format: z.enum(TOURNAMENT_FORMATS).optional(),
-  entryFee: z.number().min(0, 'Entry fee cannot be negative').optional(),
-  prizeMoney: z.number().min(0, 'Prize money cannot be negative').optional(),
   rules: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   contactPhone: z.string().optional(),
@@ -159,14 +154,9 @@ export default function EditTournamentPage() {
         venue: (data as any).venue || '',
         city: (data as any).city || '',
         country: data.country || '',
-        maxTeams: data.maxTeams || undefined,
-        minTeams: (data as any).minTeams || undefined,
-        numberOfMatches: data.numberOfMatches || undefined,
         ageCategory: data.ageCategory || undefined,
         level: data.level || undefined,
         format: (data.format || undefined) as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE' | undefined,
-        entryFee: data.entryFee || 0,
-        prizeMoney: data.prizeMoney || 0,
         rules: data.rules || '',
         contactEmail: data.contactEmail || '',
         contactPhone: data.contactPhone || '',
@@ -198,12 +188,8 @@ export default function EditTournamentPage() {
         latitude: data.latitude,
         longitude: data.longitude,
         country: data.country,
-        maxTeams: data.maxTeams,
-        numberOfMatches: data.numberOfMatches, // Guaranteed matches per team
         ageCategory: data.ageCategory,
         level: data.level,
-        // Map entryFee to participationFee (backend field name)
-        participationFee: data.entryFee,
         // Include isPrivate field
         isPrivate: data.isPrivate,
         // Only include contactEmail if it's a valid email (not empty string)
@@ -498,69 +484,24 @@ export default function EditTournamentPage() {
             </CardContent>
           </Card>
 
-          {/* Teams & Format Settings */}
+          {/* Age Categories */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.formatSettings', 'Format & Settings')}</CardTitle>
+              <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
+              <p className="text-sm text-gray-500 mt-1">
+                {t('tournaments.ageGroups.description', 'Define specific settings for each age category. Each category can have its own dates, fees, and game format.')}
+              </p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Team Limits */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Input
-                  type="number"
-                  label={t('tournament.minTeams')}
-                  error={errors.minTeams?.message}
-                  {...register('minTeams', { valueAsNumber: true })}
-                />
-                <Input
-                  type="number"
-                  label={t('tournament.maxTeams')}
-                  error={errors.maxTeams?.message}
-                  {...register('maxTeams', { valueAsNumber: true })}
-                />
-                <Input
-                  type="number"
-                  label={t('tournament.numberOfMatches')}
-                  helperText={t('tournament.numberOfMatchesHelp')}
-                  error={errors.numberOfMatches?.message}
-                  {...register('numberOfMatches', { valueAsNumber: true })}
-                />
-              </div>
-
-              {/* Fees */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  type="number"
-                  label={t('tournament.entryFee')}
-                  error={errors.entryFee?.message}
-                  {...register('entryFee', { valueAsNumber: true })}
-                />
-                <Input
-                  type="number"
-                  label={t('tournament.prizeMoney')}
-                  error={errors.prizeMoney?.message}
-                  {...register('prizeMoney', { valueAsNumber: true })}
-                />
-              </div>
-
-              {/* Age Categories Divider */}
-              <div className="border-t border-gray-200 pt-4">
-                <h4 className="text-sm font-semibold text-gray-900 mb-1">
-                  {t('tournaments.ageGroups.title', 'Age Categories')}
-                </h4>
-                <p className="text-sm text-gray-500 mb-4">
-                  {t('tournaments.ageGroups.description', 'Define specific settings for each age category. Each category can have its own dates, fees, and game format.')}
-                </p>
-                <AgeGroupsManager
-                  ageGroups={ageGroups}
-                  onChange={setAgeGroups}
-                  tournamentStartDate={watch('startDate')}
-                  tournamentEndDate={watch('endDate')}
-                  tournamentParticipationFee={watch('entryFee')}
-                  locations={tournament?.locations?.map(loc => ({ id: loc.id || '', venueName: loc.venueName })) || []}
-                  disabled={saving}
-                />
-              </div>
+            <CardContent>
+              <AgeGroupsManager
+                ageGroups={ageGroups}
+                onChange={setAgeGroups}
+                tournamentStartDate={watch('startDate')}
+                tournamentEndDate={watch('endDate')}
+                tournamentParticipationFee={0}
+                locations={tournament?.locations?.map(loc => ({ id: loc.id || '', venueName: loc.venueName })) || []}
+                disabled={saving}
+              />
             </CardContent>
           </Card>
 

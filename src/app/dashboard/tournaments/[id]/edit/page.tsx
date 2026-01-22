@@ -129,12 +129,10 @@ export default function EditTournamentPage() {
           displayLabel: ag.displayLabel,
           gameSystem: ag.gameSystem,
           teamCount: ag.teamCount,
-          minTeams: ag.minTeams,
           startDate: ag.startDate,
           endDate: ag.endDate,
           locationId: ag.locationId,
           locationAddress: ag.locationAddress,
-          participationFee: ag.participationFee,
           groupsCount: ag.groupsCount,
           teamsPerGroup: ag.teamsPerGroup,
         })));
@@ -480,10 +478,8 @@ export default function EditTournamentPage() {
                 onChange={setAgeGroups}
                 tournamentStartDate={watch('startDate')}
                 tournamentEndDate={watch('endDate')}
-                tournamentParticipationFee={0}
                 tournamentLocation={watch('location')}
                 disabled={saving}
-                mode="edit"
               />
             </CardContent>
           </Card>

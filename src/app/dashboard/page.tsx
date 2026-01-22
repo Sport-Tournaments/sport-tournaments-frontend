@@ -31,46 +31,18 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       const [tournamentsRes, clubsRes, registrationsRes] = await Promise.all([
-        tournamentService.getTournaments({ pageSize: 5 }),
-        clubService.getClubs({ pageSize: 5 }),
+        tournamentService.getMyTournaments(),
+        clubService.getMyClubs(),
         registrationService.getMyRegistrations(),
       ]);
 
-      // Handle different response structures for tournaments
-      const tData = tournamentsRes.data as any;
-      let tournamentData: Tournament[] = [];
-      let tournamentTotal = 0;
-      if (Array.isArray(tData)) {
-        tournamentData = tData;
-        tournamentTotal = tData.length;
-      } else if (tData?.data?.items) {
-        tournamentData = tData.data.items;
-        tournamentTotal = tData.data.total || tData.data.items.length;
-      } else if (tData?.items) {
-        tournamentData = tData.items;
-        tournamentTotal = tData.total || tData.items.length;
-      } else if (tData?.data && Array.isArray(tData.data)) {
-        tournamentData = tData.data;
-        tournamentTotal = tData.total || tData.data.length;
-      }
+      const tData = (tournamentsRes as any)?.data;
+      const tournamentData: Tournament[] = Array.isArray(tData) ? tData : [];
+      const tournamentTotal = tournamentData.length;
 
-      // Handle different response structures for clubs
-      const cData = clubsRes.data as any;
-      let clubData: Club[] = [];
-      let clubTotal = 0;
-      if (Array.isArray(cData)) {
-        clubData = cData;
-        clubTotal = cData.length;
-      } else if (cData?.data?.items) {
-        clubData = cData.data.items;
-        clubTotal = cData.data.total || cData.data.items.length;
-      } else if (cData?.items) {
-        clubData = cData.items;
-        clubTotal = cData.total || cData.items.length;
-      } else if (cData?.data && Array.isArray(cData.data)) {
-        clubData = cData.data;
-        clubTotal = cData.total || cData.data.length;
-      }
+      const cData = (clubsRes as any)?.data;
+      const clubData: Club[] = Array.isArray(cData) ? cData : [];
+      const clubTotal = clubData.length;
 
       // Handle registrations response
       const rData = registrationsRes.data as any;
@@ -83,8 +55,8 @@ export default function DashboardPage() {
         registrationData = rData.items;
       }
 
-      setRecentTournaments(tournamentData);
-      setRecentClubs(clubData);
+      setRecentTournaments(tournamentData.slice(0, 5));
+      setRecentClubs(clubData.slice(0, 5));
       setRecentRegistrations(registrationData);
 
       setStats({

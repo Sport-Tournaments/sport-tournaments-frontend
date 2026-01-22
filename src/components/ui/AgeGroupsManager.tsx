@@ -32,17 +32,12 @@ export interface AgeGroupFormData {
   displayLabel?: string;
   gameSystem?: string;
   teamCount?: number;
-  minTeams?: number;
-  maxTeams?: number;
-  guaranteedMatches?: number;
   startDate?: string;
   endDate?: string;
   locationId?: string;
   locationAddress?: string;
-  participationFee?: number;
   groupsCount?: number;
   teamsPerGroup?: number;
-  numberOfMatches?: number;
 }
 
 interface AgeGroupsManagerProps {
@@ -50,20 +45,16 @@ interface AgeGroupsManagerProps {
   onChange: (ageGroups: AgeGroupFormData[]) => void;
   tournamentStartDate?: string;
   tournamentEndDate?: string;
-  tournamentParticipationFee?: number;
   tournamentLocation?: string;
   disabled?: boolean;
   className?: string;
-  mode?: 'create' | 'edit'; // New prop to control field visibility
 }
 
 const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
   gameSystem: '7+1',
   teamCount: 16,
-  minTeams: 4,
   teamsPerGroup: 4,
   groupsCount: 4,
-  numberOfMatches: 3,
 };
 
 export function AgeGroupsManager({
@@ -71,11 +62,9 @@ export function AgeGroupsManager({
   onChange,
   tournamentStartDate,
   tournamentEndDate,
-  tournamentParticipationFee,
   tournamentLocation,
   disabled = false,
   className,
-  mode = 'create', // Default to create mode for backward compatibility
 }: AgeGroupsManagerProps) {
   const { t } = useTranslation();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -91,13 +80,12 @@ export function AgeGroupsManager({
       birthYear: nextYear ? parseInt(nextYear.value) : currentYear - 10,
       startDate: tournamentStartDate,
       endDate: tournamentEndDate,
-      participationFee: tournamentParticipationFee,
     };
     
     const newAgeGroups = [...ageGroups, newAgeGroup];
     onChange(newAgeGroups);
     setExpandedIndex(newAgeGroups.length - 1);
-  }, [ageGroups, onChange, tournamentStartDate, tournamentEndDate, tournamentParticipationFee]);
+  }, [ageGroups, onChange, tournamentStartDate, tournamentEndDate]);
 
   const handleRemoveAgeGroup = useCallback((index: number) => {
     const newAgeGroups = ageGroups.filter((_, i) => i !== index);
@@ -267,20 +255,6 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.teamCountHelp', 'Expected number of teams')}
                     />
 
-                    {/* Min Teams - Only show in create mode */}
-                    {mode === 'create' && (
-                      <Input
-                        type="number"
-                        label={t('tournaments.ageGroups.minTeams', 'Min Teams')}
-                        value={ageGroup.minTeams || ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { minTeams: e.target.value ? parseInt(e.target.value) : undefined })}
-                        min={2}
-                        step={1}
-                        disabled={disabled}
-                        helperText={t('tournaments.ageGroups.minTeamsHelp', 'Minimum to run this category')}
-                      />
-                    )}
-
                     {/* Teams Per Group - moved here per issue #73 */}
                     <Input
                       type="number"
@@ -306,50 +280,6 @@ export function AgeGroupsManager({
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
                     />
-
-                    {/* Max Teams - Only show in create mode */}
-                    {mode === 'create' && (
-                      <Input
-                        type="number"
-                        label={t('tournaments.ageGroups.maxTeams', 'Max Teams')}
-                        value={ageGroup.maxTeams || ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { maxTeams: e.target.value ? parseInt(e.target.value) : undefined })}
-                        min={2}
-                        max={128}
-                        step={1}
-                        disabled={disabled}
-                        helperText={t('tournaments.ageGroups.maxTeamsHelp', 'Maximum teams allowed')}
-                      />
-                    )}
-
-                    {/* Guaranteed Matches - Only show in create mode */}
-                    {mode === 'create' && (
-                      <Input
-                        type="number"
-                        label={t('tournaments.ageGroups.guaranteedMatches', 'Guaranteed Matches')}
-                        value={ageGroup.guaranteedMatches || ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { guaranteedMatches: e.target.value ? parseInt(e.target.value) : undefined })}
-                        min={1}
-                        max={20}
-                        step={1}
-                        disabled={disabled}
-                        helperText={t('tournaments.ageGroups.guaranteedMatchesHelp', 'Minimum matches each team will play')}
-                      />
-                    )}
-
-                    {/* Participation Fee - Only show in create mode */}
-                    {mode === 'create' && (
-                      <Input
-                        type="number"
-                        label={t('tournaments.ageGroups.participationFee', 'Participation Fee')}
-                        value={ageGroup.participationFee ?? ''}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { participationFee: e.target.value ? parseFloat(e.target.value) : undefined })}
-                        min={0}
-                        step={0.01}
-                        disabled={disabled}
-                        helperText={t('tournaments.ageGroups.participationFeeHelp', 'Leave empty to use tournament default')}
-                      />
-                    )}
 
                     {/* Start Date */}
                     <Input

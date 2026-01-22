@@ -71,7 +71,6 @@ export default function CreateTournamentPage() {
   const isPrivate = watch('isPrivate');
   const watchedStartDate = watch('startDate');
   const watchedEndDate = watch('endDate');
-  const watchedRegistrationFee = 0; // Default value for age groups
 
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
@@ -325,7 +324,6 @@ export default function CreateTournamentPage() {
                 onChange={setAgeGroups}
                 tournamentStartDate={watchedStartDate}
                 tournamentEndDate={watchedEndDate}
-                tournamentParticipationFee={watchedRegistrationFee}
                 tournamentLocation={watch('location')}
                 disabled={isLoading}
               />

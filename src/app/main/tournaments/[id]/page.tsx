@@ -581,6 +581,9 @@ export default function TournamentDetailPage() {
                               <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
                               {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
                               {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
+                              {ag.locationAddress && (
+                                <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
+                              )}
                               {ag.participationFee !== undefined && ag.participationFee !== null && (
                                 <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
                               )}

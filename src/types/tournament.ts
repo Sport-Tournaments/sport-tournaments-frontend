@@ -26,6 +26,7 @@ export interface AgeGroup {
   startDate?: string;
   endDate?: string;
   locationId?: string;
+  locationAddress?: string;
   participationFee?: number;
   groupsCount?: number;
   teamsPerGroup?: number;

@@ -32,9 +32,6 @@ const tournamentSchema = z.object({
   location: z.string().min(3, 'Location is required'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
-  venue: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
   ageCategory: z.enum(AGE_CATEGORIES).optional(),
   level: z.enum(TOURNAMENT_LEVELS).optional(),
   format: z.enum(TOURNAMENT_FORMATS).optional(),
@@ -86,6 +83,7 @@ export default function EditTournamentPage() {
   });
 
   const isPrivate = watch('isPrivate');
+  const watchedLocation = watch('location');
 
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
@@ -151,9 +149,6 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        venue: (data as any).venue || '',
-        city: (data as any).city || '',
-        country: data.country || '',
         ageCategory: data.ageCategory || undefined,
         level: data.level || undefined,
         format: (data.format || undefined) as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE' | undefined,
@@ -187,7 +182,6 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        country: data.country,
         ageCategory: data.ageCategory,
         level: data.level,
         // Include isPrivate field
@@ -440,17 +434,16 @@ export default function EditTournamentPage() {
               <CardTitle>{t('tournament.location')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Input
-                label={t('tournament.location')}
-                error={errors.location?.message}
-                {...register('location')}
-              />
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <LocationAutocomplete
-                    label={t('tournament.locationSearch', 'Search for location')}
+                        label={t('tournament.location')}
                     placeholder="Search for city or venue..."
+                        value={watchedLocation || ''}
+                        onChange={(value) => setValue('location', value, { shouldValidate: true })}
                     onSelect={handleLocationSelect}
+                        error={errors.location?.message}
+                        required
                   />
                 </div>
                 <div className="flex items-end">
@@ -468,23 +461,6 @@ export default function EditTournamentPage() {
                     {t('common.useMyLocation', 'Use My Location')}
                   </Button>
                 </div>
-              </div>
-              <Input
-                label={t('tournament.venue')}
-                error={errors.venue?.message}
-                {...register('venue')}
-              />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label={t('common.city')}
-                  error={errors.city?.message}
-                  {...register('city')}
-                />
-                <Input
-                  label={t('common.country')}
-                  error={errors.country?.message}
-                  {...register('country')}
-                />
               </div>
             </CardContent>
           </Card>

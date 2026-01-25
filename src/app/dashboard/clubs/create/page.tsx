@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Alert, FileUpload, FilePreview, ColorPicker, ColorCombinationPicker, LocationAutocomplete } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Alert, FileUpload, FilePreview, ColorPicker, ColorCombinationPicker, LocationAutocomplete, Modal } from '@/components/ui';
 import { clubService } from '@/services';
 import type { LocationSuggestion } from '@/types';
 
@@ -65,6 +65,9 @@ export default function CreateClubPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [locationQuery, setLocationQuery] = useState('');
   const errorRef = useRef<HTMLDivElement>(null);
+  const initialLocationRef = useRef('');
+  const pendingNavigationRef = useRef<null | (() => void)>(null);
+  const [leaveModalOpen, setLeaveModalOpen] = useState(false);
 
   // Auto-scroll to error message when error is set
   useEffect(() => {
@@ -83,7 +86,7 @@ export default function CreateClubPage() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ClubFormData>({
     resolver: zodResolver(clubSchema),
     defaultValues: {
@@ -95,6 +98,72 @@ export default function CreateClubPage() {
   const primaryColor = watch('primaryColor');
   const secondaryColor = watch('secondaryColor');
   const locationError = errors.city?.message || errors.country?.message;
+  const hasUnsavedLocation = useMemo(() => {
+    return locationQuery.trim().length > 0 && locationQuery !== initialLocationRef.current;
+  }, [locationQuery]);
+  const hasUnsavedLogo = useMemo(() => !!logoFile, [logoFile]);
+  const hasUnsavedChanges = isDirty || hasUnsavedLocation || hasUnsavedLogo;
+
+  const getLeaveMessage = useCallback(
+    () => t('common.unsavedChangesPrompt', 'You have unsaved changes. Are you sure you want to leave this page?'),
+    [t]
+  );
+
+  const openLeaveModal = useCallback((action: () => void) => {
+    pendingNavigationRef.current = action;
+    setLeaveModalOpen(true);
+  }, []);
+
+  const closeLeaveModal = useCallback(() => {
+    setLeaveModalOpen(false);
+    pendingNavigationRef.current = null;
+  }, []);
+
+  const confirmLeave = useCallback(() => {
+    setLeaveModalOpen(false);
+    const action = pendingNavigationRef.current;
+    pendingNavigationRef.current = null;
+    action?.();
+  }, []);
+
+  const shouldWarnOnLeave = hasUnsavedChanges && !loading;
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!shouldWarnOnLeave) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [shouldWarnOnLeave]);
+
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!shouldWarnOnLeave) return;
+      const target = event.target as HTMLElement | null;
+      const anchor = target?.closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+      if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      openLeaveModal(() => {
+        if (href.startsWith('http')) {
+          window.location.href = href;
+          return;
+        }
+        router.push(href);
+      });
+    };
+
+    document.addEventListener('click', handleDocumentClick, true);
+    return () => document.removeEventListener('click', handleDocumentClick, true);
+  }, [shouldWarnOnLeave, getLeaveMessage]);
 
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
@@ -154,7 +223,13 @@ export default function CreateClubPage() {
         {/* Back button at top */}
         <div className="mb-2">
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (!shouldWarnOnLeave) {
+                router.back();
+                return;
+              }
+              openLeaveModal(() => router.back());
+            }}
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors rounded-md hover:bg-gray-100"
           >
             <svg
@@ -193,7 +268,7 @@ export default function CreateClubPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24">
           {/* Logo */}
           <Card>
             <CardHeader>
@@ -354,16 +429,49 @@ export default function CreateClubPage() {
           </Card>
 
           {/* Actions */}
-          <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+          <div className="sticky bottom-0 z-10 -mx-4 sm:mx-0 bg-white/95 backdrop-blur border-t border-gray-200 py-4 px-4 sm:px-0">
+            <div className="flex justify-end gap-4 max-w-3xl mx-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                if (!shouldWarnOnLeave) {
+                  router.back();
+                  return;
+                }
+                openLeaveModal(() => router.back());
+              }}
+            >
               {t('common.cancel')}
             </Button>
             <Button type="submit" variant="primary" isLoading={loading}>
               {t('clubs.create')}
             </Button>
+            </div>
           </div>
         </form>
       </div>
+      <Modal
+        isOpen={leaveModalOpen}
+        onClose={closeLeaveModal}
+        title={t('common.unsavedChangesTitle', 'Unsaved changes')}
+        description={getLeaveMessage()}
+        size="sm"
+        footer={(
+          <>
+            <Button type="button" variant="danger" onClick={confirmLeave}>
+              {t('common.leave', 'Leave')}
+            </Button>
+            <Button type="button" variant="outline" onClick={closeLeaveModal}>
+              {t('common.stay', 'Stay')}
+            </Button>
+          </>
+        )}
+      >
+        <div className="text-sm text-gray-600">
+          {t('common.unsavedChangesDetail', 'Changes you made may not be saved.')}
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

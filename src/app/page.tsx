@@ -1,12 +1,30 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
 import { Button, Card, CardContent } from '@/components/ui';
+import { useAuthStore } from '@/store';
 
 export default function HomePage() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  const handleFeatureNavigation = (targetPath: string) => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      const callbackUrl = encodeURIComponent(targetPath);
+      const backUrl = encodeURIComponent(pathname || '/');
+      router.push(`/auth/login?callbackUrl=${callbackUrl}&backUrl=${backUrl}`);
+      return;
+    }
+
+    router.push(targetPath);
+  };
 
   const features = [
     {
@@ -17,6 +35,7 @@ export default function HomePage() {
       ),
       title: t('home.features.tournaments.title'),
       description: t('home.features.tournaments.description'),
+      href: '/dashboard/tournaments',
     },
     {
       icon: (
@@ -26,6 +45,7 @@ export default function HomePage() {
       ),
       title: t('home.features.clubs.title'),
       description: t('home.features.clubs.description'),
+      href: '/dashboard/clubs',
     },
     {
       icon: (
@@ -35,6 +55,7 @@ export default function HomePage() {
       ),
       title: t('home.features.registration.title'),
       description: t('home.features.registration.description'),
+      href: '/dashboard/registrations',
     },
     {
       icon: (
@@ -44,6 +65,7 @@ export default function HomePage() {
       ),
       title: t('home.features.groups.title'),
       description: t('home.features.groups.description'),
+      href: '/dashboard/groups',
     },
     {
       icon: (
@@ -53,6 +75,7 @@ export default function HomePage() {
       ),
       title: t('home.features.payments.title'),
       description: t('home.features.payments.description'),
+      href: '/dashboard/payments',
     },
     {
       icon: (
@@ -62,6 +85,7 @@ export default function HomePage() {
       ),
       title: t('home.features.notifications.title'),
       description: t('home.features.notifications.description'),
+      href: '/dashboard/notifications',
     },
   ];
 
@@ -136,7 +160,22 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} variant="hover" className="border border-slate-200 hover:border-teal-300 bg-white">
+              <Card
+                key={index}
+                variant="hover"
+                role="button"
+                tabIndex={0}
+                aria-label={feature.title}
+                aria-disabled={isLoading}
+                className="border border-slate-200 hover:border-teal-300 bg-white"
+                onClick={() => handleFeatureNavigation(feature.href)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleFeatureNavigation(feature.href);
+                  }
+                }}
+              >
                 <CardContent className="p-6">
                   <div className="w-14 h-14 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4">
                     {feature.icon}

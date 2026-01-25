@@ -70,6 +70,19 @@ export default function DashboardTournamentsPage() {
     return variants[status] || 'default';
   };
 
+  const getMaxTeamsDisplay = (tournament: Tournament) => {
+    const derivedMaxTeams = tournament.maxTeams ?? tournament.ageGroups?.reduce((total, ageGroup) => {
+      const ageGroupMaxTeams = ageGroup.teamCount
+        ?? ageGroup.maxTeams
+        ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
+          ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+          : 0);
+      return total + (ageGroupMaxTeams || 0);
+    }, 0);
+
+    return derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -152,7 +165,7 @@ export default function DashboardTournamentsPage() {
                             {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
-                            {tournament.registeredTeams || 0} / {tournament.maxTeams} {t('common.teams')}
+                            {tournament.registeredTeams ?? 0} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}
                           </div>
                         </div>
                       </div>

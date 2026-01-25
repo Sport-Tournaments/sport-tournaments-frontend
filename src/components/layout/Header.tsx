@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore, useUIStore } from '@/store';
@@ -24,6 +24,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await logout();
+    router.push('/');
     setShowUserMenu(false);
   };
 

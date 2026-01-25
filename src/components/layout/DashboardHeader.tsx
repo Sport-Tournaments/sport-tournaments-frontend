@@ -1,17 +1,20 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore, useUIStore } from '@/store';
 import { Avatar, Dropdown } from '@/components/ui';
 
 export default function DashboardHeader() {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const { user, logout } = useAuthStore();
   const { toggleSidebar } = useUIStore();
 
   const handleLogout = async () => {
     await logout();
+    router.push('/');
   };
 
   const changeLanguage = (lang: string) => {

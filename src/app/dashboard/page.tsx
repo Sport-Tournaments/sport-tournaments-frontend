@@ -41,7 +41,16 @@ export default function DashboardPage() {
       const tournamentTotal = tournamentData.length;
 
       const cData = (clubsRes as any)?.data;
-      const clubData: Club[] = Array.isArray(cData) ? cData : [];
+      let clubData: Club[] = [];
+      if (Array.isArray(cData)) {
+        clubData = cData;
+      } else if (cData?.data?.items && Array.isArray(cData.data.items)) {
+        clubData = cData.data.items;
+      } else if (cData?.items && Array.isArray(cData.items)) {
+        clubData = cData.items;
+      } else if (cData?.data && Array.isArray(cData.data)) {
+        clubData = cData.data;
+      }
       const clubTotal = clubData.length;
 
       // Handle registrations response
@@ -97,8 +106,9 @@ export default function DashboardPage() {
 
         {/* Stats grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
+          <Link href="/dashboard/tournaments" className="block">
+            <Card variant="hover" className="h-full">
+              <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-primary/10 rounded-lg">
                   <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,11 +120,13 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-500">{t('dashboard.tournaments')}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card>
-            <CardContent className="p-6">
+          <Link href="/dashboard/clubs" className="block">
+            <Card variant="hover" className="h-full">
+              <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-100 rounded-lg">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,11 +138,13 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-500">{t('dashboard.clubs')}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card>
-            <CardContent className="p-6">
+          <Link href="/dashboard/registrations" className="block">
+            <Card variant="hover" className="h-full">
+              <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-green-100 rounded-lg">
                   <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,11 +156,13 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-500">{t('dashboard.registrations')}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card>
-            <CardContent className="p-6">
+          <Link href="/dashboard/registrations" className="block">
+            <Card variant="hover" className="h-full">
+              <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-yellow-100 rounded-lg">
                   <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,8 +174,9 @@ export default function DashboardPage() {
                   <p className="text-sm text-gray-500">{t('dashboard.pending')}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent items */}

@@ -3,10 +3,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, Alert, Loading, Input } from '@/components/ui';
-import { DocumentUpload } from './DocumentUpload';
 import { registrationService, clubService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
-import type { Club, Tournament, Registration, RegistrationDocument, DocumentType, ConfirmFitnessDto } from '@/types';
+import type { Club, Tournament, Registration } from '@/types';
 import { cn } from '@/utils/helpers';
 
 interface RegistrationWizardProps {
@@ -16,9 +15,9 @@ interface RegistrationWizardProps {
   onSuccess?: (registration: Registration) => void;
 }
 
-type WizardStep = 'club' | 'documents' | 'fitness' | 'review';
+type WizardStep = 'club' | 'fitness' | 'review';
 
-const STEPS: WizardStep[] = ['club', 'documents', 'fitness', 'review'];
+const STEPS: WizardStep[] = ['club', 'fitness', 'review'];
 
 export function RegistrationWizard({
   tournament,
@@ -41,7 +40,6 @@ export function RegistrationWizard({
   
   // Registration state
   const [registration, setRegistration] = useState<Registration | null>(null);
-  const [documents, setDocuments] = useState<RegistrationDocument[]>([]);
   
   // Fitness step
   const [fitnessConfirmed, setFitnessConfirmed] = useState(false);
@@ -97,7 +95,6 @@ export function RegistrationWizard({
         setCurrentStep('club');
         setSelectedClub(null);
         setRegistration(null);
-        setDocuments([]);
         setFitnessConfirmed(false);
         setFitnessNotes('');
         setCoachName('');
@@ -127,9 +124,8 @@ export function RegistrationWizard({
   const getStepTitle = (step: WizardStep): string => {
     const titles: Record<WizardStep, string> = {
       club: t('registration.wizard.step1', 'Club Selection'),
-      documents: t('registration.wizard.step2', 'Medical Documents'),
-      fitness: t('registration.wizard.step3', 'Fitness Confirmation'),
-      review: t('registration.wizard.step4', 'Review & Submit'),
+      fitness: t('registration.wizard.step2', 'Fitness Confirmation'),
+      review: t('registration.wizard.step3', 'Review & Submit'),
     };
     return titles[step];
   };
@@ -138,9 +134,6 @@ export function RegistrationWizard({
     switch (currentStep) {
       case 'club':
         return !!selectedClub;
-      case 'documents':
-        // Medical declaration is required
-        return documents.some(d => d.documentType === 'MEDICAL_DECLARATION');
       case 'fitness':
         return fitnessConfirmed;
       case 'review':
@@ -167,7 +160,7 @@ export function RegistrationWizard({
         
         if (response.data) {
           setRegistration(response.data);
-          setCurrentStep('documents');
+          setCurrentStep('fitness');
         }
       } catch (err: any) {
         console.error('Registration failed:', err);
@@ -179,11 +172,6 @@ export function RegistrationWizard({
       } finally {
         setLoading(false);
       }
-      return;
-    }
-    
-    if (currentStep === 'documents') {
-      setCurrentStep('fitness');
       return;
     }
     
@@ -218,14 +206,6 @@ export function RegistrationWizard({
       onSuccess?.(registration);
     }
     onClose();
-  };
-
-  const handleDocumentUpload = (document: RegistrationDocument) => {
-    setDocuments(prev => [...prev.filter(d => d.documentType !== document.documentType), document]);
-  };
-
-  const handleDocumentDelete = (documentId: string) => {
-    setDocuments(prev => prev.filter(d => d.id !== documentId));
   };
 
   const renderStepContent = () => {
@@ -324,47 +304,6 @@ export function RegistrationWizard({
           </div>
         );
 
-      case 'documents':
-        return (
-          <div className="space-y-6">
-            <p className="text-gray-600">
-              {t('registration.wizard.documentsDesc', 'Upload the required documents. Medical declaration is mandatory for all participants.')}
-            </p>
-
-            <Alert variant="info">
-              {t('registration.wizard.medicalInfo', 'Medical declarations are typically required to be renewed every 6 months. Make sure your document is current.')}
-            </Alert>
-
-            {registration && (
-              <div className="space-y-6">
-                <DocumentUpload
-                  registrationId={registration.id}
-                  documentType={'MEDICAL_DECLARATION' as DocumentType}
-                  existingDocuments={documents}
-                  onUploadSuccess={handleDocumentUpload}
-                  onDeleteSuccess={handleDocumentDelete}
-                />
-
-                <DocumentUpload
-                  registrationId={registration.id}
-                  documentType={'PARENTAL_CONSENT' as DocumentType}
-                  existingDocuments={documents}
-                  onUploadSuccess={handleDocumentUpload}
-                  onDeleteSuccess={handleDocumentDelete}
-                />
-
-                <DocumentUpload
-                  registrationId={registration.id}
-                  documentType={'INSURANCE' as DocumentType}
-                  existingDocuments={documents}
-                  onUploadSuccess={handleDocumentUpload}
-                  onDeleteSuccess={handleDocumentDelete}
-                />
-              </div>
-            )}
-          </div>
-        );
-
       case 'fitness':
         return (
           <div className="space-y-6">
@@ -433,12 +372,6 @@ export function RegistrationWizard({
                     <span className="font-medium text-gray-900">{coachName}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-gray-500">{t('registration.wizard.documents', 'Documents')}</span>
-                  <span className="font-medium text-gray-900">
-                    {documents.length} {t('registration.wizard.uploaded', 'uploaded')}
-                  </span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">{t('registration.wizard.fitness', 'Fitness')}</span>
                   <span className="font-medium text-green-600">

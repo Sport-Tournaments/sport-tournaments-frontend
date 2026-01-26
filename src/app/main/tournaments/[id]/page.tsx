@@ -154,6 +154,11 @@ export default function TournamentDetailPage() {
       return;
     }
 
+    if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+      setShowRegistrationWizard(true);
+      return;
+    }
+
     // Fetch user's clubs if not already loaded
     if (userClubs.length === 0) {
       setLoadingClubs(true);
@@ -272,16 +277,31 @@ export default function TournamentDetailPage() {
     );
   }
 
-  const derivedMaxTeams = tournament.maxTeams ?? tournament.ageGroups?.reduce((total, ageGroup) => {
-    const ageGroupMaxTeams = ageGroup.teamCount
-      ?? ageGroup.maxTeams
-      ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
-        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
-        : 0);
-    return total + (ageGroupMaxTeams || 0);
-  }, 0);
+  const ageGroupTotals = tournament.ageGroups?.reduce(
+    (acc, ageGroup) => {
+      const ageGroupMaxTeams =
+        ageGroup.teamCount ??
+        ageGroup.maxTeams ??
+        (ageGroup.teamsPerGroup && ageGroup.groupsCount
+          ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+          : 0);
+      const currentTeams = ageGroup.currentTeams ?? 0;
+      return {
+        maxTeams: acc.maxTeams + (ageGroupMaxTeams || 0),
+        currentTeams: acc.currentTeams + currentTeams,
+      };
+    },
+    { maxTeams: 0, currentTeams: 0 }
+  );
+
+  const derivedMaxTeams = tournament.ageGroups && tournament.ageGroups.length > 0
+    ? ageGroupTotals?.maxTeams
+    : tournament.maxTeams;
   const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
-  const spotsLeft = Math.max(maxTeamsDisplay - registrations.length, 0);
+  const currentTeamsDisplay = tournament.ageGroups && tournament.ageGroups.length > 0
+    ? ageGroupTotals?.currentTeams || 0
+    : registrations.length;
+  const spotsLeft = Math.max(maxTeamsDisplay - currentTeamsDisplay, 0);
 
   const tournamentLatitude = typeof tournament.latitude === 'string'
     ? parseFloat(tournament.latitude)
@@ -340,7 +360,7 @@ export default function TournamentDetailPage() {
                 )}
                 <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                   <span className="text-gray-600">{t('tournament.teamsRegistered', 'Teams Registered')}</span>
-                  <span className="font-medium">{registrations.length} / {maxTeamsDisplay}</span>
+                  <span className="font-medium">{currentTeamsDisplay} / {maxTeamsDisplay}</span>
                 </div>
               </div>
             </CardContent>
@@ -379,6 +399,13 @@ export default function TournamentDetailPage() {
                   {tournament.ageGroups.map((ag, index) => {
                     const currentYear = new Date().getFullYear();
                     const displayLabel = ag.displayLabel || `U${currentYear - ag.birthYear}`;
+                    const ageGroupMaxTeams =
+                      ag.teamCount ??
+                      ag.maxTeams ??
+                      (ag.teamsPerGroup && ag.groupsCount
+                        ? ag.teamsPerGroup * ag.groupsCount
+                        : 0);
+                    const ageGroupCurrentTeams = ag.currentTeams ?? 0;
                     return (
                       <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
                         <div className="flex items-center justify-between mb-1">
@@ -398,7 +425,11 @@ export default function TournamentDetailPage() {
                           {ag.format && (
                             <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
                           )}
-                          {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
+                          {ageGroupMaxTeams > 0 && (
+                            <span>
+                              {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {ageGroupMaxTeams}
+                            </span>
+                          )}
                           {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
                           {ag.locationAddress && (
                             <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
@@ -617,7 +648,7 @@ export default function TournamentDetailPage() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  {registrations.length} / {maxTeamsDisplay} {t('common.teams')}
+                  {currentTeamsDisplay} / {maxTeamsDisplay} {t('common.teams')}
                 </div>
               </div>
               </div>

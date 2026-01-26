@@ -37,6 +37,7 @@ export function RegistrationWizard({
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [loadingClubs, setLoadingClubs] = useState(false);
+  const [selectedAgeGroupId, setSelectedAgeGroupId] = useState<string>('');
   
   // Registration state
   const [registration, setRegistration] = useState<Registration | null>(null);
@@ -94,6 +95,7 @@ export function RegistrationWizard({
       setTimeout(() => {
         setCurrentStep('club');
         setSelectedClub(null);
+        setSelectedAgeGroupId('');
         setRegistration(null);
         setFitnessConfirmed(false);
         setFitnessNotes('');
@@ -133,6 +135,9 @@ export function RegistrationWizard({
   const canProceed = (): boolean => {
     switch (currentStep) {
       case 'club':
+        if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+          return !!selectedClub && !!selectedAgeGroupId;
+        }
         return !!selectedClub;
       case 'fitness':
         return fitnessConfirmed;
@@ -152,6 +157,7 @@ export function RegistrationWizard({
       try {
         const response = await registrationService.registerForTournament(tournament.id, {
           clubId: selectedClub.id,
+          ageGroupId: selectedAgeGroupId || undefined,
           coachName: coachName || undefined,
           coachPhone: coachPhone || undefined,
           numberOfPlayers: numberOfPlayers || undefined,
@@ -216,6 +222,67 @@ export function RegistrationWizard({
             <p className="text-gray-600">
               {t('registration.wizard.selectClubDesc', 'Select the club you want to register for this tournament and provide team details.')}
             </p>
+
+            {tournament.ageGroups && tournament.ageGroups.length > 0 && (
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-900">
+                  {t('registration.wizard.ageGroup', 'Age Category')} *
+                </label>
+                <div className="space-y-2">
+                  {tournament.ageGroups.map((ageGroup) => {
+                    const currentYear = new Date().getFullYear();
+                    const displayLabel = ageGroup.displayLabel || `U${currentYear - ageGroup.birthYear}`;
+                    const maxTeams =
+                      ageGroup.maxTeams ||
+                      ageGroup.teamCount ||
+                      (ageGroup.teamsPerGroup && ageGroup.groupsCount
+                        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+                        : 0);
+                    const currentTeams = ageGroup.currentTeams || 0;
+                    const spotsLeft = maxTeams > 0 ? Math.max(maxTeams - currentTeams, 0) : null;
+                    const isFull = maxTeams > 0 && spotsLeft === 0;
+
+                    return (
+                      <label
+                        key={ageGroup.id || displayLabel}
+                        className={cn(
+                          'flex items-center justify-between gap-4 p-4 border rounded-lg cursor-pointer transition-colors',
+                          selectedAgeGroupId === ageGroup.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-gray-200 hover:border-gray-300',
+                          isFull && 'opacity-60 cursor-not-allowed'
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="ageGroup"
+                            value={ageGroup.id}
+                            checked={selectedAgeGroupId === ageGroup.id}
+                            onChange={() => !isFull && setSelectedAgeGroupId(ageGroup.id || '')}
+                            className="w-4 h-4 text-primary"
+                            disabled={isFull}
+                          />
+                          <div>
+                            <p className="font-medium text-gray-900">{displayLabel}</p>
+                            <p className="text-xs text-gray-500">
+                              {t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ageGroup.birthYear}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {maxTeams > 0 ? (
+                            <span>{currentTeams} / {maxTeams}</span>
+                          ) : (
+                            <span>{t('tournament.unlimited', 'Unlimited')}</span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {loadingClubs ? (
               <div className="flex justify-center py-8">

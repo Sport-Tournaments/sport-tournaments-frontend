@@ -227,7 +227,7 @@ export default function AdminTournamentsPage() {
                             {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
                           </p>
                           <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
-                            <span>{formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</span>
+                            <span>{t('tournament.startDate')}: {formatDate(tournament.startDate)}</span>
                             <span>{tournament.registeredTeams || 0} / {tournament.maxTeams} teams</span>
                             {(tournament as any).organizer && (
                               <span>by {(tournament as any).organizer.firstName} {(tournament as any).organizer.lastName}</span>

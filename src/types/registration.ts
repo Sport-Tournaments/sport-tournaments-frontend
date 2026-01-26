@@ -7,6 +7,19 @@ import type { PaymentStatus } from './payment';
 export interface Registration {
   id: string;
   tournamentId: string;
+  ageGroupId?: string;
+  ageGroup?: {
+    id: string;
+    birthYear: number;
+    displayLabel?: string;
+    ageCategory?: string;
+    level?: string;
+    format?: string;
+    gameSystem?: string;
+    teamCount?: number;
+    maxTeams?: number;
+    currentTeams?: number;
+  };
   tournament?: {
     id: string;
     name: string;
@@ -47,6 +60,7 @@ export interface Registration {
 
 export interface CreateRegistrationDto {
   clubId: string;
+  ageGroupId?: string;
   numberOfPlayers?: number;
   coachName?: string;
   coachPhone?: string;
@@ -55,6 +69,7 @@ export interface CreateRegistrationDto {
 }
 
 export interface UpdateRegistrationDto {
+  ageGroupId?: string;
   numberOfPlayers?: number;
   coachName?: string;
   coachPhone?: string;

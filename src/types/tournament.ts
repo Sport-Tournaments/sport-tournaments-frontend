@@ -25,6 +25,7 @@ export interface AgeGroup {
   teamCount?: number;
   minTeams?: number;
   maxTeams?: number;
+  currentTeams?: number;
   guaranteedMatches?: number;
   startDate?: string;
   endDate?: string;

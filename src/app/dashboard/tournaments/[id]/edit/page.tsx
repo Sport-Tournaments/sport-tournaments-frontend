@@ -210,6 +210,7 @@ export default function EditTournamentPage() {
           format: (ag as any).format,
           gameSystem: ag.gameSystem,
           teamCount: ag.teamCount,
+          participationFee: (ag as any).participationFee,
           startDate: ag.startDate,
           endDate: ag.endDate,
           locationId: ag.locationId,
@@ -293,7 +294,7 @@ export default function EditTournamentPage() {
         try {
           // Strip out fields that are not allowed in UpdateAgeGroupDto
           const sanitizedAgeGroups = ageGroups.map(ag => {
-            const { minTeams, maxTeams, numberOfMatches, guaranteedMatches, participationFee, ...allowed } = ag as any;
+            const { minTeams, maxTeams, numberOfMatches, guaranteedMatches, ...allowed } = ag as any;
             return allowed;
           });
           await tournamentService.updateTournamentAgeGroups(params.id as string, sanitizedAgeGroups);

@@ -40,6 +40,7 @@ export interface AgeGroupFormData {
   format?: TournamentFormat;
   gameSystem?: string;
   teamCount?: number;
+  participationFee?: number;
   startDate?: string;
   endDate?: string;
   locationId?: string;
@@ -341,6 +342,18 @@ export function AgeGroupsManager({
                       step={1}
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
+                    />
+
+                    {/* Participation Fee */}
+                    <Input
+                      type="number"
+                      label={t('tournaments.ageGroups.participationFee', 'Participation Fee')}
+                      value={ageGroup.participationFee ?? ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { participationFee: e.target.value ? parseFloat(e.target.value) : undefined })}
+                      min={0}
+                      step={1}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.participationFeeHelp', 'Leave empty to use tournament default')}
                     />
 
                     {/* Start Date */}

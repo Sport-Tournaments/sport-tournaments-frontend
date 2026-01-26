@@ -154,7 +154,7 @@ export default function TournamentDetailPage() {
       return;
     }
 
-    if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+    if (tournament?.ageGroups && tournament.ageGroups.length > 0) {
       setShowRegistrationWizard(true);
       return;
     }

@@ -82,17 +82,17 @@ export default function Modal({
   if (!isOpen) return null;
 
   return (
-    <div className="relative z-50">
+    <div className="fixed inset-0 z-[1200]">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-white/80 transition-opacity"
+        className="fixed inset-0 bg-white/80 transition-opacity z-[1200]"
         aria-hidden="true"
       />
       
       {/* Modal container */}
       <div 
         ref={overlayRef}
-        className="fixed inset-0 z-10 w-screen overflow-y-auto"
+        className="fixed inset-0 z-[1210] w-screen overflow-y-auto"
         onClick={handleOverlayClick}
       >
         <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">

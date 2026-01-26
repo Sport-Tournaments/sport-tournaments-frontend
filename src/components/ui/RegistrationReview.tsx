@@ -7,7 +7,8 @@ import Badge from './Badge';
 import Modal from './Modal';
 import Textarea from './Textarea';
 import {
-  approveRegistration,
+  approveRegistrationWithPayment,
+  approveRegistrationWithoutPayment,
   rejectRegistration,
   bulkApproveRegistrations,
   bulkRejectRegistrations,
@@ -26,26 +27,43 @@ export function RegistrationReviewCard({
   tournamentId,
   onUpdate,
 }: RegistrationReviewProps) {
-  const [isApproving, setIsApproving] = useState(false);
+  const [isApprovingPaid, setIsApprovingPaid] = useState(false);
+  const [isApprovingUnpaid, setIsApprovingUnpaid] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
   const { showToast } = useToast();
 
-  const handleApprove = useCallback(async () => {
-    setIsApproving(true);
+  const handleApproveWithPayment = useCallback(async () => {
+    setIsApprovingPaid(true);
     try {
-      const response = await approveRegistration(registration.id, { reviewNotes });
+      const response = await approveRegistrationWithPayment(registration.id, { reviewNotes });
       if (response.success) {
-        showToast('success', 'Registration approved');
+        showToast('success', 'Registration approved with payment');
         onUpdate?.(response.data);
       }
     } catch (error) {
-      console.error('Error approving registration:', error);
-      showToast('error', 'Failed to approve registration');
+      console.error('Error approving registration with payment:', error);
+      showToast('error', 'Failed to approve registration with payment');
     } finally {
-      setIsApproving(false);
+      setIsApprovingPaid(false);
+    }
+  }, [registration.id, reviewNotes, showToast, onUpdate]);
+
+  const handleApproveWithoutPayment = useCallback(async () => {
+    setIsApprovingUnpaid(true);
+    try {
+      const response = await approveRegistrationWithoutPayment(registration.id, { reviewNotes });
+      if (response.success) {
+        showToast('success', 'Registration approved without payment');
+        onUpdate?.(response.data);
+      }
+    } catch (error) {
+      console.error('Error approving registration without payment:', error);
+      showToast('error', 'Failed to approve registration without payment');
+    } finally {
+      setIsApprovingUnpaid(false);
     }
   }, [registration.id, reviewNotes, showToast, onUpdate]);
 
@@ -117,10 +135,18 @@ export function RegistrationReviewCard({
               <Button
                 variant="primary"
                 size="sm"
-                onClick={handleApprove}
-                isLoading={isApproving}
+                onClick={handleApproveWithPayment}
+                isLoading={isApprovingPaid}
               >
-                Approve
+                Approve (Paid)
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleApproveWithoutPayment}
+                isLoading={isApprovingUnpaid}
+              >
+                Approve (Unpaid)
               </Button>
               <Button
                 variant="outline"

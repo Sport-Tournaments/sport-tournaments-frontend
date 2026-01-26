@@ -365,6 +365,8 @@
     "noRegistrations": "Nicio înregistrare încă",
     "noRegistrationsDesc": "Nicio echipă nu s-a înregistrat încă la acest turneu",
     "approve": "Aprobă",
+    "approveWithPayment": "Aprobă (Plătit)",
+    "approveWithoutPayment": "Aprobă (Neplătit)",
     "reject": "Respinge",
     "rejectTitle": "Respinge Înregistrarea",
     "rejectReason": "Motivul respingerii",

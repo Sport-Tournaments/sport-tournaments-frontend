@@ -371,6 +371,8 @@
     "noRegistrations": "No registrations yet",
     "noRegistrationsDesc": "No teams have registered for this tournament yet",
     "approve": "Approve",
+    "approveWithPayment": "Approve (Paid)",
+    "approveWithoutPayment": "Approve (Unpaid)",
     "reject": "Reject",
     "rejectTitle": "Reject Registration",
     "rejectReason": "Rejection Reason",

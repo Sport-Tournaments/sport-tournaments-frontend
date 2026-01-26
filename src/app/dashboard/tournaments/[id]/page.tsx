@@ -118,12 +118,21 @@ export default function TournamentDetailPage() {
     }
   };
 
-  const handleApproveRegistration = async (registrationId: string) => {
+  const handleApproveRegistrationWithPayment = async (registrationId: string) => {
     try {
-      await registrationService.approveRegistration(registrationId);
+      await registrationService.approveRegistrationWithPayment(registrationId);
       fetchData();
     } catch (err: any) {
-      setError('Failed to approve registration');
+      setError('Failed to approve registration with payment');
+    }
+  };
+
+  const handleApproveRegistrationWithoutPayment = async (registrationId: string) => {
+    try {
+      await registrationService.approveRegistrationWithoutPayment(registrationId);
+      fetchData();
+    } catch (err: any) {
+      setError('Failed to approve registration without payment');
     }
   };
 
@@ -414,9 +423,16 @@ export default function TournamentDetailPage() {
                               <Button
                                 size="sm"
                                 variant="primary"
-                                onClick={() => handleApproveRegistration(registration.id)}
+                                onClick={() => handleApproveRegistrationWithPayment(registration.id)}
                               >
-                                {t('registration.approve')}
+                                {t('registration.approveWithPayment', 'Approve (Paid)')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleApproveRegistrationWithoutPayment(registration.id)}
+                              >
+                                {t('registration.approveWithoutPayment', 'Approve (Unpaid)')}
                               </Button>
                               <Button
                                 size="sm"

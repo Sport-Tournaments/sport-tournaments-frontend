@@ -240,7 +240,7 @@ export default function EditTournamentPage() {
     setError(null);
     try {
       // Transform form data to match backend UpdateTournamentDto
-      // Backend doesn't accept: venue, city, minTeams, format, entryFee, prizeMoney, rules, status
+      // Backend doesn't accept: venue, city, minTeams, format, entryFee, prizeMoney, rules
       const updateData = {
         name: data.name,
         description: data.description,
@@ -261,6 +261,19 @@ export default function EditTournamentPage() {
       
       // First update the tournament data
       await tournamentService.updateTournament(params.id as string, updateData as any);
+
+      // Update status via dedicated endpoints when changed
+      if (tournament && data.status !== tournament.status) {
+        if (data.status === 'PUBLISHED') {
+          await tournamentService.publishTournament(params.id as string);
+        } else if (data.status === 'ONGOING') {
+          await tournamentService.startTournament(params.id as string);
+        } else if (data.status === 'COMPLETED') {
+          await tournamentService.completeTournament(params.id as string);
+        } else if (data.status === 'CANCELLED') {
+          await tournamentService.cancelTournament(params.id as string);
+        }
+      }
       
       // Update age groups if any changes
       if (ageGroups.length > 0 || (tournament?.ageGroups && tournament.ageGroups.length > 0)) {

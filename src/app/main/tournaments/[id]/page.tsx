@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap } from '@/components/ui';
 import { tournamentService, registrationService, clubService, fileService } from '@/services';
 import { Tournament, TournamentStatus, Registration, Club } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
@@ -277,6 +277,20 @@ export default function TournamentDetailPage() {
   const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
   const spotsLeft = Math.max(maxTeamsDisplay - registrations.length, 0);
 
+  const tournamentLatitude = typeof tournament.latitude === 'string'
+    ? parseFloat(tournament.latitude)
+    : tournament.latitude;
+  const tournamentLongitude = typeof tournament.longitude === 'string'
+    ? parseFloat(tournament.longitude)
+    : tournament.longitude;
+  const hasValidLocation = typeof tournamentLatitude === 'number'
+    && typeof tournamentLongitude === 'number'
+    && !isNaN(tournamentLatitude)
+    && !isNaN(tournamentLongitude);
+  const mapTournaments = hasValidLocation
+    ? [{ ...tournament, latitude: tournamentLatitude, longitude: tournamentLongitude }]
+    : [];
+
   const isOwner = !!user && (user.id === tournament.organizerId || user.id === tournament.organizer?.id);
 
   const tabs = [
@@ -285,6 +299,47 @@ export default function TournamentDetailPage() {
       label: t('tournament.tabs.overview'),
       content: (
         <div className="space-y-6">
+          {/* Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournament.details', 'Tournament Details')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {tournament.isPrivate && (
+                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                    <span className="text-gray-600">{t('tournament.visibility', 'Visibility')}</span>
+                    <Badge variant="warning">{t('tournament.privateTournament', 'Private')}</Badge>
+                  </div>
+                )}
+                {tournament.registrationFee && tournament.registrationFee > 0 && (
+                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                    <span className="text-gray-600">{t('tournament.registrationFee', 'Registration Fee')}</span>
+                    <span className="font-medium">€{tournament.registrationFee}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.spotsLeft')}</span>
+                  <span className="font-medium">{spotsLeft}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.ageCategory.label')}</span>
+                  <span className="font-medium">{tournament.ageCategory || 'Open'}</span>
+                </div>
+                {tournament.numberOfMatches && (
+                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                    <span className="text-gray-600">{t('tournament.numberOfMatches')}</span>
+                    <span className="font-medium">{tournament.numberOfMatches}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.teamsRegistered', 'Teams Registered')}</span>
+                  <span className="font-medium">{registrations.length} / {maxTeamsDisplay}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Description */}
           <Card>
             <CardHeader>
@@ -303,6 +358,53 @@ export default function TournamentDetailPage() {
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap">{tournament.rules}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Age Categories */}
+          {tournament.ageGroups && tournament.ageGroups.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {tournament.ageGroups.map((ag, index) => {
+                    const currentYear = new Date().getFullYear();
+                    const displayLabel = ag.displayLabel || `U${currentYear - ag.birthYear}`;
+                    return (
+                      <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-gray-900">{displayLabel}</span>
+                          {ag.gameSystem && (
+                            <Badge variant="info">{ag.gameSystem}</Badge>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+                          <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
+                          {ag.ageCategory && (
+                            <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
+                          )}
+                          {ag.level && (
+                            <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
+                          )}
+                          {ag.format && (
+                            <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
+                          )}
+                          {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
+                          {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
+                          {ag.locationAddress && (
+                            <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
+                          )}
+                          {ag.participationFee !== undefined && ag.participationFee !== null && (
+                            <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           )}
@@ -347,29 +449,15 @@ export default function TournamentDetailPage() {
             </Card>
           )}
 
-          {/* Schedule */}
+          {/* Tournament Start */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.schedule')}</CardTitle>
+              <CardTitle>{t('tournament.tournamentStart', 'Tournament Start')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.registrationStart')}</span>
-                  <span className="font-medium">{tournament.registrationStartDate ? formatDateTime(tournament.registrationStartDate) : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.registrationEnd')}</span>
-                  <span className="font-medium">{tournament.registrationEndDate ? formatDateTime(tournament.registrationEndDate) : 'N/A'}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.tournamentStart')}</span>
-                  <span className="font-medium">{formatDateTime(tournament.startDate)}</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.tournamentEnd')}</span>
-                  <span className="font-medium">{formatDateTime(tournament.endDate)}</span>
-                </div>
+              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                <span className="text-gray-600">{t('tournament.startDate', 'Start Date')}</span>
+                <span className="font-medium">{formatDateTime(tournament.startDate)}</span>
               </div>
             </CardContent>
           </Card>
@@ -478,8 +566,9 @@ export default function TournamentDetailPage() {
             </div>
           )}
 
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] gap-6">
+            <div className="space-y-6">
+              <div>
               <div className="flex items-center gap-3 mb-2">
                 <h1 className="text-3xl font-bold text-gray-900">
                   {tournament.name}
@@ -508,7 +597,8 @@ export default function TournamentDetailPage() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
+                  <span className="text-gray-600">{t('tournament.tournamentStart', 'Tournament Start')}:</span>
+                  <span className="font-medium text-gray-900">{formatDate(tournament.startDate)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -524,184 +614,111 @@ export default function TournamentDetailPage() {
                   {registrations.length} / {maxTeamsDisplay} {t('common.teams')}
                 </div>
               </div>
+              </div>
+
+              <Tabs tabs={tabs} />
             </div>
 
-            {/* Registration card */}
-            <Card className="lg:w-80 flex-shrink-0">
-              <CardContent className="p-6">
-                {/* Private tournament badge */}
-                {tournament.isPrivate && (
-                  <div className="flex items-center gap-2 mb-4 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span className="text-sm font-medium text-amber-700">
-                      {t('tournament.privateTournament', 'Private Tournament')}
-                    </span>
-                  </div>
-                )}
-
-                {tournament.registrationFee && tournament.registrationFee > 0 && (
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-primary">
-                      €{tournament.registrationFee}
-                    </span>
-                    <span className="text-gray-500 ml-1">/ {t('common.team')}</span>
-                  </div>
-                )}
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{t('tournament.spotsLeft')}</span>
-                    <span className="font-medium">
-                      {spotsLeft}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{t('tournament.ageCategory.label')}</span>
-                    <span className="font-medium">{tournament.ageCategory || 'Open'}</span>
-                  </div>
-                  {tournament.numberOfMatches && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">{t('tournament.numberOfMatches')}</span>
-                      <span className="font-medium">{tournament.numberOfMatches}</span>
+            {/* Sidebar */}
+            <div className="flex-shrink-0 space-y-4">
+              {/* Map */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('tournament.locationMap', 'Location Map')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {mapTournaments.length > 0 ? (
+                    <TournamentMap
+                      tournaments={mapTournaments}
+                      defaultZoom={12}
+                    />
+                  ) : (
+                    <div className="bg-gray-100 rounded-lg p-6 text-center">
+                      <p className="text-sm text-gray-600">{t('tournament.noLocation', 'No location data available')}</p>
                     </div>
                   )}
-                  {/* <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">{t('tournament.format.label')}</span>
-                    <span className="font-medium">{tournament.format || 'Groups + Knockout'}</span>
-                  </div> */}
-                </div>
+                </CardContent>
+              </Card>
 
-                {/* Age Categories */}
-                {tournament.ageGroups && tournament.ageGroups.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-700 mb-3">
-                      {t('tournaments.ageGroups.title', 'Age Categories')}
-                    </h4>
-                    <div className="space-y-2">
-                      {tournament.ageGroups.map((ag, index) => {
-                        const currentYear = new Date().getFullYear();
-                        const displayLabel = ag.displayLabel || `U${currentYear - ag.birthYear}`;
-                        return (
-                          <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="font-medium text-gray-900">{displayLabel}</span>
-                              {ag.gameSystem && (
-                                <Badge variant="info">{ag.gameSystem}</Badge>
-                              )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
-                              <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
-                              {ag.ageCategory && (
-                                <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
-                              )}
-                              {ag.level && (
-                                <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
-                              )}
-                              {ag.format && (
-                                <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
-                              )}
-                              {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
-                              {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
-                              {ag.locationAddress && (
-                                <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
-                              )}
-                              {ag.participationFee !== undefined && ag.participationFee !== null && (
-                                <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+              {/* Contact + Register */}
+              <Card>
+                <CardContent className="p-6">
+                  {(tournament.organizer?.email || tournament.contactEmail) && (
+                    <a
+                      href={`mailto:${tournament.contactEmail || tournament.organizer?.email}?subject=${encodeURIComponent(t('tournament.emailSubject', `Question about ${tournament.name}`))}`}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 mb-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {t('tournament.contactOrganizer', 'Contact Organizer')}
+                    </a>
+                  )}
 
-                {/* Contact Organizer Button */}
-                {(tournament.organizer?.email || tournament.contactEmail) && (
-                  <a
-                    href={`mailto:${tournament.contactEmail || tournament.organizer?.email}?subject=${encodeURIComponent(t('tournament.emailSubject', `Question about ${tournament.name}`))}`}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-2 mb-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    {t('tournament.contactOrganizer', 'Contact Organizer')}
-                  </a>
-                )}
-
-                {/* Registration button logic */}
-                {tournament.status === 'PUBLISHED' ? (
-                  tournament.isRegistrationClosed ? (
-                    <Button variant="secondary" fullWidth disabled>
-                      {t('tournament.registrationClosed')}
-                    </Button>
-                  ) : tournament.isPrivate && !hasValidInvite ? (
-                    // Private tournament without valid invite
-                    <div className="space-y-3">
-                      {validatingInvite ? (
-                        <Button variant="secondary" fullWidth disabled isLoading>
-                          {t('tournament.invitation.validating', 'Validating invite...')}
-                        </Button>
-                      ) : (
-                        <>
-                          <Button variant="secondary" fullWidth disabled>
-                            {t('tournament.invitation.required', 'Invitation Required')}
-                          </Button>
-                          <p className="text-xs text-center text-gray-500">
-                            {t('tournament.invitation.contactOrganizer', 'Contact the organizer to get an invitation link.')}
-                          </p>
-                          <Link href="/main/tournaments/join" className="block">
-                            <Button variant="outline" fullWidth size="sm">
-                              {t('tournament.invitation.haveCode', 'Have an invitation code?')}
-                            </Button>
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    // Public tournament OR private with valid invite
-                    <>
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={handleRegister}
-                        isLoading={registering || loadingClubs}
-                      >
-                        {t('tournament.register')}
+                  {tournament.status === 'PUBLISHED' ? (
+                    tournament.isRegistrationClosed ? (
+                      <Button variant="secondary" fullWidth disabled>
+                        {t('tournament.registrationClosed')}
                       </Button>
-                      {hasValidInvite && (
-                        <p className="text-xs text-center text-green-600 mt-2 flex items-center justify-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          {t('tournament.invitation.validInvite', 'Valid invitation')}
-                        </p>
-                      )}
-                    </>
-                  )
-                ) : (
-                  <Button variant="secondary" fullWidth disabled>
-                    {tournament.status === 'ONGOING' || tournament.status === 'COMPLETED'
-                      ? t('tournament.registrationClosed')
-                      : t('tournament.registrationNotOpen')}
-                  </Button>
-                )}
+                    ) : tournament.isPrivate && !hasValidInvite ? (
+                      <div className="space-y-3">
+                        {validatingInvite ? (
+                          <Button variant="secondary" fullWidth disabled isLoading>
+                            {t('tournament.invitation.validating', 'Validating invite...')}
+                          </Button>
+                        ) : (
+                          <>
+                            <Button variant="secondary" fullWidth disabled>
+                              {t('tournament.invitation.required', 'Invitation Required')}
+                            </Button>
+                            <p className="text-xs text-center text-gray-500">
+                              {t('tournament.invitation.contactOrganizer', 'Contact the organizer to get an invitation link.')}
+                            </p>
+                            <Link href="/main/tournaments/join" className="block">
+                              <Button variant="outline" fullWidth size="sm">
+                                {t('tournament.invitation.haveCode', 'Have an invitation code?')}
+                              </Button>
+                            </Link>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          variant="primary"
+                          fullWidth
+                          onClick={handleRegister}
+                          isLoading={registering || loadingClubs}
+                        >
+                          {t('tournament.register')}
+                        </Button>
+                        {hasValidInvite && (
+                          <p className="text-xs text-center text-green-600 mt-2 flex items-center justify-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {t('tournament.invitation.validInvite', 'Valid invitation')}
+                          </p>
+                        )}
+                      </>
+                    )
+                  ) : (
+                    <Button variant="secondary" fullWidth disabled>
+                      {tournament.status === 'ONGOING' || tournament.status === 'COMPLETED'
+                        ? t('tournament.registrationClosed')
+                        : t('tournament.registrationNotOpen')}
+                    </Button>
+                  )}
 
-                {!isAuthenticated && tournament.status === 'PUBLISHED' && (
-                  <p className="text-xs text-center text-gray-500 mt-2">
-                    {t('tournament.loginToRegister')}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                  {!isAuthenticated && tournament.status === 'PUBLISHED' && (
+                    <p className="text-xs text-center text-gray-500 mt-2">
+                      {t('tournament.loginToRegister')}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-
-        {/* Tabs */}
-        <div className="mt-8">
-          <Tabs tabs={tabs} />
         </div>
       </div>
 

@@ -30,10 +30,9 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const [tournamentsRes, clubsRes, registrationsRes] = await Promise.all([
+      const [tournamentsRes, clubsRes] = await Promise.all([
         tournamentService.getMyTournaments(),
         clubService.getMyClubs(),
-        registrationService.getMyRegistrations(),
       ]);
 
       const tData = (tournamentsRes as any)?.data;
@@ -53,26 +52,71 @@ export default function DashboardPage() {
       }
       const clubTotal = clubData.length;
 
-      // Handle registrations response
-      const rData = registrationsRes.data as any;
+      const tournamentById = new Map(tournamentData.map((tournament) => [tournament.id, tournament]));
+
       let registrationData: Registration[] = [];
-      if (Array.isArray(rData)) {
-        registrationData = rData;
-      } else if (rData?.data && Array.isArray(rData.data)) {
-        registrationData = rData.data;
-      } else if (rData?.items && Array.isArray(rData.items)) {
-        registrationData = rData.items;
+      if (user?.role === 'ORGANIZER') {
+        const registrationsResults = await Promise.allSettled(
+          tournamentData.map((tournament) =>
+            registrationService.getTournamentRegistrations(tournament.id, {
+              page: 1,
+              pageSize: 5,
+            })
+          )
+        );
+
+        registrationData = registrationsResults.flatMap((result) => {
+          if (result.status !== 'fulfilled') return [];
+          return result.value?.data?.items || [];
+        });
+      } else {
+        const registrationsRes = await registrationService.getMyRegistrations();
+        const rData = registrationsRes.data as any;
+        if (Array.isArray(rData)) {
+          registrationData = rData;
+        } else if (rData?.data && Array.isArray(rData.data)) {
+          registrationData = rData.data;
+        } else if (rData?.items && Array.isArray(rData.items)) {
+          registrationData = rData.items;
+        }
       }
+
+      const normalizedRegistrations = registrationData.map((registration) => {
+        if (registration.tournament) return registration;
+        const tournament = tournamentById.get(registration.tournamentId);
+        if (!tournament) return registration;
+
+        return {
+          ...registration,
+          tournament: {
+            id: tournament.id,
+            name: tournament.name,
+            startDate: tournament.startDate,
+            endDate: tournament.endDate,
+            location: tournament.location,
+            status: tournament.status,
+            participationFee: tournament.participationFee,
+          },
+        };
+      });
+
+      const sortedRegistrations = normalizedRegistrations
+        .slice()
+        .sort((a, b) => {
+          const aDate = new Date(a.createdAt || a.updatedAt).getTime();
+          const bDate = new Date(b.createdAt || b.updatedAt).getTime();
+          return bDate - aDate;
+        });
 
       setRecentTournaments(tournamentData.slice(0, 5));
       setRecentClubs(clubData.slice(0, 5));
-      setRecentRegistrations(registrationData);
+      setRecentRegistrations(sortedRegistrations.slice(0, 5));
 
       setStats({
         tournaments: tournamentTotal,
         clubs: clubTotal,
-        registrations: registrationData.length,
-        pending: registrationData.filter((r: Registration) => r.status === ('PENDING' as any)).length,
+        registrations: normalizedRegistrations.length,
+        pending: normalizedRegistrations.filter((r: Registration) => r.status === ('PENDING' as any)).length,
       });
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -244,6 +288,11 @@ export default function DashboardPage() {
                           <p className="font-medium">{registration.club?.name || 'Unknown Club'}</p>
                           <p className="text-sm text-gray-500">
                             {registration.tournament?.name || 'Unknown Tournament'}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {registration.tournament?.startDate
+                              ? formatDate(registration.tournament.startDate)
+                              : t('tournament.startDate')}
                           </p>
                         </div>
                         <Badge

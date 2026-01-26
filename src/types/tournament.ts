@@ -88,6 +88,7 @@ export interface Tournament {
   prizeMoney?: number;
   contactEmail?: string;
   contactPhone?: string;
+  whatsappGroupLink?: string;
   country?: string;
   status: TournamentStatus;
   isPrivate: boolean;
@@ -141,6 +142,7 @@ export interface CreateTournamentDto {
   isRegistrationClosed?: boolean;
   contactEmail?: string;
   contactPhone?: string;
+  whatsappGroupLink?: string;
   country?: string;
   isPrivate?: boolean;
   visibilitySettings?: VisibilitySettings;

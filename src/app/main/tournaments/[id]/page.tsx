@@ -375,6 +375,9 @@ export default function TournamentDetailPage() {
   );
 
   const isOwner = !!user && (user.id === tournament.organizerId || user.id === tournament.organizer?.id);
+  const hasApprovedRegistration = myRegistrations.some(
+    (registration) => registration.status === 'APPROVED'
+  );
 
   const tabs = [
     {
@@ -570,6 +573,35 @@ export default function TournamentDetailPage() {
                     </svg>
                     {t('tournament.viewRegulations', 'View PDF')}
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {tournament.whatsappGroupLink && hasApprovedRegistration && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('tournament.whatsappGroup', 'WhatsApp Group')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {t('tournament.whatsappGroupAccess', 'Join the tournament WhatsApp group')}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {t('tournament.whatsappGroupHelp', 'Available after your club is approved.')}
+                    </p>
+                  </div>
+                  <a
+                    href={tournament.whatsappGroupLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="primary" size="sm">
+                      {t('tournament.whatsappGroupJoin', 'Open WhatsApp')}
+                    </Button>
+                  </a>
                 </div>
               </CardContent>
             </Card>

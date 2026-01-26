@@ -21,6 +21,7 @@ const tournamentSchema = z.object({
   location: z.string().min(2, 'Location is required'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
+  whatsappGroupLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   registrationStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
@@ -199,6 +200,7 @@ export default function CreateTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
+        ...(data.whatsappGroupLink?.trim() && { whatsappGroupLink: data.whatsappGroupLink.trim() }),
         startDate: data.startDate,
         endDate: data.endDate,
         // Map frontend fields to backend fields  
@@ -291,11 +293,7 @@ export default function CreateTournamentPage() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24">
-          {error && (
-            <Alert variant="error" onClose={() => setError(null)}>
-              {error}
-            </Alert>
-          )}
+
 
           {/* Basic Info */}
           <Card>
@@ -330,6 +328,14 @@ export default function CreateTournamentPage() {
                 rows={4}
                 error={errors.description?.message}
                 {...register('description')}
+              />
+
+              <Input
+                label={t('tournament.whatsappGroup', 'WhatsApp Group Link')}
+                placeholder="https://chat.whatsapp.com/your-group-code"
+                helperText={t('tournament.whatsappGroupHelp', 'Visible to approved clubs only.')}
+                error={errors.whatsappGroupLink?.message}
+                {...register('whatsappGroupLink')}
               />
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -586,6 +592,18 @@ export default function CreateTournamentPage() {
           {t('common.unsavedChangesDetail', 'Changes you made may not be saved.')}
         </div>
       </Modal>
+      <Modal
+        isOpen={!!error}
+        onClose={() => setError(null)}
+        title={t('common.error', 'Error')}
+        description={error || ''}
+        size="sm"
+        footer={(
+          <Button type="button" variant="primary" onClick={() => setError(null)}>
+            {t('common.ok', 'OK')}
+          </Button>
+        )}
+      />
     </DashboardLayout>
   );
 }

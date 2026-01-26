@@ -129,6 +129,18 @@ export function AgeGroupsManager({
     return `U${age}`;
   };
 
+  const getLocationDifferentLabel = () =>
+    tournamentLocation
+      ? t(
+          'tournaments.ageGroups.locationDifferentLabel',
+          'This games takes place on a different location than {{location}}',
+          { location: tournamentLocation }
+        )
+      : t(
+          'tournaments.ageGroups.locationDifferentLabelFallback',
+          'This games takes place on a different location than the tournament address'
+        );
+
   return (
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between">
@@ -300,27 +312,47 @@ export function AgeGroupsManager({
                       disabled={disabled}
                     />
 
-                    {/* Location Override Address */}
-                    <LocationAutocomplete
-                      label={t('tournaments.ageGroups.locationAddress', 'Game Location Address')}
-                      placeholder={t('tournaments.ageGroups.locationAddressPlaceholder', 'Search for address...')}
-                      value={ageGroup.locationAddress || ''}
-                      onChange={(value) =>
-                        handleUpdateAgeGroup(index, {
-                          locationAddress: value || undefined,
-                          locationId: undefined,
-                        })
-                      }
-                      onSelect={(location) =>
-                        handleUpdateAgeGroup(index, {
-                          locationAddress: location.formattedAddress,
-                          locationId: undefined,
-                        })
-                      }
-                      helperText={t('tournaments.ageGroups.locationAddressHelp', 'Override the default tournament location for this category')}
-                      displayMode="address"
-                      searchContext={tournamentLocation}
-                    />
+                    {/* Location Override */}
+                    <div className="space-y-3">
+                      <label className="flex items-start gap-3 text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          checked={ageGroup.locationAddress !== undefined && ageGroup.locationAddress !== null}
+                          onChange={(e) =>
+                            handleUpdateAgeGroup(index, {
+                              locationAddress: e.target.checked ? ageGroup.locationAddress ?? '' : undefined,
+                              locationId: undefined,
+                            })
+                          }
+                          disabled={disabled}
+                        />
+                        <span>{getLocationDifferentLabel()}</span>
+                      </label>
+
+                      {(ageGroup.locationAddress !== undefined && ageGroup.locationAddress !== null) && (
+                        <LocationAutocomplete
+                          label={t('tournaments.ageGroups.locationAddress', 'Game Location Address')}
+                          placeholder={t('tournaments.ageGroups.locationAddressPlaceholder', 'Search for address...')}
+                          value={ageGroup.locationAddress || ''}
+                          onChange={(value) =>
+                            handleUpdateAgeGroup(index, {
+                              locationAddress: value ?? '',
+                              locationId: undefined,
+                            })
+                          }
+                          onSelect={(location) =>
+                            handleUpdateAgeGroup(index, {
+                              locationAddress: location.formattedAddress,
+                              locationId: undefined,
+                            })
+                          }
+                          helperText={t('tournaments.ageGroups.locationAddressHelp', 'Override the default tournament location for this category')}
+                          displayMode="address"
+                          searchContext={tournamentLocation}
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

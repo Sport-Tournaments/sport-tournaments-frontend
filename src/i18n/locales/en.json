@@ -314,6 +314,8 @@
       "startDate": "Start Date",
       "startDateHelp": "Leave empty to use tournament dates",
       "endDate": "End Date",
+      "locationDifferentLabel": "This games takes place on a different location than {{location}}",
+      "locationDifferentLabelFallback": "This games takes place on a different location than the tournament address",
       "teamsPerGroup": "Teams Per Group",
       "teamsPerGroupHelp": "Usually 4 teams per group",
       "groupsCount": "Number of Groups",

@@ -164,7 +164,7 @@ export default function JoinTournamentPage() {
                         <p className="font-medium text-gray-900">{tournament.ageCategory}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500">{t('tournament.dates')}</p>
+                        <p className="text-gray-500">{t('tournament.startDate')}</p>
                         <p className="font-medium text-gray-900">
                           {new Date(tournament.startDate).toLocaleDateString()}
                         </p>

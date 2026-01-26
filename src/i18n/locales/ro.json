@@ -312,6 +312,8 @@
       "startDate": "Data de început",
       "startDateHelp": "Lasă gol pentru a folosi datele turneului",
       "endDate": "Data de sfârșit",
+      "locationDifferentLabel": "Aceste meciuri au loc într-o locație diferită de {{location}}",
+      "locationDifferentLabelFallback": "Aceste meciuri au loc într-o locație diferită de adresa turneului",
       "teamsPerGroup": "Echipe per grupă",
       "teamsPerGroupHelp": "De obicei 4 echipe per grupă",
       "groupsCount": "Număr de grupe",

@@ -2,9 +2,43 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'ax
 import { getTokenFromCookie, setTokenCookie, clearAllTokens } from '@/utils/cookies';
 import type { ApiError } from '@/types';
 
+const DEFAULT_API_BASE_URL = 'http://localhost:3001/api';
+
+const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, '');
+
+const resolveApiBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  const rawUrl = envUrl || DEFAULT_API_BASE_URL;
+
+  if (typeof window === 'undefined') {
+    return normalizeBaseUrl(rawUrl);
+  }
+
+  try {
+    const parsed = new URL(rawUrl);
+    const currentHost = window.location.hostname;
+
+    if (
+      ['localhost', '127.0.0.1'].includes(parsed.hostname) &&
+      currentHost &&
+      !['localhost', '127.0.0.1'].includes(currentHost)
+    ) {
+      parsed.hostname = currentHost;
+      return normalizeBaseUrl(parsed.toString());
+    }
+
+    return normalizeBaseUrl(parsed.toString());
+  } catch {
+    const { protocol, hostname } = window.location;
+    return normalizeBaseUrl(`${protocol}//${hostname}:3001/api`);
+  }
+};
+
+const apiBaseUrl = resolveApiBaseUrl();
+
 // Create axios instance
 export const api: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1',
+  baseURL: apiBaseUrl,
   timeout: parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '30000'),
   withCredentials: false,
   headers: {
@@ -70,13 +104,6 @@ api.interceptors.request.use(
     // Only add token if available (all endpoints are public by default)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    // Add User-Agent for login/refresh endpoints
-    if (config.url?.includes('/auth/login') || config.url?.includes('/auth/refresh')) {
-      config.headers['user-agent'] = typeof navigator !== 'undefined' 
-        ? navigator.userAgent 
-        : 'Football-Tournament-Frontend';
     }
     
     return config;
@@ -147,15 +174,12 @@ api.interceptors.response.use(
 
         // Call refresh token endpoint
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api/v1'}/auth/refresh-token`,
+          `${apiBaseUrl}/v1/auth/refresh-token`,
           { refreshToken },
           {
             timeout: 5000,
             headers: {
               'Content-Type': 'application/json',
-              'user-agent': typeof navigator !== 'undefined' 
-                ? navigator.userAgent 
-                : 'Football-Tournament-Frontend',
             },
           }
         );

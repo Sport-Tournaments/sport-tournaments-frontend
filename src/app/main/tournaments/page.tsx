@@ -153,7 +153,6 @@ export default function TournamentsPage() {
 
   const statusOptions = [
     { value: '', label: t('common.all') },
-    { value: 'DRAFT' as TournamentStatus, label: t('tournament.status.draft') },
     { value: 'PUBLISHED' as TournamentStatus, label: t('tournament.status.published') },
     { value: 'ONGOING' as TournamentStatus, label: t('tournament.status.ongoing') },
     { value: 'COMPLETED' as TournamentStatus, label: t('tournament.status.completed') },
@@ -229,15 +228,18 @@ export default function TournamentsPage() {
     setSortOrder('ASC');
   };
 
+  const normalizeStatus = (tournamentStatus: TournamentStatus) =>
+    tournamentStatus === 'DRAFT' ? 'PUBLISHED' : tournamentStatus;
+
   const getStatusBadge = (tournamentStatus: TournamentStatus) => {
+    const normalizedStatus = normalizeStatus(tournamentStatus);
     const variants: Partial<Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'>> = {
-      'DRAFT': 'default',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[tournamentStatus] || 'default';
+    return variants[normalizedStatus] || 'default';
   };
 
   return (
@@ -520,9 +522,9 @@ export default function TournamentsPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge variant={getStatusBadge(tournament.status)}>
-                            {t(`tournament.status.${tournament.status}`)}
-                          </Badge>
+                            <Badge variant={getStatusBadge(tournament.status)}>
+                              {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
+                            </Badge>
                         </div>
                       </div>
                     )}

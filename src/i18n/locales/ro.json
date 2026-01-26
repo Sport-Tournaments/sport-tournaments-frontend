@@ -830,7 +830,7 @@
     "viewRegulations": "Vezi PDF",
     "regulationsDownloadError": "Descărcarea regulamentului a eșuat. Te rugăm să încerci din nou.",
     "existingRegulations": "Document regulament existent",
-    "dates": "Date importante",
+    "dates": "Data de început a turneului",
     "basicInfo": "Informații de bază",
     "formatSettings": "Format și setări",
     "namePlaceholder": "ex: Cupa Tineretului Vară 2024",
@@ -983,7 +983,8 @@
       "SINGLE_ELIMINATION": "Eliminare simplă",
       "DOUBLE_ELIMINATION": "Eliminare dublă",
       "ROUND_ROBIN": "Tur și retur",
-      "GROUPS_PLUS_KNOCKOUT": "Grupe + Eliminatorii"
+      "GROUPS_PLUS_KNOCKOUT": "Grupe + Eliminatorii",
+      "LEAGUE": "Ligă"
     },
     "fields": {
       "name": "Nume turneu",

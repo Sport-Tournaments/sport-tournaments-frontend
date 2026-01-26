@@ -8,6 +8,7 @@ import Select from './Select';
 import LocationAutocomplete from './LocationAutocomplete';
 import Modal from './Modal';
 import { cn } from '@/utils/helpers';
+import type { AgeCategory, TournamentFormat, TournamentLevel } from '@/types';
 
 // Game systems for football based on player count (field players + goalkeeper)
 const GAME_SYSTEMS = [
@@ -18,6 +19,10 @@ const GAME_SYSTEMS = [
   { value: '9+1', label: '9+1 (10-a-side)' },
   { value: '10+1', label: '10+1 (11-a-side)' },
 ];
+
+const AGE_CATEGORY_OPTIONS = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'SENIOR', 'VETERANS'] as const;
+const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
+const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
 
 // Generate birth years from 2005 to current year
 const currentYear = new Date().getFullYear();
@@ -30,6 +35,9 @@ export interface AgeGroupFormData {
   id?: string;
   birthYear: number;
   displayLabel?: string;
+  ageCategory?: AgeCategory;
+  level?: TournamentLevel;
+  format?: TournamentFormat;
   gameSystem?: string;
   teamCount?: number;
   startDate?: string;
@@ -51,6 +59,9 @@ interface AgeGroupsManagerProps {
 }
 
 const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
+  ageCategory: undefined,
+  level: 'II',
+  format: 'GROUPS_PLUS_KNOCKOUT',
   gameSystem: '7+1',
   teamCount: 16,
   teamsPerGroup: 4,
@@ -67,6 +78,18 @@ export function AgeGroupsManager({
   className,
 }: AgeGroupsManagerProps) {
   const { t } = useTranslation();
+  const ageCategoryOptions = AGE_CATEGORY_OPTIONS.map((cat) => ({
+    value: cat,
+    label: t(`tournament.ageCategory.${cat}`),
+  }));
+  const levelOptions = TOURNAMENT_LEVELS.map((level) => ({
+    value: level,
+    label: t(`tournament.level.${level}`),
+  }));
+  const formatOptions = TOURNAMENT_FORMATS.map((format) => ({
+    value: format,
+    label: t(`tournament.format.${format}`, format.replace(/_/g, ' ')),
+  }));
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
@@ -78,8 +101,8 @@ export function AgeGroupsManager({
     const newAgeGroup: AgeGroupFormData = {
       ...defaultAgeGroup,
       birthYear: nextYear ? parseInt(nextYear.value) : currentYear - 10,
-      startDate: tournamentStartDate,
-      endDate: tournamentEndDate,
+      ...(tournamentStartDate ? { startDate: tournamentStartDate } : {}),
+      ...(tournamentEndDate ? { endDate: tournamentEndDate } : {}),
     };
     
     const newAgeGroups = [...ageGroups, newAgeGroup];
@@ -244,6 +267,33 @@ export function AgeGroupsManager({
                       onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { displayLabel: e.target.value || undefined })}
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.displayLabelHelp', 'Custom label (e.g., "U12 Elite")')}
+                    />
+
+                    {/* Age Category */}
+                    <Select
+                      label={t('tournament.ageCategory.label')}
+                      options={ageCategoryOptions}
+                      value={ageGroup.ageCategory || ''}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { ageCategory: (e.target.value || undefined) as AgeCategory | undefined })}
+                      disabled={disabled}
+                    />
+
+                    {/* Tournament Level */}
+                    <Select
+                      label={t('tournament.level.label')}
+                      options={levelOptions}
+                      value={ageGroup.level || 'II'}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { level: (e.target.value || undefined) as TournamentLevel | undefined })}
+                      disabled={disabled}
+                    />
+
+                    {/* Tournament Format */}
+                    <Select
+                      label={t('tournament.format.label')}
+                      options={formatOptions}
+                      value={ageGroup.format || 'GROUPS_PLUS_KNOCKOUT'}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { format: (e.target.value || undefined) as TournamentFormat | undefined })}
+                      disabled={disabled}
                     />
 
                     {/* Game System */}

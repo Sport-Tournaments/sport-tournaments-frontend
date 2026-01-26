@@ -261,11 +261,23 @@ export default function TournamentDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.ageCategory.label')}</p>
-                  <p className="font-medium">{t(`tournament.ageCategory.${tournament.ageCategory}`)}</p>
+                  <p className="font-medium">
+                    {tournament.ageCategory
+                      ? t(`tournament.ageCategory.${tournament.ageCategory}`)
+                      : tournament.ageGroups?.[0]?.ageCategory
+                        ? t(`tournament.ageCategory.${tournament.ageGroups[0].ageCategory}`)
+                        : '—'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.level.label')}</p>
-                  <p className="font-medium">{t(`tournament.level.${tournament.level}`)}</p>
+                  <p className="font-medium">
+                    {tournament.level
+                      ? t(`tournament.level.${tournament.level}`)
+                      : tournament.ageGroups?.[0]?.level
+                        ? t(`tournament.level.${tournament.ageGroups[0].level}`)
+                        : '—'}
+                  </p>
                 </div>
               </div>
               <div>

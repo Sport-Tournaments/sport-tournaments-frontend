@@ -714,7 +714,7 @@
       "II": "Level II",
       "III": "Level III"
     },
-    "dates": "Important Dates",
+    "dates": "Tournament Start Date",
     "formatSettings": "Format & Settings",
     "name": "Tournament Name",
     "namePlaceholder": "e.g., Summer Youth Cup 2024",
@@ -754,7 +754,8 @@
       "SINGLE_ELIMINATION": "Single Elimination",
       "DOUBLE_ELIMINATION": "Double Elimination",
       "ROUND_ROBIN": "Round Robin",
-      "GROUPS_PLUS_KNOCKOUT": "Groups + Knockout"
+      "GROUPS_PLUS_KNOCKOUT": "Groups + Knockout",
+      "LEAGUE": "League"
     },
     "ageCategory": {
       "label": "Age Category",

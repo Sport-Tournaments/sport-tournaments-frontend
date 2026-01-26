@@ -18,6 +18,9 @@ export interface AgeGroup {
   id?: string;
   birthYear: number;
   displayLabel?: string;
+  ageCategory?: AgeCategory;
+  level?: TournamentLevel;
+  format?: TournamentFormat;
   gameSystem?: string;
   teamCount?: number;
   minTeams?: number;

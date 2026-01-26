@@ -593,6 +593,15 @@ export default function TournamentDetailPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                               <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
+                              {ag.ageCategory && (
+                                <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
+                              )}
+                              {ag.level && (
+                                <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
+                              )}
+                              {ag.format && (
+                                <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
+                              )}
                               {ag.teamCount && <span>{t('tournaments.ageGroups.teamCount', 'Max Teams')}: {ag.teamCount}</span>}
                               {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
                               {ag.locationAddress && (

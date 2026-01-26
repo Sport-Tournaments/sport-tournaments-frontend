@@ -16,9 +16,6 @@ import type { LocationSuggestion } from '@/types';
 import { formatDateForInput } from '@/utils/date';
 
 // Define value arrays for runtime use
-const AGE_CATEGORIES = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'SENIOR', 'VETERANS'] as const;
-const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
-const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
 const TOURNAMENT_STATUSES = ['PUBLISHED', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
 
 const tournamentSchema = z.object({
@@ -32,9 +29,6 @@ const tournamentSchema = z.object({
   location: z.string().min(3, 'Location is required'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
-  ageCategory: z.enum(AGE_CATEGORIES).optional(),
-  level: z.enum(TOURNAMENT_LEVELS).optional(),
-  format: z.enum(TOURNAMENT_FORMATS).optional(),
   rules: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   contactPhone: z.string().optional(),
@@ -201,6 +195,9 @@ export default function EditTournamentPage() {
           id: ag.id,
           birthYear: ag.birthYear,
           displayLabel: ag.displayLabel,
+          ageCategory: (ag as any).ageCategory,
+          level: (ag as any).level,
+          format: (ag as any).format,
           gameSystem: ag.gameSystem,
           teamCount: ag.teamCount,
           startDate: ag.startDate,
@@ -225,9 +222,6 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        ageCategory: data.ageCategory || undefined,
-        level: data.level || undefined,
-        format: (data.format || undefined) as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE' | undefined,
         rules: data.rules || '',
         contactEmail: data.contactEmail || '',
         contactPhone: data.contactPhone || '',
@@ -258,8 +252,6 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        ageCategory: data.ageCategory,
-        level: data.level,
         // Include isPrivate field
         isPrivate: data.isPrivate,
         // Only include contactEmail if it's a valid email (not empty string)
@@ -316,21 +308,6 @@ export default function EditTournamentPage() {
       setSaving(false);
     }
   };
-
-  const ageCategoryOptions = AGE_CATEGORIES.map(cat => ({
-    value: cat,
-    label: t(`tournament.ageCategory.${cat}`),
-  }));
-
-  const levelOptions = TOURNAMENT_LEVELS.map(level => ({
-    value: level,
-    label: t(`tournament.level.${level}`),
-  }));
-
-  const formatOptions = TOURNAMENT_FORMATS.map(format => ({
-    value: format,
-    label: format.replace(/_/g, ' '),
-  }));
 
   const statusOptions = TOURNAMENT_STATUSES.map(status => ({
     value: status,
@@ -436,26 +413,6 @@ export default function EditTournamentPage() {
                 error={errors.description?.message}
                 {...register('description')}
               />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Select
-                  label={t('tournament.ageCategory.label')}
-                  options={ageCategoryOptions}
-                  error={errors.ageCategory?.message}
-                  {...register('ageCategory')}
-                />
-                <Select
-                  label={t('tournament.level.label')}
-                  options={levelOptions}
-                  error={errors.level?.message}
-                  {...register('level')}
-                />
-                <Select
-                  label={t('tournament.format.label')}
-                  options={formatOptions}
-                  error={errors.format?.message}
-                  {...register('format')}
-                />
-              </div>
               <Select
                 label={t('common.status')}
                 options={statusOptions}

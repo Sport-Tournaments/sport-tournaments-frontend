@@ -1,4 +1,5 @@
-import api from './api';
+import { apiDelete, apiGet, apiPost } from './api';
+import type { ApiResponse } from '@/types';
 
 export interface AssignTeamToPotDto {
   registrationId: string;
@@ -26,21 +27,21 @@ class PotDrawService {
    * Get all pot assignments for a tournament
    */
   async getPotAssignments(tournamentId: string) {
-    return api.get<PotResponse[]>(`/v1/tournaments/${tournamentId}/pots`);
+    return apiGet<ApiResponse<PotResponse[]>>(`/v1/tournaments/${tournamentId}/pots`);
   }
 
   /**
    * Assign a single team to a pot
    */
   async assignTeamToPot(tournamentId: string, dto: AssignTeamToPotDto) {
-    return api.post(`/v1/tournaments/${tournamentId}/pots/assign`, dto);
+    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/assign`, dto);
   }
 
   /**
    * Assign multiple teams to pots at once
    */
   async assignTeamsToPotsBulk(tournamentId: string, assignments: AssignTeamToPotDto[]) {
-    return api.post(`/v1/tournaments/${tournamentId}/pots/bulk-assign`, {
+    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/bulk-assign`, {
       assignments,
     });
   }
@@ -49,21 +50,21 @@ class PotDrawService {
    * Validate pot distribution
    */
   async validatePotDistribution(tournamentId: string) {
-    return api.post(`/v1/tournaments/${tournamentId}/pots/validate`);
+    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/validate`);
   }
 
   /**
    * Execute pot-based draw to create groups
    */
   async executePotDraw(tournamentId: string, dto: ExecutePotDrawDto) {
-    return api.post(`/v1/tournaments/${tournamentId}/pots/draw`, dto);
+    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/draw`, dto);
   }
 
   /**
    * Clear all pot assignments for a tournament
    */
   async clearPotAssignments(tournamentId: string) {
-    return api.delete(`/v1/tournaments/${tournamentId}/pots`);
+    return apiDelete<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots`);
   }
 }
 

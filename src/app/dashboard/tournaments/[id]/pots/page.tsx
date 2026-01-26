@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select } from '@/components/ui';
 import { potDrawService, tournamentService, registrationService } from '@/services';
 import type { Tournament, Registration } from '@/types';
 import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle } from 'lucide-react';
@@ -21,6 +21,14 @@ interface Pot {
   count: number;
   teams: PotAssignment[];
 }
+
+const NUMBER_OF_GROUPS_OPTIONS = Array.from({ length: 32 }, (_, i) => {
+  const value = i + 1;
+  return {
+    value: value.toString(),
+    label: value === 1 ? '1 Group' : `${value} Groups`,
+  };
+});
 
 export default function PotManagementPage() {
   const { t } = useTranslation();
@@ -263,13 +271,10 @@ export default function PotManagementPage() {
               </div>
               <div className="p-4 bg-white border border-gray-200 rounded-lg">
                 <label className="text-sm text-gray-600 block mb-2">Number of Groups</label>
-                <input
-                  type="number"
-                  min="2"
-                  max="32"
-                  value={numberOfGroups}
+                <Select
+                  value={numberOfGroups.toString()}
+                  options={NUMBER_OF_GROUPS_OPTIONS}
                   onChange={(e) => setNumberOfGroups(Number(e.target.value))}
-                  className="w-full p-2 border rounded"
                 />
               </div>
             </div>

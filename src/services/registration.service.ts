@@ -110,6 +110,28 @@ export async function approveRegistration(
   return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/approve`, data || {});
 }
 
+// Approve registration with payment
+export async function approveRegistrationWithPayment(
+  id: string,
+  data?: ApproveRegistrationDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(
+    `/v1/registrations/${id}/approve-with-payment`,
+    data || {}
+  );
+}
+
+// Approve registration without payment
+export async function approveRegistrationWithoutPayment(
+  id: string,
+  data?: ApproveRegistrationDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(
+    `/v1/registrations/${id}/approve-without-payment`,
+    data || {}
+  );
+}
+
 // Reject registration
 export async function rejectRegistration(
   id: string,
@@ -226,6 +248,8 @@ export const registrationService = {
   adminUpdateRegistration,
   deleteRegistration,
   approveRegistration,
+  approveRegistrationWithPayment,
+  approveRegistrationWithoutPayment,
   rejectRegistration,
   getPendingRegistrations,
   bulkApproveRegistrations,

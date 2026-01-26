@@ -21,6 +21,7 @@ export default function TournamentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
+  const [updatingRegistrations, setUpdatingRegistrations] = useState(false);
   
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -120,6 +121,22 @@ export default function TournamentDetailPage() {
       fetchData();
     } catch (err: any) {
       setError('Failed to approve registration');
+    }
+  };
+
+  const handleStopRegistrations = async () => {
+    if (!tournament) return;
+    setUpdatingRegistrations(true);
+    setError(null);
+    try {
+      await tournamentService.updateTournament(tournament.id, {
+        isRegistrationClosed: true,
+      } as any);
+      await fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to stop registrations');
+    } finally {
+      setUpdatingRegistrations(false);
     }
   };
 
@@ -223,10 +240,8 @@ export default function TournamentDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500">{t('tournament.dates')}</p>
-                  <p className="font-medium">
-                    {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
-                  </p>
+                  <p className="text-sm text-gray-500">{t('tournament.startDate')}</p>
+                  <p className="font-medium">{formatDate(tournament.startDate)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">{t('tournament.registrationDeadline')}</p>
@@ -527,15 +542,38 @@ export default function TournamentDetailPage() {
           </Alert>
         )}
 
-        {tournament.status === 'PUBLISHED' && (
+        {tournament.status === 'PUBLISHED' && !tournament.isRegistrationClosed && (
           <Alert variant="info" className="flex items-center justify-between">
-            <span>Tournament is published and accepting registrations.</span>
+            <span>{t('tournament.registrationOpenMessage')}</span>
+            <div className="flex gap-2">
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleStopRegistrations}
+                isLoading={updatingRegistrations}
+              >
+                {t('tournament.stopRegistrations')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleStatusChange('ONGOING')}
+              >
+                {t('tournament.startTournament')}
+              </Button>
+            </div>
+          </Alert>
+        )}
+
+        {tournament.status === 'PUBLISHED' && tournament.isRegistrationClosed && (
+          <Alert variant="warning" className="flex items-center justify-between">
+            <span>{t('tournament.registrationClosed')}</span>
             <Button
               variant="primary"
               size="sm"
               onClick={() => handleStatusChange('ONGOING')}
             >
-              Start Tournament
+              {t('tournament.startTournament')}
             </Button>
           </Alert>
         )}

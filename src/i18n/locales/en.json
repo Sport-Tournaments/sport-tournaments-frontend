@@ -702,6 +702,10 @@
     "prizeMoney": "Prize Money",
     "locationSearch": "Search Location",
     "registrationDeadline": "Registration Deadline",
+    "registrationOpenMessage": "Tournament is published and accepting registrations.",
+    "stopRegistrations": "Stop Registrations",
+    "startTournament": "Start Tournament",
+    "registrationClosed": "Registration Closed",
     "level": {
       "label": "Tournament Level",
       "I": "Level I",

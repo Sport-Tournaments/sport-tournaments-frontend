@@ -74,6 +74,7 @@ export interface Tournament {
   registrationDeadline?: string;
   registrationStartDate?: string;
   registrationEndDate?: string;
+  isRegistrationClosed?: boolean;
   registrationFee?: number;
   registeredTeams?: number;
   bannerImage?: string;
@@ -133,6 +134,7 @@ export interface CreateTournamentDto {
   participationFee?: number;
   tags?: string[];
   registrationDeadline?: string;
+  isRegistrationClosed?: boolean;
   contactEmail?: string;
   contactPhone?: string;
   country?: string;

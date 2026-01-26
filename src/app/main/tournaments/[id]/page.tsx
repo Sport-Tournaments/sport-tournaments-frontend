@@ -621,7 +621,11 @@ export default function TournamentDetailPage() {
 
                 {/* Registration button logic */}
                 {tournament.status === 'PUBLISHED' ? (
-                  tournament.isPrivate && !hasValidInvite ? (
+                  tournament.isRegistrationClosed ? (
+                    <Button variant="secondary" fullWidth disabled>
+                      {t('tournament.registrationClosed')}
+                    </Button>
+                  ) : tournament.isPrivate && !hasValidInvite ? (
                     // Private tournament without valid invite
                     <div className="space-y-3">
                       {validatingInvite ? (

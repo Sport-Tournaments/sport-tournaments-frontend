@@ -4,6 +4,7 @@ import { cn } from '@/utils';
 interface ClubColorBannerProps {
   primaryColor?: string;
   secondaryColor?: string;
+  backgroundImageUrl?: string;
   height?: 'sm' | 'md' | 'lg' | 'xl';
   pattern?: 'gradient' | 'stripes' | 'diagonal' | 'radial';
   opacity?: number;
@@ -14,6 +15,7 @@ interface ClubColorBannerProps {
 export function ClubColorBanner({
   primaryColor = '#1E40AF',
   secondaryColor = '#FFFFFF',
+  backgroundImageUrl,
   height = 'md',
   pattern = 'gradient',
   opacity = 0.15,
@@ -31,6 +33,16 @@ export function ClubColorBanner({
     const base = {
       opacity,
     };
+
+    if (backgroundImageUrl) {
+      return {
+        opacity: 1,
+        backgroundImage: `url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      };
+    }
 
     switch (pattern) {
       case 'gradient':

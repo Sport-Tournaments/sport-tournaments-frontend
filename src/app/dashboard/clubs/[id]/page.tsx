@@ -30,6 +30,7 @@ export default function ClubDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const [previewImage, setPreviewImage] = useState<{ url: string; alt: string } | null>(null);
   const [newPlayer, setNewPlayer] = useState({
     firstName: '',
     lastName: '',
@@ -107,6 +108,10 @@ export default function ClubDetailPage() {
     { value: 'midfielder', label: 'Midfielder' },
     { value: 'forward', label: 'Forward' },
   ];
+
+  const openImagePreview = (url: string, alt: string) => {
+    setPreviewImage({ url, alt });
+  };
 
   const tabs = [
     {
@@ -191,7 +196,6 @@ export default function ClubDetailPage() {
                     primaryColor={club.primaryColor} 
                     secondaryColor={club.secondaryColor} 
                     size="lg"
-                    showHex
                   />
                 </div>
               )}
@@ -318,21 +322,31 @@ export default function ClubDetailPage() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Color Banner */}
-        {(club.primaryColor || club.secondaryColor) && (
+        {(club.logo || club.primaryColor || club.secondaryColor) && (
           <ClubColorBanner
             primaryColor={club.primaryColor}
             secondaryColor={club.secondaryColor}
+            backgroundImageUrl={club.logo}
             height="lg"
             pattern="gradient"
             opacity={0.08}
           >
-            <div className="container mx-auto px-4 h-full flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            {club.logo && (
+              <button
+                type="button"
+                onClick={() => openImagePreview(club.logo as string, club.name)}
+                className="absolute inset-0 z-0 cursor-zoom-in"
+                aria-label="Preview cover image"
+              />
+            )}
+            <div className="container mx-auto px-4 h-full flex items-center justify-between relative z-10 pointer-events-none">
+              <div className="flex items-center gap-6 pointer-events-auto">
                 {club.logo ? (
                   <img 
                     src={club.logo} 
                     alt={club.name} 
-                    className="w-20 h-20 rounded-xl object-cover shadow-lg" 
+                    className="w-20 h-20 rounded-xl object-cover shadow-lg cursor-zoom-in"
+                    onClick={() => openImagePreview(club.logo as string, club.name)}
                   />
                 ) : (
                   <div className="w-20 h-20 bg-white/90 rounded-xl flex items-center justify-center shadow-lg">
@@ -358,7 +372,7 @@ export default function ClubDetailPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 pointer-events-auto">
                 <Link href={`/main/clubs/${club.id}?preview=true`}>
                   <Button variant="outline">
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,7 +398,7 @@ export default function ClubDetailPage() {
         {error && <Alert variant="error">{error}</Alert>}
 
         {/* Header (fallback when no colors) */}
-        {!(club.primaryColor || club.secondaryColor) && (
+        {!(club.logo || club.primaryColor || club.secondaryColor) && (
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               {club.logo ? (
@@ -501,6 +515,21 @@ export default function ClubDetailPage() {
               </Button>
             </div>
           </div>
+        </Modal>
+
+        <Modal
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          title={previewImage?.alt}
+          size="xl"
+        >
+          {previewImage && (
+            <img
+              src={previewImage.url}
+              alt={previewImage.alt}
+              className="max-h-[80vh] w-auto mx-auto rounded-lg"
+            />
+          )}
         </Modal>
       </div>
     </DashboardLayout>

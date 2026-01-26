@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Tabs, Loading, Alert, Avatar, Badge, ClubColorBadge, ClubColorBanner } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Tabs, Loading, Alert, Avatar, Badge, ClubColorBadge, ClubColorBanner, Modal } from '@/components/ui';
 import { clubService } from '@/services';
 import { Club, Team } from '@/types';
 import { useAuthStore } from '@/store';
@@ -20,6 +20,7 @@ export default function ClubDetailPage() {
   const [club, setClub] = useState<Club | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ url: string; alt: string } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -76,6 +77,10 @@ export default function ClubDetailPage() {
     user.id === club.organizerId ||
     user.id === club.organizer?.id
   );
+
+  const openImagePreview = (url: string, alt: string) => {
+    setPreviewImage({ url, alt });
+  };
 
   const tabs = [
     {
@@ -226,21 +231,31 @@ export default function ClubDetailPage() {
     <MainLayout>
       <div className="space-y-6">
         {/* Color Banner */}
-        {(club.primaryColor || club.secondaryColor) && (
+        {(club.logo || club.primaryColor || club.secondaryColor) && (
           <ClubColorBanner
             primaryColor={club.primaryColor}
             secondaryColor={club.secondaryColor}
+            backgroundImageUrl={club.logo}
             height="xl"
             pattern="radial"
             opacity={0.08}
           >
-            <div className="container mx-auto px-4 h-full flex flex-col justify-end pb-8">
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6">
+            {club.logo && (
+              <button
+                type="button"
+                onClick={() => openImagePreview(club.logo as string, club.name)}
+                className="absolute inset-0 z-0 cursor-zoom-in"
+                aria-label="Preview cover image"
+              />
+            )}
+            <div className="container mx-auto px-4 h-full flex flex-col justify-end pb-8 relative z-10 pointer-events-none">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 pointer-events-auto">
                 {club.logo ? (
                   <img
                     src={club.logo}
                     alt={club.name}
-                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover shadow-xl"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl object-cover shadow-xl cursor-zoom-in"
+                    onClick={() => openImagePreview(club.logo as string, club.name)}
                   />
                 ) : (
                   <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white/90 rounded-xl flex items-center justify-center shadow-xl">
@@ -311,7 +326,7 @@ export default function ClubDetailPage() {
           </div>
 
           {/* Header (fallback when no colors) */}
-          {!(club.primaryColor || club.secondaryColor) && (
+          {!(club.logo || club.primaryColor || club.secondaryColor) && (
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-6 sm:mb-8 text-center sm:text-left">
               <Avatar
                 src={club.logo}
@@ -364,6 +379,21 @@ export default function ClubDetailPage() {
           <Tabs tabs={tabs} />
         </div>
       </div>
+
+      <Modal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        title={previewImage?.alt}
+        size="xl"
+      >
+        {previewImage && (
+          <img
+            src={previewImage.url}
+            alt={previewImage.alt}
+            className="max-h-[80vh] w-auto mx-auto rounded-lg"
+          />
+        )}
+      </Modal>
     </MainLayout>
   );
 }

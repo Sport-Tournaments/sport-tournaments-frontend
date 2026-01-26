@@ -24,6 +24,7 @@ const tournamentSchema = z.object({
   registrationStartDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   registrationEndDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
   rules: z.string().optional(),
+  whatsappGroupLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   isPrivate: z.boolean().default(false),
   invitationCodeExpirationDays: z.coerce.number().min(1).max(365).optional(),
 });
@@ -194,6 +195,7 @@ export default function CreateTournamentPage() {
         registrationStartDate: data.registrationStartDate,
         registrationEndDate: data.registrationEndDate,
         registrationDeadline: data.registrationEndDate, // Backward compatibility
+        whatsappGroupLink: data.whatsappGroupLink || undefined,
         isPrivate: data.isPrivate,
         // Only include rules if provided (as regulationsData)
         ...(data.rules && { regulationsData: { rules: data.rules } }),
@@ -420,6 +422,18 @@ export default function CreateTournamentPage() {
                 error={errors.rules?.message}
                 {...register('rules')}
               />
+              <div>
+                <Input
+                  type="url"
+                  label={t('tournament.whatsappGroupLabel')}
+                  placeholder={t('tournament.whatsappGroupPlaceholder')}
+                  error={errors.whatsappGroupLink?.message}
+                  {...register('whatsappGroupLink')}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('tournament.whatsappGroupHelp')}
+                </p>
+              </div>
               
               <div>
                 <label className="block text-sm font-medium mb-2">

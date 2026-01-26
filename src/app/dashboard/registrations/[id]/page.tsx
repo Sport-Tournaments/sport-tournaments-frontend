@@ -221,6 +221,25 @@ export default function RegistrationDetailPage() {
           </Card>
         )}
 
+        {registration.status === 'APPROVED' && tournament?.whatsappGroupLink && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournament.whatsappGroupLabel')}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-600">
+                {t('tournament.whatsappGroupHelp')}
+              </p>
+              <Button
+                variant="primary"
+                onClick={() => window.open(tournament.whatsappGroupLink as string, '_blank')}
+              >
+                {t('tournament.whatsappGroupJoin')}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Registration Details */}
         <Card>
           <CardHeader>

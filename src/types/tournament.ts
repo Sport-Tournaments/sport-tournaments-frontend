@@ -75,6 +75,7 @@ export interface Tournament {
   registrationStartDate?: string;
   registrationEndDate?: string;
   isRegistrationClosed?: boolean;
+  whatsappGroupLink?: string;
   registrationFee?: number;
   registeredTeams?: number;
   bannerImage?: string;
@@ -135,6 +136,7 @@ export interface CreateTournamentDto {
   tags?: string[];
   registrationDeadline?: string;
   isRegistrationClosed?: boolean;
+  whatsappGroupLink?: string;
   contactEmail?: string;
   contactPhone?: string;
   country?: string;

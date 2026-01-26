@@ -36,6 +36,7 @@ const tournamentSchema = z.object({
   level: z.enum(TOURNAMENT_LEVELS).optional(),
   format: z.enum(TOURNAMENT_FORMATS).optional(),
   rules: z.string().optional(),
+  whatsappGroupLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
   contactPhone: z.string().optional(),
   status: z.enum(TOURNAMENT_STATUSES),
@@ -229,6 +230,7 @@ export default function EditTournamentPage() {
         level: data.level || undefined,
         format: (data.format || undefined) as 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE' | undefined,
         rules: data.rules || '',
+        whatsappGroupLink: (data as any).whatsappGroupLink || '',
         contactEmail: data.contactEmail || '',
         contactPhone: data.contactPhone || '',
         status: data.status,
@@ -262,6 +264,7 @@ export default function EditTournamentPage() {
         level: data.level,
         // Include isPrivate field
         isPrivate: data.isPrivate,
+        whatsappGroupLink: data.whatsappGroupLink || undefined,
         // Only include contactEmail if it's a valid email (not empty string)
         ...(data.contactEmail && data.contactEmail.trim() !== '' && { contactEmail: data.contactEmail }),
         ...(data.contactPhone && { contactPhone: data.contactPhone }),
@@ -596,6 +599,18 @@ export default function EditTournamentPage() {
                   error={errors.contactPhone?.message}
                   {...register('contactPhone')}
                 />
+              </div>
+              <div>
+                <Input
+                  type="url"
+                  label={t('tournament.whatsappGroupLabel')}
+                  placeholder={t('tournament.whatsappGroupPlaceholder')}
+                  error={errors.whatsappGroupLink?.message}
+                  {...register('whatsappGroupLink')}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('tournament.whatsappGroupHelp')}
+                </p>
               </div>
               <Textarea
                 label={t('tournament.rules')}

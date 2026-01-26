@@ -76,15 +76,18 @@ export default function TournamentDetailPage() {
     }
   };
 
+  const normalizeStatus = (status: TournamentStatus) =>
+    status === 'DRAFT' ? 'PUBLISHED' : status;
+
   const getStatusBadge = (status: TournamentStatus) => {
+    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-      'DRAFT': 'default',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[status] || 'default';
+    return variants[normalizedStatus] || 'default';
   };
 
   const getRegistrationStatusBadge = (status: RegistrationStatus) => {
@@ -492,7 +495,7 @@ export default function TournamentDetailPage() {
                 {tournament.name}
               </h1>
               <Badge variant={getStatusBadge(tournament.status)}>
-                {t(`tournament.status.${tournament.status}`)}
+                {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
               </Badge>
               {tournament.isPrivate && (
                 <Badge variant="warning">
@@ -529,18 +532,6 @@ export default function TournamentDetailPage() {
         </div>
 
         {/* Status Actions */}
-        {tournament.status === ('DRAFT' as TournamentStatus) && (
-          <Alert variant="info" className="flex items-center justify-between">
-            <span>This tournament is in draft mode. Publish it to make it visible.</span>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleStatusChange('PUBLISHED' as TournamentStatus)}
-            >
-              Publish Tournament
-            </Button>
-          </Alert>
-        )}
 
         {tournament.status === 'PUBLISHED' && !tournament.isRegistrationClosed && (
           <Alert variant="info" className="flex items-center justify-between">

@@ -59,15 +59,18 @@ export default function DashboardTournamentsPage() {
     fetchData: fetchTournaments,
   });
 
+  const normalizeStatus = (status: TournamentStatus) =>
+    status === 'DRAFT' ? 'PUBLISHED' : status;
+
   const getStatusBadge = (status: TournamentStatus) => {
+    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-      'DRAFT': 'default',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[status] || 'default';
+    return variants[normalizedStatus] || 'default';
   };
 
   const getMaxTeamsDisplay = (tournament: Tournament) => {
@@ -158,7 +161,7 @@ export default function DashboardTournamentsPage() {
                               {tournament.name}
                             </Link>
                             <Badge variant={getStatusBadge(tournament.status)}>
-                              {t(`tournament.status.${tournament.status}`)}
+                              {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
                             </Badge>
                           </div>
                           <div className="text-sm text-gray-500">

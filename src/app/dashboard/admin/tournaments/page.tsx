@@ -101,20 +101,22 @@ export default function AdminTournamentsPage() {
     }
   };
 
+  const normalizeStatus = (status: TournamentStatus) =>
+    status === 'DRAFT' ? 'PUBLISHED' : status;
+
   const getStatusBadge = (status: TournamentStatus) => {
+    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-      DRAFT: 'default',
       PUBLISHED: 'info',
       ONGOING: 'success',
       COMPLETED: 'success',
       CANCELLED: 'danger',
     };
-    return variants[status] || 'default';
+    return variants[normalizedStatus] || 'default';
   };
 
   const statusOptions = [
     { value: 'all', label: 'All Statuses' },
-    { value: 'DRAFT', label: t('tournament.status.DRAFT') },
     { value: 'PUBLISHED', label: t('tournament.status.PUBLISHED') },
     { value: 'ONGOING', label: t('tournament.status.ONGOING') },
     { value: 'COMPLETED', label: t('tournament.status.COMPLETED') },
@@ -218,7 +220,7 @@ export default function AdminTournamentsPage() {
                               {tournament.name}
                             </Link>
                             <Badge variant={getStatusBadge(tournament.status)}>
-                              {t(`tournament.status.${tournament.status}`)}
+                              {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
                             </Badge>
                           </div>
                           <p className="text-sm text-gray-500">
@@ -240,15 +242,6 @@ export default function AdminTournamentsPage() {
                         <Link href={`/dashboard/tournaments/${tournament.id}/edit`}>
                           <Button variant="outline" size="sm">Edit</Button>
                         </Link>
-                        {tournament.status === ('DRAFT' as TournamentStatus) && (
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => handleStatusChange(tournament.id, 'PUBLISHED' as TournamentStatus)}
-                          >
-                            Publish
-                          </Button>
-                        )}
                         {tournament.status === 'PUBLISHED' && (
                           <Button
                             variant="primary"

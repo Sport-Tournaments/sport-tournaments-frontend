@@ -19,7 +19,7 @@ import { formatDateForInput } from '@/utils/date';
 const AGE_CATEGORIES = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'SENIOR', 'VETERANS'] as const;
 const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
 const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
-const TOURNAMENT_STATUSES = ['DRAFT', 'PUBLISHED', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
+const TOURNAMENT_STATUSES = ['PUBLISHED', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
 
 const tournamentSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -231,7 +231,7 @@ export default function EditTournamentPage() {
         rules: data.rules || '',
         contactEmail: data.contactEmail || '',
         contactPhone: data.contactPhone || '',
-        status: data.status,
+        status: data.status === 'DRAFT' ? 'PUBLISHED' : data.status,
         isPrivate: (data as any).isPrivate || false,
       });
     } catch (err: any) {

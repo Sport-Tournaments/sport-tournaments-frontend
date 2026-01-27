@@ -420,7 +420,7 @@ export function AgeGroupsManager({
                           }
                           helperText={t('tournaments.ageGroups.locationAddressHelp', 'Override the default tournament location for this category')}
                           displayMode="address"
-                          searchContext={tournamentLocation}
+                          limit={15}
                         />
                       )}
                     </div>

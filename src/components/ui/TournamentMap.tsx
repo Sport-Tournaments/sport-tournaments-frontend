@@ -13,8 +13,8 @@ interface TournamentMapProps {
 }
 
 // Dynamically import the entire map component with ssr disabled
-const LeafletMap = dynamic(
-  () => import('./LeafletMap'),
+const GoogleMap = dynamic(
+  () => import('./GoogleMap'),
   { 
     ssr: false,
     loading: () => (
@@ -67,7 +67,7 @@ export function TournamentMap({
 
   return (
     <div className={className} key={mapKey}>
-      <LeafletMap 
+      <GoogleMap 
         key={mapKey}
         tournaments={tournamentsWithCoords}
         defaultCenter={defaultCenter}

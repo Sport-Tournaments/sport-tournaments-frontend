@@ -343,6 +343,7 @@ export default function CreateTournamentPage() {
                   <LocationAutocomplete
                     label={t('tournament.location')}
                     placeholder="Search for city or venue..."
+                    displayMode="address"
                     onSelect={handleLocationSelect}
                     error={errors.location?.message}
                     required

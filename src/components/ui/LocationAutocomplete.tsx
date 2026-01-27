@@ -19,6 +19,7 @@ export interface LocationAutocompleteProps {
   onCoordinatesChange?: (lat: number, lng: number) => void;
   displayMode?: 'city' | 'address';
   searchContext?: string;
+  limit?: number;
 }
 
 export default function LocationAutocomplete({
@@ -34,6 +35,7 @@ export default function LocationAutocomplete({
   onCoordinatesChange,
   displayMode = 'city',
   searchContext,
+  limit,
 }: LocationAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
@@ -64,16 +66,23 @@ export default function LocationAutocomplete({
         ? `${normalizedQuery}, ${normalizedContext}`
         : normalizedQuery;
 
+      const effectiveLimit = limit ?? (displayMode === 'address' ? 10 : 5);
+
       setIsLoading(true);
       try {
-        const response = await searchLocations(searchQuery);
+        const response = await searchLocations(searchQuery, effectiveLimit);
         if (response.success) {
-          // Remove duplicates based on city + region + country
+          // Remove duplicates based on display mode
           const uniqueSuggestions = response.data.reduce((acc, current) => {
-            const key = `${current.city}-${current.region || ''}-${current.country}`;
-            const existing = acc.find(item => 
-              `${item.city}-${item.region || ''}-${item.country}` === key
-            );
+            const key = displayMode === 'address'
+              ? (current.placeId || current.formattedAddress)
+              : `${current.city}-${current.region || ''}-${current.country}`;
+            const existing = acc.find(item => {
+              const existingKey = displayMode === 'address'
+                ? (item.placeId || item.formattedAddress)
+                : `${item.city}-${item.region || ''}-${item.country}`;
+              return existingKey === key;
+            });
             if (!existing) {
               acc.push(current);
             }
@@ -92,7 +101,7 @@ export default function LocationAutocomplete({
     }
 
     fetchSuggestions();
-  }, [debouncedQuery]);
+  }, [debouncedQuery, displayMode, searchContext]);
 
   // Sync external value changes
   useEffect(() => {

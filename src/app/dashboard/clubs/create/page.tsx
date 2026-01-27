@@ -377,6 +377,7 @@ export default function CreateClubPage() {
               <LocationAutocomplete
                 label={t('clubs.locationSearch', 'Search Location')}
                 placeholder="Search for city or address..."
+                displayMode="address"
                 value={locationQuery}
                 required
                 error={locationError}

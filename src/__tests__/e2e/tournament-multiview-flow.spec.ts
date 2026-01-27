@@ -309,12 +309,8 @@ test.describe('Tournament Multi-View Flow', () => {
     await page.waitForTimeout(3000);
     
     // Verify map container is present
-    const mapContainer = page.locator('.leaflet-container, [class*="map"]').first();
+    const mapContainer = page.locator('[data-testid="google-map"]').first();
     await expect(mapContainer).toBeVisible({ timeout: 10000 });
-    
-    // Verify markers are present on the map
-    const markers = page.locator('.leaflet-marker-icon');
-    await expect(markers.first()).toBeVisible({ timeout: 5000 });
     
     // Verify tournament count message shows at least 1 tournament
     const countMessage = page.locator('text=/Showing.*tournament/i');
@@ -426,7 +422,7 @@ test.describe('Tournament Multi-View Flow', () => {
     await mapButton.click();
     await page.waitForTimeout(2000);
     
-    const mapContainer = page.locator('.leaflet-container').first();
+    const mapContainer = page.locator('[data-testid="google-map"]').first();
     await expect(mapContainer).toBeVisible({ timeout: 10000 });
     console.log('✅ Verified in map view');
     

@@ -525,6 +525,7 @@ export default function EditTournamentPage() {
                   <LocationAutocomplete
                         label={t('tournament.location')}
                     placeholder="Search for city or venue..."
+                    displayMode="address"
                         value={watchedLocation || ''}
                         onChange={(value) => setValue('location', value, { shouldValidate: true })}
                     onSelect={handleLocationSelect}

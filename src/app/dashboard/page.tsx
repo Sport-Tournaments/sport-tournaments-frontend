@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Loading } from '@/components/ui';
@@ -14,6 +15,7 @@ import { getTournamentPublicPath } from '@/utils/helpers';
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     tournaments: 0,
@@ -52,6 +54,11 @@ export default function DashboardPage() {
         clubData = cData.data;
       }
       const clubTotal = clubData.length;
+
+      if (clubTotal > 0 && tournamentTotal === 0) {
+        router.replace('/dashboard/tournaments');
+        return;
+      }
 
       const tournamentById = new Map(tournamentData.map((tournament) => [tournament.id, tournament]));
 

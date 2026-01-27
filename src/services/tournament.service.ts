@@ -101,11 +101,6 @@ export async function cancelTournament(id: string): Promise<ApiResponse<Tourname
   return apiPost<ApiResponse<Tournament>>(`${TOURNAMENTS_BASE}/${id}/cancel`);
 }
 
-// Start tournament
-export async function startTournament(id: string): Promise<ApiResponse<Tournament>> {
-  return apiPost<ApiResponse<Tournament>>(`${TOURNAMENTS_BASE}/${id}/start`);
-}
-
 // Complete tournament
 export async function completeTournament(id: string): Promise<ApiResponse<Tournament>> {
   return apiPost<ApiResponse<Tournament>>(`${TOURNAMENTS_BASE}/${id}/complete`);
@@ -189,7 +184,6 @@ export const tournamentService = {
   deleteTournament,
   publishTournament,
   cancelTournament,
-  startTournament,
   completeTournament,
   trackRegulationsDownload,
   getInvitationCode,

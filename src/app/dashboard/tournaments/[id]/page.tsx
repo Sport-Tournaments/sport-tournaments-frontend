@@ -100,24 +100,6 @@ export default function TournamentDetailPage() {
     return variants[status] || 'default';
   };
 
-  const handleStatusChange = async (newStatus: TournamentStatus) => {
-    if (!tournament) return;
-    try {
-      let response;
-      if (newStatus === 'PUBLISHED') {
-        response = await tournamentService.publishTournament(tournament.id);
-      } else if (newStatus === 'ONGOING') {
-        response = await tournamentService.startTournament(tournament.id);
-      } else {
-        setError('Invalid status transition');
-        return;
-      }
-      setTournament(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update status');
-    }
-  };
-
   const handleApproveRegistrationWithPayment = async (registrationId: string) => {
     try {
       await registrationService.approveRegistrationWithPayment(registrationId);
@@ -573,13 +555,6 @@ export default function TournamentDetailPage() {
               >
                 {t('tournament.stopRegistrations')}
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => handleStatusChange('ONGOING')}
-              >
-                {t('tournament.startTournament')}
-              </Button>
             </div>
           </Alert>
         )}
@@ -587,13 +562,6 @@ export default function TournamentDetailPage() {
         {tournament.status === 'PUBLISHED' && tournament.isRegistrationClosed && (
           <Alert variant="warning" className="flex items-center justify-between">
             <span>{t('tournament.registrationClosed')}</span>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleStatusChange('ONGOING')}
-            >
-              {t('tournament.startTournament')}
-            </Button>
           </Alert>
         )}
 

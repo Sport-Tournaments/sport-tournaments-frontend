@@ -79,16 +79,6 @@ export default function AdminTournamentsPage() {
     reset();
   };
 
-  const handleStatusChange = async (tournamentId: string, newStatus: TournamentStatus) => {
-    try {
-      await tournamentService.adminUpdateTournament(tournamentId, { status: newStatus });
-      setSuccess('Tournament status updated');
-      reset();
-    } catch (err: any) {
-      setError('Failed to update tournament status');
-    }
-  };
-
   const handleDelete = async (tournamentId: string) => {
     if (!confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) return;
     
@@ -242,15 +232,6 @@ export default function AdminTournamentsPage() {
                         <Link href={`/dashboard/tournaments/${tournament.id}/edit`}>
                           <Button variant="outline" size="sm">Edit</Button>
                         </Link>
-                        {tournament.status === 'PUBLISHED' && (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleStatusChange(tournament.id, 'ONGOING')}
-                          >
-                            Start Tournament
-                          </Button>
-                        )}
                         <Button
                           variant="danger"
                           size="sm"

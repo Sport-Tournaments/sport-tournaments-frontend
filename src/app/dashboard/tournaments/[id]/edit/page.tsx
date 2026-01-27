@@ -17,7 +17,8 @@ import { formatDateForInput } from '@/utils/date';
 import { slugify } from '@/utils/helpers';
 
 // Define value arrays for runtime use
-const TOURNAMENT_STATUSES = ['PUBLISHED', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
+const BASE_TOURNAMENT_STATUSES = ['PUBLISHED', 'COMPLETED', 'CANCELLED'] as const;
+const TOURNAMENT_STATUSES = [...BASE_TOURNAMENT_STATUSES, 'ONGOING'] as const;
 
 const tournamentSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -283,8 +284,6 @@ export default function EditTournamentPage() {
       if (tournament && data.status !== tournament.status) {
         if (data.status === 'PUBLISHED') {
           await tournamentService.publishTournament(params.id as string);
-        } else if (data.status === 'ONGOING') {
-          await tournamentService.startTournament(params.id as string);
         } else if (data.status === 'COMPLETED') {
           await tournamentService.completeTournament(params.id as string);
         } else if (data.status === 'CANCELLED') {
@@ -339,7 +338,11 @@ export default function EditTournamentPage() {
     }
   };
 
-  const statusOptions = TOURNAMENT_STATUSES.map(status => ({
+  const availableStatuses = tournament?.status === 'ONGOING'
+    ? TOURNAMENT_STATUSES
+    : BASE_TOURNAMENT_STATUSES;
+
+  const statusOptions = availableStatuses.map(status => ({
     value: status,
     label: t(`tournament.status.${status}`),
   }));

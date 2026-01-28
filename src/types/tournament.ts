@@ -1,6 +1,27 @@
 // Tournament types
 export type TournamentStatus = 'DRAFT' | 'PUBLISHED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
-export type AgeCategory = 'U8' | 'U10' | 'U12' | 'U14' | 'U16' | 'U18' | 'U21' | 'SENIOR' | 'VETERANS';
+export type AgeCategory =
+  | 'U5'
+  | 'U6'
+  | 'U7'
+  | 'U8'
+  | 'U9'
+  | 'U10'
+  | 'U11'
+  | 'U12'
+  | 'U13'
+  | 'U14'
+  | 'U15'
+  | 'U16'
+  | 'U17'
+  | 'U18'
+  | 'U19'
+  | 'U20'
+  | 'U21'
+  | 'U22'
+  | 'U23'
+  | 'SENIOR'
+  | 'VETERANS';
 export type TournamentFormat = 'SINGLE_ELIMINATION' | 'DOUBLE_ELIMINATION' | 'ROUND_ROBIN' | 'GROUPS_PLUS_KNOCKOUT' | 'LEAGUE';
 export type TournamentLevel = 'I' | 'II' | 'III';
 export type Currency = 'EUR' | 'RON' | 'USD' | 'GBP';

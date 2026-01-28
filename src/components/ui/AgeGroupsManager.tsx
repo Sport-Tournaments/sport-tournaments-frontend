@@ -91,7 +91,6 @@ interface AgeGroupsManagerProps {
 
 const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
   ageCategory: undefined,
-  level: 'II',
   format: 'GROUPS_PLUS_KNOCKOUT',
   gameSystem: '7+1',
   teamCount: 16,
@@ -113,10 +112,13 @@ export function AgeGroupsManager({
     value: cat,
     label: t(`tournament.ageCategory.${cat}`),
   }));
-  const levelOptions = TOURNAMENT_LEVELS.map((level) => ({
-    value: level,
-    label: t(`tournament.level.${level}`),
-  }));
+  const levelOptions = [
+    { value: '', label: t('common.none') },
+    ...TOURNAMENT_LEVELS.map((level) => ({
+      value: level,
+      label: t(`tournament.level.${level}`),
+    })),
+  ];
   const formatOptions = TOURNAMENT_FORMATS.map((format) => ({
     value: format,
     label: t(`tournament.format.${format}`, format.replace(/_/g, ' ')),
@@ -313,7 +315,7 @@ export function AgeGroupsManager({
                     <Select
                       label={t('tournament.level.label')}
                       options={levelOptions}
-                      value={ageGroup.level || 'II'}
+                      value={ageGroup.level ?? ''}
                       onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { level: (e.target.value || undefined) as TournamentLevel | undefined })}
                       disabled={disabled}
                     />

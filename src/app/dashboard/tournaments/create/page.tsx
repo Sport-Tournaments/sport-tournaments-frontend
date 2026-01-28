@@ -118,17 +118,6 @@ export default function CreateTournamentPage() {
   const shouldWarnOnLeave = hasUnsavedChanges && !isLoading;
 
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!shouldWarnOnLeave) return;
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [shouldWarnOnLeave]);
-
-  useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       if (!shouldWarnOnLeave) return;
       const target = event.target as HTMLElement | null;

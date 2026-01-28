@@ -87,7 +87,7 @@ export interface Tournament {
   latitude?: number;
   longitude?: number;
   ageCategory: AgeCategory;
-  level: TournamentLevel;
+  level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;
   maxTeams: number;

@@ -1,35 +1,68 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea, Select, Alert, Loading, FileUpload, FilePreview, InvitationCodeManager, AgeGroupsManager, LocationAutocomplete, Modal } from '@/components/ui';
-import type { AgeGroupFormData } from '@/components/ui';
-import { tournamentService, fileService } from '@/services';
-import { getCurrentLocation } from '@/services/location.service';
-import { Tournament } from '@/types';
-import type { LocationSuggestion } from '@/types';
-import { formatDateForInput } from '@/utils/date';
-import { slugify } from '@/utils/helpers';
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { DashboardLayout } from "@/components/layout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Alert,
+  Loading,
+  FileUpload,
+  FilePreview,
+  InvitationCodeManager,
+  AgeGroupsManager,
+  LocationAutocomplete,
+  Modal,
+} from "@/components/ui";
+import type { AgeGroupFormData } from "@/components/ui";
+import { tournamentService, fileService } from "@/services";
+import { getCurrentLocation } from "@/services/location.service";
+import { Tournament } from "@/types";
+import type { LocationSuggestion } from "@/types";
+import { formatDateForInput } from "@/utils/date";
+import { slugify } from "@/utils/helpers";
 
 // Define value arrays for runtime use
-const BASE_TOURNAMENT_STATUSES = ['PUBLISHED', 'COMPLETED', 'CANCELLED'] as const;
-const TOURNAMENT_STATUSES = [...BASE_TOURNAMENT_STATUSES, 'ONGOING'] as const;
+const BASE_TOURNAMENT_STATUSES = [
+  "PUBLISHED",
+  "COMPLETED",
+  "CANCELLED",
+] as const;
+const TOURNAMENT_STATUSES = [...BASE_TOURNAMENT_STATUSES, "ONGOING"] as const;
 
 const tournamentSchema = z.object({
-  name: z.string().min(3, 'Name must be at least 3 characters'),
-  urlSlug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase letters, numbers, and hyphens only').optional().or(z.literal('')),
-  description: z.string().min(10, 'Description must be at least 10 characters'),
-  location: z.string().min(3, 'Location is required'),
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  urlSlug: z
+    .string()
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Slug must be lowercase letters, numbers, and hyphens only",
+    )
+    .optional()
+    .or(z.literal("")),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  registrationStartDate: z.string().optional(),
+  registrationEndDate: z.string().optional(),
+  registrationDeadline: z.string().optional(),
+  location: z.string().min(3, "Location is required"),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
-  whatsappGroupLink: z.string().url('Invalid URL').optional().or(z.literal('')),
+  whatsappGroupLink: z.string().url("Invalid URL").optional().or(z.literal("")),
   rules: z.string().optional(),
-  contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
+  contactEmail: z.string().email("Invalid email").optional().or(z.literal("")),
   contactPhone: z.string().optional(),
   status: z.enum(TOURNAMENT_STATUSES),
   isPrivate: z.boolean().optional(),
@@ -47,7 +80,7 @@ export default function EditTournamentPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const errorRef = useRef<HTMLDivElement>(null);
-  const initialAgeGroupsRef = useRef<string>('');
+  const initialAgeGroupsRef = useRef<string>("");
   const initialHasRegulationsRef = useRef(false);
   const pendingNavigationRef = useRef<null | (() => void)>(null);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
@@ -55,9 +88,9 @@ export default function EditTournamentPage() {
   // Auto-scroll to error message when error is set
   useEffect(() => {
     if (error && errorRef.current) {
-      errorRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      errorRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
       });
       // Focus on the error message for accessibility
       errorRef.current.focus();
@@ -80,9 +113,9 @@ export default function EditTournamentPage() {
     resolver: zodResolver(tournamentSchema),
   });
 
-  const isPrivate = watch('isPrivate');
-  const watchedLocation = watch('location');
-  const watchedName = watch('name');
+  const isPrivate = watch("isPrivate");
+  const watchedLocation = watch("location");
+  const watchedName = watch("name");
   const hasUnsavedAgeGroups = useMemo(() => {
     if (!initialAgeGroupsRef.current) return false;
     return initialAgeGroupsRef.current !== JSON.stringify(ageGroups);
@@ -91,17 +124,22 @@ export default function EditTournamentPage() {
     if (regulationsFile) return true;
     return hasExistingRegulations !== initialHasRegulationsRef.current;
   }, [regulationsFile, hasExistingRegulations]);
-  const hasUnsavedChanges = isDirty || hasUnsavedAgeGroups || hasUnsavedRegulations;
+  const hasUnsavedChanges =
+    isDirty || hasUnsavedAgeGroups || hasUnsavedRegulations;
 
   useEffect(() => {
     if (slugTouched) return;
-    const generatedSlug = watchedName ? slugify(watchedName) : '';
-    setValue('urlSlug', generatedSlug, { shouldDirty: !!generatedSlug });
+    const generatedSlug = watchedName ? slugify(watchedName) : "";
+    setValue("urlSlug", generatedSlug, { shouldDirty: !!generatedSlug });
   }, [watchedName, slugTouched, setValue]);
 
   const getLeaveMessage = useCallback(
-    () => t('common.unsavedChangesPrompt', 'You have unsaved changes. Are you sure you want to leave this page?'),
-    [t]
+    () =>
+      t(
+        "common.unsavedChangesPrompt",
+        "You have unsaved changes. Are you sure you want to leave this page?",
+      ),
+    [t],
   );
 
   const openLeaveModal = useCallback((action: () => void) => {
@@ -127,28 +165,28 @@ export default function EditTournamentPage() {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (!shouldWarnOnLeave) return;
       event.preventDefault();
-      event.returnValue = '';
+      event.returnValue = "";
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [shouldWarnOnLeave]);
 
   useEffect(() => {
     const handleDocumentClick = (event: MouseEvent) => {
       if (!shouldWarnOnLeave) return;
       const target = event.target as HTMLElement | null;
-      const anchor = target?.closest('a');
+      const anchor = target?.closest("a");
       if (!anchor) return;
-      const href = anchor.getAttribute('href');
-      if (!href || href.startsWith('#')) return;
-      if (anchor.target === '_blank' || anchor.hasAttribute('download')) return;
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
+      if (anchor.target === "_blank" || anchor.hasAttribute("download")) return;
 
       event.preventDefault();
       event.stopPropagation();
 
       openLeaveModal(() => {
-        if (href.startsWith('http')) {
+        if (href.startsWith("http")) {
           window.location.href = href;
           return;
         }
@@ -156,16 +194,17 @@ export default function EditTournamentPage() {
       });
     };
 
-    document.addEventListener('click', handleDocumentClick, true);
-    return () => document.removeEventListener('click', handleDocumentClick, true);
+    document.addEventListener("click", handleDocumentClick, true);
+    return () =>
+      document.removeEventListener("click", handleDocumentClick, true);
   }, [shouldWarnOnLeave, getLeaveMessage]);
 
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
-    setValue('location', location.formattedAddress);
+    setValue("location", location.formattedAddress);
     if (location.latitude && location.longitude) {
-      setValue('latitude', location.latitude);
-      setValue('longitude', location.longitude);
+      setValue("latitude", location.latitude);
+      setValue("longitude", location.longitude);
     }
   };
 
@@ -174,12 +213,16 @@ export default function EditTournamentPage() {
     setIsGettingLocation(true);
     try {
       const location = await getCurrentLocation();
-      setValue('latitude', location.latitude);
-      setValue('longitude', location.longitude);
+      setValue("latitude", location.latitude);
+      setValue("longitude", location.longitude);
       // Update the location field to show coordinates (user can override with autocomplete)
-      setValue('location', `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`);
+      setValue(
+        "location",
+        `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`,
+      );
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get location';
+      const message =
+        err instanceof Error ? err.message : "Failed to get location";
       setError(message);
     } finally {
       setIsGettingLocation(false);
@@ -192,55 +235,64 @@ export default function EditTournamentPage() {
 
   const fetchTournament = async () => {
     try {
-      const response = await tournamentService.getTournamentById(params.id as string);
+      const response = await tournamentService.getTournamentById(
+        params.id as string,
+      );
       const data = response.data;
       setTournament(data);
       setHasExistingRegulations(!!data.regulationsDocument);
       // Load existing age groups if available
-      const mappedAgeGroups = data.ageGroups && data.ageGroups.length > 0
-        ? data.ageGroups.map(ag => ({
-          id: ag.id,
-          birthYear: ag.birthYear,
-          displayLabel: ag.displayLabel,
-          ageCategory: (ag as any).ageCategory,
-          level: (ag as any).level,
-          format: (ag as any).format,
-          gameSystem: ag.gameSystem,
-          teamCount: ag.teamCount,
-          participationFee: (ag as any).participationFee,
-          startDate: ag.startDate,
-          endDate: ag.endDate,
-          locationId: ag.locationId,
-          locationAddress: ag.locationAddress,
-          groupsCount: ag.groupsCount,
-          teamsPerGroup: ag.teamsPerGroup,
-        }))
-        : [];
+      const mappedAgeGroups =
+        data.ageGroups && data.ageGroups.length > 0
+          ? data.ageGroups.map((ag) => ({
+              id: ag.id,
+              birthYear: ag.birthYear,
+              displayLabel: ag.displayLabel,
+              ageCategory: (ag as any).ageCategory,
+              level: (ag as any).level,
+              format: (ag as any).format,
+              gameSystem: ag.gameSystem,
+              teamCount: ag.teamCount,
+              participationFee: (ag as any).participationFee,
+              startDate: ag.startDate,
+              endDate: ag.endDate,
+              locationId: ag.locationId,
+              locationAddress: ag.locationAddress,
+              groupsCount: ag.groupsCount,
+              teamsPerGroup: ag.teamsPerGroup,
+            }))
+          : [];
       setAgeGroups(mappedAgeGroups);
       initialAgeGroupsRef.current = JSON.stringify(mappedAgeGroups);
       initialHasRegulationsRef.current = !!data.regulationsDocument;
       reset({
         name: data.name,
-        urlSlug: data.urlSlug || '',
+        urlSlug: data.urlSlug || "",
         description: data.description,
         startDate: formatDateForInput(data.startDate),
         endDate: formatDateForInput(data.endDate),
-        registrationStartDate: formatDateForInput((data as any).registrationStartDate || ''),
-        registrationEndDate: formatDateForInput((data as any).registrationEndDate || ''),
-        registrationDeadline: formatDateForInput(data.registrationDeadline || ''),
+        registrationStartDate: formatDateForInput(
+          (data as any).registrationStartDate || "",
+        ),
+        registrationEndDate: formatDateForInput(
+          (data as any).registrationEndDate || "",
+        ),
+        registrationDeadline: formatDateForInput(
+          data.registrationDeadline || "",
+        ),
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        whatsappGroupLink: data.whatsappGroupLink || '',
-        rules: data.rules || '',
-        contactEmail: data.contactEmail || '',
-        contactPhone: data.contactPhone || '',
-        status: data.status === 'DRAFT' ? 'PUBLISHED' : data.status,
+        whatsappGroupLink: data.whatsappGroupLink || "",
+        rules: data.rules || "",
+        contactEmail: data.contactEmail || "",
+        contactPhone: data.contactPhone || "",
+        status: data.status === "DRAFT" ? "PUBLISHED" : data.status,
         isPrivate: (data as any).isPrivate || false,
       });
       setSlugTouched(!!data.urlSlug);
     } catch (err: any) {
-      setError('Failed to load tournament');
+      setError("Failed to load tournament");
     } finally {
       setLoading(false);
     }
@@ -254,62 +306,84 @@ export default function EditTournamentPage() {
       // Backend doesn't accept: venue, city, minTeams, format, entryFee, prizeMoney, rules
       const updateData = {
         name: data.name,
-        ...(data.urlSlug && data.urlSlug.trim() !== '' && { urlSlug: data.urlSlug.trim() }),
+        ...(data.urlSlug &&
+          data.urlSlug.trim() !== "" && { urlSlug: data.urlSlug.trim() }),
         description: data.description,
         startDate: data.startDate,
         endDate: data.endDate,
         registrationStartDate: data.registrationStartDate,
         registrationEndDate: data.registrationEndDate,
-        registrationDeadline: data.registrationEndDate || data.registrationDeadline, // Backward compatibility
+        registrationDeadline:
+          data.registrationEndDate || data.registrationDeadline, // Backward compatibility
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
-        ...(data.whatsappGroupLink?.trim() && { whatsappGroupLink: data.whatsappGroupLink.trim() }),
+        ...(data.whatsappGroupLink?.trim() && {
+          whatsappGroupLink: data.whatsappGroupLink.trim(),
+        }),
         // Include isPrivate field
         isPrivate: data.isPrivate,
         // Only include contactEmail if it's a valid email (not empty string)
-        ...(data.contactEmail && data.contactEmail.trim() !== '' && { contactEmail: data.contactEmail }),
+        ...(data.contactEmail &&
+          data.contactEmail.trim() !== "" && {
+            contactEmail: data.contactEmail,
+          }),
         ...(data.contactPhone && { contactPhone: data.contactPhone }),
       };
-      
+
       // First update the tournament data
-      await tournamentService.updateTournament(params.id as string, updateData as any);
+      await tournamentService.updateTournament(
+        params.id as string,
+        updateData as any,
+      );
 
       // Update status via dedicated endpoints when changed
       if (tournament && data.status !== tournament.status) {
-        if (data.status === 'PUBLISHED') {
+        if (data.status === "PUBLISHED") {
           await tournamentService.publishTournament(params.id as string);
-        } else if (data.status === 'COMPLETED') {
+        } else if (data.status === "COMPLETED") {
           await tournamentService.completeTournament(params.id as string);
-        } else if (data.status === 'CANCELLED') {
+        } else if (data.status === "CANCELLED") {
           await tournamentService.cancelTournament(params.id as string);
         }
       }
-      
+
       // Update age groups if any changes
-      if (ageGroups.length > 0 || (tournament?.ageGroups && tournament.ageGroups.length > 0)) {
+      if (
+        ageGroups.length > 0 ||
+        (tournament?.ageGroups && tournament.ageGroups.length > 0)
+      ) {
         try {
           // Strip out fields that are not allowed in UpdateAgeGroupDto
-          const sanitizedAgeGroups = ageGroups.map(ag => {
-            const { minTeams, maxTeams, numberOfMatches, guaranteedMatches, ...allowed } = ag as any;
+          const sanitizedAgeGroups = ageGroups.map((ag) => {
+            const {
+              minTeams,
+              maxTeams,
+              numberOfMatches,
+              guaranteedMatches,
+              ...allowed
+            } = ag as any;
             return allowed;
           });
-          await tournamentService.updateTournamentAgeGroups(params.id as string, sanitizedAgeGroups);
+          await tournamentService.updateTournamentAgeGroups(
+            params.id as string,
+            sanitizedAgeGroups,
+          );
         } catch (ageGroupErr) {
-          console.error('Failed to update age groups:', ageGroupErr);
+          console.error("Failed to update age groups:", ageGroupErr);
           // Don't fail the whole update, just warn
         }
       }
-      
+
       // Upload new regulations file if one was selected
       if (regulationsFile) {
         try {
           const uploadResponse = await fileService.uploadFile(regulationsFile, {
-            entityType: 'tournament',
+            entityType: "tournament",
             entityId: params.id as string,
             isPublic: true,
           });
-          
+
           // Update tournament with the file ID (used for download URL)
           if (uploadResponse.data?.id) {
             await tournamentService.updateTournament(params.id as string, {
@@ -317,27 +391,28 @@ export default function EditTournamentPage() {
             });
           }
         } catch (uploadErr) {
-          console.error('Failed to upload regulations file:', uploadErr);
+          console.error("Failed to upload regulations file:", uploadErr);
           // Don't fail the whole update, just warn
         }
       }
-      
+
       setSuccess(true);
       setTimeout(() => {
         router.push(`/dashboard/tournaments/${params.id}`);
       }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update tournament');
+      setError(err.response?.data?.message || "Failed to update tournament");
     } finally {
       setSaving(false);
     }
   };
 
-  const availableStatuses = tournament?.status === 'ONGOING'
-    ? TOURNAMENT_STATUSES
-    : BASE_TOURNAMENT_STATUSES;
+  const availableStatuses =
+    tournament?.status === "ONGOING"
+      ? TOURNAMENT_STATUSES
+      : BASE_TOURNAMENT_STATUSES;
 
-  const statusOptions = availableStatuses.map(status => ({
+  const statusOptions = availableStatuses.map((status) => ({
     value: status,
     label: t(`tournament.status.${status}`),
   }));
@@ -355,7 +430,7 @@ export default function EditTournamentPage() {
   if (!tournament) {
     return (
       <DashboardLayout>
-        <Alert variant="error">{error || 'Tournament not found'}</Alert>
+        <Alert variant="error">{error || "Tournament not found"}</Alert>
       </DashboardLayout>
     );
   }
@@ -387,13 +462,13 @@ export default function EditTournamentPage() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          <span className="text-sm font-medium">{t('common.back')}</span>
+          <span className="text-sm font-medium">{t("common.back")}</span>
         </button>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {t('tournament.edit')}
+              {t("tournament.edit")}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               {tournament.name}
@@ -402,74 +477,86 @@ export default function EditTournamentPage() {
           <Button
             variant="outline"
             onClick={() => {
-                if (!shouldWarnOnLeave) {
-                  router.back();
-                  return;
-                }
-                openLeaveModal(() => router.back());
+              if (!shouldWarnOnLeave) {
+                router.back();
+                return;
+              }
+              openLeaveModal(() => router.back());
             }}
             className="self-start sm:self-auto"
           >
-            {t('common.cancel')}
+            {t("common.cancel")}
           </Button>
         </div>
 
         {error && <div ref={errorRef} tabIndex={-1} className="outline-none" />}
-        {success && <Alert variant="success">{t('common.saveSuccess')}</Alert>}
+        {success && <Alert variant="success">{t("common.saveSuccess")}</Alert>}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24">
           {/* Basic Information */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.basicInfo')}</CardTitle>
+              <CardTitle>{t("tournament.basicInfo")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
-                label={t('tournament.name')}
+                label={t("tournament.name")}
                 error={errors.name?.message}
-                {...register('name')}
+                {...register("name")}
               />
               <Input
-                label={t('tournament.slug', 'Tournament URL Slug')}
-                placeholder={t('tournament.slugPlaceholder', 'e.g. summer-youth-cup-2025')}
-                helperText={t('tournament.slugHelp', 'Auto-generated from the title; you can edit it.')}
+                label={t("tournament.slug", "Tournament URL Slug")}
+                placeholder={t(
+                  "tournament.slugPlaceholder",
+                  "e.g. summer-youth-cup-2025",
+                )}
+                helperText={t(
+                  "tournament.slugHelp",
+                  "Auto-generated from the title; you can edit it.",
+                )}
                 error={errors.urlSlug?.message}
-                {...register('urlSlug', {
+                {...register("urlSlug", {
                   onChange: () => setSlugTouched(true),
                   onBlur: (event) => {
-                    const nextSlug = slugify(event.target.value || '');
-                    setValue('urlSlug', nextSlug, { shouldDirty: true });
+                    const nextSlug = slugify(event.target.value || "");
+                    setValue("urlSlug", nextSlug, { shouldDirty: true });
                   },
                 })}
               />
               <Textarea
-                label={t('tournament.description')}
+                label={t("tournament.description")}
                 rows={4}
                 error={errors.description?.message}
-                {...register('description')}
+                {...register("description")}
               />
               <Select
-                label={t('common.status')}
+                label={t("common.status")}
                 options={statusOptions}
                 error={errors.status?.message}
-                {...register('status')}
+                {...register("status")}
               />
-              
+
               {/* Private Tournament Toggle */}
               <div className="flex items-center gap-3 pt-2">
                 <input
                   type="checkbox"
                   id="isPrivate"
-                  {...register('isPrivate')}
+                  {...register("isPrivate")}
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <label htmlFor="isPrivate" className="text-sm font-medium text-gray-700">
-                  {t('tournament.isPrivate', 'Private Tournament')}
+                <label
+                  htmlFor="isPrivate"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  {t("tournament.isPrivate", "Private Tournament")}
                 </label>
               </div>
               {isPrivate && (
                 <p className="text-sm text-gray-500 mt-1">
-                  {t('tournament.isPrivateHelp', 'Private tournaments require an invitation code to register.')}
+                  {t(
+                    "tournament.isPrivateHelp",
+                    "Private tournaments require an invitation code to register.",
+                  )}
                 </p>
               )}
             </CardContent>
@@ -478,20 +565,22 @@ export default function EditTournamentPage() {
           {/* Location */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.location')}</CardTitle>
+              <CardTitle>{t("tournament.location")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1">
                   <LocationAutocomplete
-                        label={t('tournament.location')}
+                    label={t("tournament.location")}
                     placeholder="Search for city or venue..."
                     displayMode="address"
-                        value={watchedLocation || ''}
-                        onChange={(value) => setValue('location', value, { shouldValidate: true })}
+                    value={watchedLocation || ""}
+                    onChange={(value) =>
+                      setValue("location", value, { shouldValidate: true })
+                    }
                     onSelect={handleLocationSelect}
-                        error={errors.location?.message}
-                        required
+                    error={errors.location?.message}
+                    required
                   />
                 </div>
                 <div className="flex items-end">
@@ -502,11 +591,26 @@ export default function EditTournamentPage() {
                     isLoading={isGettingLocation}
                     className="whitespace-nowrap"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     </svg>
-                    {t('common.useMyLocation', 'Use My Location')}
+                    {t("common.useMyLocation", "Use My Location")}
                   </Button>
                 </div>
               </div>
@@ -516,18 +620,23 @@ export default function EditTournamentPage() {
           {/* Age Categories */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
+              <CardTitle>
+                {t("tournaments.ageGroups.title", "Age Categories")}
+              </CardTitle>
               <p className="text-sm text-gray-500 mt-1">
-                {t('tournaments.ageGroups.description', 'Define specific settings for each age category. Each category can have its own dates, fees, and game format.')}
+                {t(
+                  "tournaments.ageGroups.description",
+                  "Define specific settings for each age category. Each category can have its own dates, fees, and game format.",
+                )}
               </p>
             </CardHeader>
             <CardContent>
               <AgeGroupsManager
                 ageGroups={ageGroups}
                 onChange={setAgeGroups}
-                tournamentStartDate={watch('startDate')}
-                tournamentEndDate={watch('endDate')}
-                tournamentLocation={watch('location')}
+                tournamentStartDate={watch("startDate")}
+                tournamentEndDate={watch("endDate")}
+                tournamentLocation={watch("location")}
                 disabled={saving}
               />
             </CardContent>
@@ -536,41 +645,44 @@ export default function EditTournamentPage() {
           {/* Contact & Rules */}
           <Card>
             <CardHeader>
-              <CardTitle>{t('common.contact')}</CardTitle>
+              <CardTitle>{t("common.contact")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   type="email"
-                  label={t('common.email')}
+                  label={t("common.email")}
                   error={errors.contactEmail?.message}
-                  {...register('contactEmail')}
+                  {...register("contactEmail")}
                 />
                 <Input
                   type="tel"
-                  label={t('common.phone')}
+                  label={t("common.phone")}
                   error={errors.contactPhone?.message}
-                  {...register('contactPhone')}
+                  {...register("contactPhone")}
                 />
               </div>
               <Input
-                label={t('tournament.whatsappGroup', 'WhatsApp Group Link')}
+                label={t("tournament.whatsappGroup", "WhatsApp Group Link")}
                 placeholder="https://chat.whatsapp.com/your-group-code"
-                helperText={t('tournament.whatsappGroupHelp', 'Visible to approved clubs only.')}
+                helperText={t(
+                  "tournament.whatsappGroupHelp",
+                  "Visible to approved clubs only.",
+                )}
                 error={errors.whatsappGroupLink?.message}
-                {...register('whatsappGroupLink')}
+                {...register("whatsappGroupLink")}
               />
               <Textarea
-                label={t('tournament.rules')}
+                label={t("tournament.rules")}
                 rows={4}
                 error={errors.rules?.message}
-                {...register('rules')}
+                {...register("rules")}
               />
-              
+
               {/* Regulations File Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  {t('tournament.regulationsFile', 'Regulations File (PDF)')}
+                  {t("tournament.regulationsFile", "Regulations File (PDF)")}
                 </label>
                 {regulationsFile ? (
                   <FilePreview
@@ -582,12 +694,19 @@ export default function EditTournamentPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                          <svg
+                            className="w-6 h-6 text-red-600"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z" />
                           </svg>
                         </div>
                         <span className="text-sm text-gray-600">
-                          {t('tournament.existingRegulations', 'Existing regulations document')}
+                          {t(
+                            "tournament.existingRegulations",
+                            "Existing regulations document",
+                          )}
                         </span>
                       </div>
                       <Button
@@ -596,19 +715,22 @@ export default function EditTournamentPage() {
                         size="sm"
                         onClick={() => setHasExistingRegulations(false)}
                       >
-                        {t('common.replace', 'Replace')}
+                        {t("common.replace", "Replace")}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <FileUpload
                     onFilesSelected={(files) => setRegulationsFile(files[0])}
-                    accept={{ 'application/pdf': ['.pdf'] }}
+                    accept={{ "application/pdf": [".pdf"] }}
                     maxSize={10 * 1024 * 1024}
                   />
                 )}
                 <p className="text-xs text-gray-500 mt-1">
-                  {t('tournament.regulationsHelp', 'Upload tournament regulations as PDF (max 10MB)')}
+                  {t(
+                    "tournament.regulationsHelp",
+                    "Upload tournament regulations as PDF (max 10MB)",
+                  )}
                 </p>
               </div>
             </CardContent>
@@ -639,10 +761,10 @@ export default function EditTournamentPage() {
                   openLeaveModal(() => router.back());
                 }}
               >
-              {t('common.cancel')}
+                {t("common.cancel")}
               </Button>
               <Button type="submit" variant="primary" isLoading={saving}>
-              {t('common.save')}
+                {t("common.save")}
               </Button>
             </div>
           </div>
@@ -651,39 +773,44 @@ export default function EditTournamentPage() {
       <Modal
         isOpen={leaveModalOpen}
         onClose={closeLeaveModal}
-        title={t('common.unsavedChangesTitle', 'Unsaved changes')}
+        title={t("common.unsavedChangesTitle", "Unsaved changes")}
         description={getLeaveMessage()}
         size="sm"
-        footer={(
+        footer={
           <>
             <Button type="button" variant="danger" onClick={confirmLeave}>
-              {t('common.leave', 'Leave')}
+              {t("common.leave", "Leave")}
             </Button>
             <Button type="button" variant="outline" onClick={closeLeaveModal}>
-              {t('common.stay', 'Stay')}
+              {t("common.stay", "Stay")}
             </Button>
           </>
-        )}
+        }
       >
         <div className="text-sm text-gray-600">
-          {t('common.unsavedChangesDetail', 'Changes you made may not be saved.')}
+          {t(
+            "common.unsavedChangesDetail",
+            "Changes you made may not be saved.",
+          )}
         </div>
       </Modal>
       <Modal
         isOpen={!!error}
         onClose={() => setError(null)}
-        title={t('common.error', 'Error')}
-        description={error || ''}
+        title={t("common.error", "Error")}
+        description={error || ""}
         size="sm"
-        footer={(
-          <Button type="button" variant="primary" onClick={() => setError(null)}>
-            {t('common.ok', 'OK')}
+        footer={
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => setError(null)}
+          >
+            {t("common.ok", "OK")}
           </Button>
-        )}
+        }
       >
-        <div className="text-sm text-gray-600">
-          {error}
-        </div>
+        <div className="text-sm text-gray-600">{error}</div>
       </Modal>
     </DashboardLayout>
   );

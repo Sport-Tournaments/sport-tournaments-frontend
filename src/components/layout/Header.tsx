@@ -52,7 +52,7 @@ export default function Header() {
             </button>
 
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-black tracking-tight text-teal-600">
+              <span className="text-2xl font-black tracking-tight text-[#1e3a5f]">
                 tournamente
               </span>
             </Link>
@@ -67,7 +67,7 @@ export default function Header() {
                 className={cn(
                   'inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition-colors',
                   pathname === item.href
-                    ? 'border-teal-500 text-slate-900'
+                    ? 'border-[#1e3a5f] text-slate-900'
                     : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
                 )}
               >
@@ -157,7 +157,7 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="rounded-lg bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600"
+                  className="rounded-lg bg-[#1e3a5f] px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#152a45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f]"
                 >
                   {t('auth.register')}
                 </Link>
@@ -183,7 +183,7 @@ export default function Header() {
                 className={cn(
                   'block rounded-lg px-3 py-2 text-base font-medium',
                   pathname === item.href
-                    ? 'bg-teal-50 text-teal-700'
+                    ? 'bg-[#dbeafe] text-[#1e3a5f]'
                     : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                 )}
               >
@@ -199,7 +199,7 @@ export default function Header() {
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-medium text-teal-700 bg-teal-50 hover:bg-teal-100"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-base font-medium text-[#1e3a5f] bg-[#dbeafe] hover:bg-[#bfdbfe]"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -242,7 +242,7 @@ export default function Header() {
               <Link
                 href="/auth/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-1 block rounded-lg bg-teal-600 px-3 py-2 text-base font-medium text-white hover:bg-teal-700"
+                className="mt-1 block rounded-lg bg-[#1e3a5f] px-3 py-2 text-base font-medium text-white hover:bg-[#152a45]"
               >
                 {t('auth.register')}
               </Link>

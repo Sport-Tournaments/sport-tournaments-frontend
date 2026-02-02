@@ -8,7 +8,7 @@ import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal } from '@/components/ui';
 import { tournamentService, registrationService, fileService } from '@/services';
-import type { Tournament, Registration, TournamentStatus, RegistrationStatus } from '@/types';
+import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
 
@@ -186,311 +186,395 @@ export default function TournamentDetailPage() {
   const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
   const registeredTeamsDisplay = tournament.registeredTeams ?? registrations.length ?? 0;
 
-  const tabs = [
-    {
-      id: 'overview',
-      label: t('tournament.overview'),
-      content: (
-        <div className="space-y-6">
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <Card>
-              <CardContent className="p-3 sm:p-4 text-center">
-                <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
-                <p className="text-xl sm:text-2xl font-bold text-primary">
-                  {registeredTeamsDisplay} / {maxTeamsDisplay}
+  const getAgeGroupLabel = (ageGroup: AgeGroup) => {
+    if (ageGroup.displayLabel) return ageGroup.displayLabel;
+    if (ageGroup.ageCategory) return t(`tournament.ageCategory.${ageGroup.ageCategory}`);
+    if (ageGroup.birthYear) return `${t('tournament.birthYear', 'Birth Year')} ${ageGroup.birthYear}`;
+    return t('tournament.ageCategory.label', 'Age Category');
+  };
+
+  const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
+    ageGroup.teamCount
+      ?? ageGroup.maxTeams
+      ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
+        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+        : 0)
+  );
+
+  const renderRegistrationsTable = (items: Registration[]) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {t('common.team')} / {t('common.club')}
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {t('common.date')}
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {t('common.status')}
+            </th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {t('common.actions')}
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {items.map((registration) => (
+            <tr key={registration.id}>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="font-medium text-gray-900">
+                  {registration.club?.name || registration.coachName || '-'}
+                </div>
+                {registration.coachPhone && (
+                  <div className="text-sm text-gray-500">{registration.coachPhone}</div>
+                )}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {formatDateTime(registration.createdAt)}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <Badge variant={getRegistrationStatusBadge(registration.status)}>
+                  {t(`registration.status.${registration.status}`)}
+                </Badge>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                {registration.status === 'PENDING' && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => handleApproveRegistrationWithPayment(registration.id)}
+                    >
+                      {t('registration.approveWithPayment', 'Approve (Paid)')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleApproveRegistrationWithoutPayment(registration.id)}
+                    >
+                      {t('registration.approveWithoutPayment', 'Approve (Unpaid)')}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleRejectRegistration(registration.id)}
+                    >
+                      {t('registration.reject')}
+                    </Button>
+                  </>
+                )}
+                <Link href={`/dashboard/registrations/${registration.id}`}>
+                  <Button size="sm" variant="ghost">{t('common.view')}</Button>
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const buildOverviewTab = (ageGroup?: AgeGroup) => {
+    const ageGroupId = ageGroup?.id;
+    const scopedRegistrations = ageGroupId
+      ? registrations.filter((reg) => reg.ageGroupId === ageGroupId)
+      : registrations;
+
+    const maxTeams = ageGroup
+      ? getAgeGroupMaxTeams(ageGroup)
+      : maxTeamsDisplay;
+    const registeredTeams = ageGroup
+      ? (ageGroup.currentTeams ?? scopedRegistrations.length)
+      : registeredTeamsDisplay;
+
+    const entryFee = ageGroup?.participationFee ?? tournament.entryFee ?? 0;
+    const prizeMoney = tournament.prizeMoney || 0;
+
+    return (
+      <div className="space-y-6">
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <Card>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">
+                {registeredTeams} / {maxTeams}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('tournament.entryFee')}</p>
+              <p className="text-2xl font-bold">{formatCurrency(entryFee)}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('tournament.prizeMoney')}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {formatCurrency(prizeMoney)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('registration.pending')}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {scopedRegistrations.filter(r => (r.status as string) === 'PENDING').length}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('tournament.info')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.startDate')}</p>
+                <p className="font-medium">{formatDate(ageGroup?.startDate || tournament.startDate)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.registrationDeadline')}</p>
+                <p className="font-medium">
+                  {ageGroup?.registrationEndDate
+                    ? formatDate(ageGroup.registrationEndDate)
+                    : tournament.registrationDeadline
+                      ? formatDate(tournament.registrationDeadline)
+                      : 'N/A'}
                 </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('tournament.entryFee')}</p>
-                <p className="text-2xl font-bold">{formatCurrency(tournament.entryFee || 0)}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('tournament.prizeMoney')}</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(tournament.prizeMoney || 0)}
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.location')}</p>
+                <p className="font-medium">
+                  {ageGroup?.locationAddress || tournament.location}
                 </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-gray-500">{t('registration.pending')}</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {registrations.filter(r => (r.status as string) === 'PENDING').length}
+                {(tournament as any).venue && <p className="text-gray-500">{(tournament as any).venue}</p>}
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('common.city')}, {t('common.country')}</p>
+                <p className="font-medium">{tournament.location}, {tournament.country || ''}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.ageCategory.label')}</p>
+                <p className="font-medium">
+                  {ageGroup?.ageCategory
+                    ? t(`tournament.ageCategory.${ageGroup.ageCategory}`)
+                    : tournament.ageCategory
+                      ? t(`tournament.ageCategory.${tournament.ageCategory}`)
+                      : '—'}
                 </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.level.label')}</p>
+                <p className="font-medium">
+                  {ageGroup?.level
+                    ? t(`tournament.level.${ageGroup.level}`)
+                    : tournament.level
+                      ? t(`tournament.level.${tournament.level}`)
+                      : '—'}
+                </p>
+              </div>
+            </div>
+            {ageGroup?.gameSystem && (
+              <div>
+                <p className="text-sm text-gray-500 mb-2">{t('tournament.gameSystem', 'Game System')}</p>
+                <p className="text-gray-700 whitespace-pre-wrap">{ageGroup.gameSystem}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-gray-500 mb-2">{t('tournament.description')}</p>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {tournament.description}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Regulations Document */}
+        {tournament.regulationsDocument && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                      <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {t('tournament.clickToDownload', 'Click to view or download')}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleDownloadRegulations}
+                  isLoading={downloadingRegulations}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {t('tournament.viewRegulations', 'View PDF')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Private Tournament Invitation Code */}
+        {tournament.isPrivate && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                {t('tournament.invitationCode', 'Private Tournament Invitation')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InvitationCodeManager
+                tournamentId={tournament.id}
+                tournamentName={tournament.name}
+                isPrivate={tournament.isPrivate}
+                initialCode={tournament.invitationCode}
+                initialExpiresAt={tournament.invitationCodeExpiresAt}
+              />
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  const buildTabsForAgeGroup = (ageGroup?: AgeGroup) => {
+    const ageGroupId = ageGroup?.id;
+    const scopedRegistrations = ageGroupId
+      ? registrations.filter((reg) => reg.ageGroupId === ageGroupId)
+      : registrations;
+
+    return [
+      {
+        id: 'overview',
+        label: t('tournament.overview'),
+        content: buildOverviewTab(ageGroup),
+      },
+      {
+        id: 'registrations',
+        label: `${t('registration.title')} (${scopedRegistrations.length})`,
+        content: (
+          <Card>
+            <CardContent className="p-0">
+              {scopedRegistrations.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    {t('registration.noRegistrations')}
+                  </h3>
+                  <p className="text-gray-500">{t('registration.noRegistrationsDesc')}</p>
+                </div>
+              ) : (
+                renderRegistrationsTable(scopedRegistrations)
+              )}
+            </CardContent>
+          </Card>
+        ),
+      },
+      {
+        id: 'groups',
+        label: t('tournament.groups'),
+        content: (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pot-Based Draw System</CardTitle>
+                <CardDescription>
+                  Organize teams into pots based on strength and create balanced groups
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center py-8">
+                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Groups & Draw Management
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
+                </p>
+                <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
+                  <Button variant="primary">
+                    <Users className="w-4 h-4 mr-2" />
+                    Manage Pots & Draw
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
-
-          {/* Info */}
+        ),
+      },
+      {
+        id: 'matches',
+        label: t('tournament.matches'),
+        content: (
           <Card>
-            <CardHeader>
-              <CardTitle>{t('tournament.info')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">{t('tournament.startDate')}</p>
-                  <p className="font-medium">{formatDate(tournament.startDate)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">{t('tournament.registrationDeadline')}</p>
-                  <p className="font-medium">{tournament.registrationDeadline ? formatDate(tournament.registrationDeadline) : 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">{t('tournament.location')}</p>
-                  <p className="font-medium">{tournament.location}</p>
-                  {(tournament as any).venue && <p className="text-gray-500">{(tournament as any).venue}</p>}
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">{t('common.city')}, {t('common.country')}</p>
-                  <p className="font-medium">{tournament.location}, {tournament.country || ''}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">{t('tournament.ageCategory.label')}</p>
-                  <p className="font-medium">
-                    {tournament.ageCategory
-                      ? t(`tournament.ageCategory.${tournament.ageCategory}`)
-                      : tournament.ageGroups?.[0]?.ageCategory
-                        ? t(`tournament.ageCategory.${tournament.ageGroups[0].ageCategory}`)
-                        : '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">{t('tournament.level.label')}</p>
-                  <p className="font-medium">
-                    {tournament.level
-                      ? t(`tournament.level.${tournament.level}`)
-                      : tournament.ageGroups?.[0]?.level
-                        ? t(`tournament.level.${tournament.ageGroups[0].level}`)
-                        : '—'}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-2">{t('tournament.description')}</p>
-                <p className="text-gray-700 whitespace-pre-wrap">
-                  {tournament.description}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Regulations Document */}
-          {tournament.regulationsDocument && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
-                        <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {t('tournament.clickToDownload', 'Click to view or download')}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleDownloadRegulations}
-                    isLoading={downloadingRegulations}
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    {t('tournament.viewRegulations', 'View PDF')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Private Tournament Invitation Code */}
-          {tournament.isPrivate && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  {t('tournament.invitationCode', 'Private Tournament Invitation')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <InvitationCodeManager
-                  tournamentId={tournament.id}
-                  tournamentName={tournament.name}
-                  isPrivate={tournament.isPrivate}
-                  initialCode={tournament.invitationCode}
-                  initialExpiresAt={tournament.invitationCodeExpiresAt}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 'registrations',
-      label: `${t('registration.title')} (${registrations.length})`,
-      content: (
-        <Card>
-          <CardContent className="p-0">
-            {registrations.length === 0 ? (
-              <div className="text-center py-12">
-                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {t('registration.noRegistrations')}
-                </h3>
-                <p className="text-gray-500">{t('registration.noRegistrationsDesc')}</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.team')} / {t('common.club')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.date')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.status')}
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {registrations.map((registration) => (
-                      <tr key={registration.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900">
-                            {registration.club?.name || registration.coachName || '-'}
-                          </div>
-                          {registration.coachPhone && (
-                            <div className="text-sm text-gray-500">{registration.coachPhone}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatDateTime(registration.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={getRegistrationStatusBadge(registration.status)}>
-                            {t(`registration.status.${registration.status}`)}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                          {registration.status === 'PENDING' && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="primary"
-                                onClick={() => handleApproveRegistrationWithPayment(registration.id)}
-                              >
-                                {t('registration.approveWithPayment', 'Approve (Paid)')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleApproveRegistrationWithoutPayment(registration.id)}
-                              >
-                                {t('registration.approveWithoutPayment', 'Approve (Unpaid)')}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="danger"
-                                onClick={() => handleRejectRegistration(registration.id)}
-                              >
-                                {t('registration.reject')}
-                              </Button>
-                            </>
-                          )}
-                          <Link href={`/dashboard/registrations/${registration.id}`}>
-                            <Button size="sm" variant="ghost">{t('common.view')}</Button>
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ),
-    },
-    {
-      id: 'groups',
-      label: t('tournament.groups'),
-      content: (
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pot-Based Draw System</CardTitle>
-              <CardDescription>
-                Organize teams into pots based on strength and create balanced groups
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center py-8">
+            <CardContent className="text-center py-12">
               <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Groups & Draw Management
+                Match Schedule
               </h3>
-              <p className="text-gray-500 mb-6">
-                Assign teams to pots (1-4) and execute a fair draw to create balanced groups
+              <p className="text-gray-500 mb-4">
+                {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Generate and manage match schedule
               </p>
-              <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
-                <Button variant="primary">
-                  <Users className="w-4 h-4 mr-2" />
-                  Manage Pots & Draw
-                </Button>
-              </Link>
+              <Button variant="primary">Generate Schedule</Button>
             </CardContent>
           </Card>
-        </div>
-      ),
-    },
-    {
-      id: 'matches',
-      label: t('tournament.matches'),
-      content: (
-        <Card>
-          <CardContent className="text-center py-12">
-            <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Match Schedule
-            </h3>
-            <p className="text-gray-500 mb-4">Generate and manage match schedule</p>
-            <Button variant="primary">Generate Schedule</Button>
-          </CardContent>
-        </Card>
-      ),
-    },
-  ];
+        ),
+      },
+    ];
+  };
+
+  const tabs = buildTabsForAgeGroup();
+
+  const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
+    ? [
+        {
+          id: 'all',
+          label: t('common.all', 'All'),
+          content: <Tabs tabs={tabs} defaultTab="overview" variant="pills-gray" />,
+        },
+        ...tournament.ageGroups.map((ageGroup, index) => ({
+          id: `age-group-${ageGroup.id ?? index}`,
+          label: getAgeGroupLabel(ageGroup),
+          content: (
+            <Tabs
+              tabs={buildTabsForAgeGroup(ageGroup)}
+              defaultTab="overview"
+              variant="pills-gray"
+            />
+          ),
+        })),
+      ]
+    : tabs;
 
   return (
     <DashboardLayout>
@@ -566,7 +650,7 @@ export default function TournamentDetailPage() {
         )}
 
         {/* Tabs */}
-        <Tabs tabs={tabs} defaultTab="overview" />
+        <Tabs tabs={ageGroupTabs} defaultTab={ageGroupTabs[0]?.id} />
       </div>
 
       {/* Rejection Modal */}

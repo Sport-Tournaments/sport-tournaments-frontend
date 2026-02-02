@@ -20,7 +20,7 @@ const DEFAULT_PRESET_COLORS = [
   '#84CC16', // lime
   '#22C55E', // green
   '#10B981', // emerald
-  '#14B8A6', // teal
+  '#1E3A5F', // uefa navy
   '#06B6D4', // cyan
   '#0EA5E9', // sky
   '#3B82F6', // blue

@@ -17,7 +17,7 @@ export function Card({
 }: CardProps) {
   const variantStyles = {
     default: 'overflow-hidden rounded-xl bg-white shadow-sm border border-slate-100',
-    hover: 'overflow-hidden rounded-xl bg-white shadow-sm border border-slate-100 transition-all hover:shadow-md hover:border-slate-200 cursor-pointer',
+    hover: 'overflow-hidden rounded-xl bg-white shadow-sm border border-slate-100 transition-all hover:shadow-md hover:border-[#1e3a5f]/20 cursor-pointer',
     flat: 'overflow-hidden rounded-xl bg-white',
   };
 

@@ -135,7 +135,7 @@ export default function DataTable<TData, TValue>({
                   >
                     <div className="flex items-center justify-center gap-2">
                       <svg
-                        className="animate-spin size-5 text-indigo-600"
+                        className="animate-spin size-5 text-[#1e3a5f]"
                         fill="none"
                         viewBox="0 0 24 24"
                       >
@@ -172,7 +172,7 @@ export default function DataTable<TData, TValue>({
                     key={row.id}
                     className={cn(
                       'hover:bg-primary/5 transition-colors',
-                      row.getIsSelected() && 'bg-indigo-50/50'
+                      row.getIsSelected() && 'bg-[#dbeafe]/50'
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -223,7 +223,7 @@ export function createSelectionColumn<TData>(): ColumnDef<TData> {
         type="checkbox"
         checked={table.getIsAllPageRowsSelected()}
         onChange={table.getToggleAllPageRowsSelectedHandler()}
-        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+        className="size-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
         aria-label="Select all"
       />
     ),
@@ -232,7 +232,7 @@ export function createSelectionColumn<TData>(): ColumnDef<TData> {
         type="checkbox"
         checked={row.getIsSelected()}
         onChange={row.getToggleSelectedHandler()}
-        className="size-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+        className="size-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
         aria-label="Select row"
       />
     ),

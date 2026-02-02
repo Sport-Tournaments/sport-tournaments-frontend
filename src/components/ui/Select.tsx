@@ -60,7 +60,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               'outline-1 -outline-offset-1',
               error 
                 ? 'outline-red-500 focus:outline-2 focus:-outline-offset-2 focus:outline-red-600' 
-                : 'outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600',
+                : 'outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-[#1e3a5f]',
               disabled && 'cursor-not-allowed bg-white text-gray-500',
               className
             )}

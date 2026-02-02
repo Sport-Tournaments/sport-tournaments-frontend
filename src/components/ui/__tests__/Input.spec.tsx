@@ -88,7 +88,7 @@ describe('Input Component', () => {
 
     it('should apply error styles', () => {
       render(<Input error="Error" name="test" />);
-      expect(screen.getByRole('textbox')).toHaveClass('outline-red-300');
+      expect(screen.getByRole('textbox')).toHaveClass('border-red-300');
     });
 
     it('should set aria-invalid to true when error', () => {

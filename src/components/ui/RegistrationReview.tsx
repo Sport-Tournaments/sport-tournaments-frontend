@@ -346,7 +346,7 @@ export function BulkRegistrationReview({
               type="checkbox"
               checked={selectedIds.size === pendingRegistrations.length}
               onChange={toggleSelectAll}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
             />
             <span className="text-sm text-gray-600">
               {selectedIds.size} of {pendingRegistrations.length} selected
@@ -383,7 +383,7 @@ export function BulkRegistrationReview({
               className={cn(
                 'flex items-center gap-4 p-4 bg-white rounded-lg border transition-colors',
                 selectedIds.has(registration.id)
-                  ? 'border-indigo-500 bg-indigo-50/50'
+                  ? 'border-[#1e3a5f] bg-[#dbeafe]/50'
                   : 'border-gray-200'
               )}
             >
@@ -391,7 +391,7 @@ export function BulkRegistrationReview({
                 type="checkbox"
                 checked={selectedIds.has(registration.id)}
                 onChange={() => toggleSelect(registration.id)}
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
               />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-900 truncate">

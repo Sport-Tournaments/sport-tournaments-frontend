@@ -220,7 +220,7 @@ export default function GeolocationFilter({
                 className={cn(
                   'px-3 py-1.5 text-sm rounded-full border transition-colors',
                   maxDistance === undefined
-                    ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
+                    ? 'bg-[#dbeafe] border-[#1e3a5f] text-[#1e3a5f]'
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-primary/5'
                 )}
               >
@@ -233,7 +233,7 @@ export default function GeolocationFilter({
                   className={cn(
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     maxDistance === distance
-                      ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
+                      ? 'bg-[#dbeafe] border-[#1e3a5f] text-[#1e3a5f]'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-primary/5'
                   )}
                 >
@@ -254,8 +254,8 @@ export default function GeolocationFilter({
                 aria-checked={sortByDistance}
                 onClick={handleSortToggle}
                 className={cn(
-                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
-                  sortByDistance ? 'bg-indigo-600' : 'bg-white'
+                  'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:ring-offset-2',
+                  sortByDistance ? 'bg-[#1e3a5f]' : 'bg-white'
                 )}
               >
                 <span

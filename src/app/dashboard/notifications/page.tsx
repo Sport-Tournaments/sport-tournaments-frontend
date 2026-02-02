@@ -148,8 +148,8 @@ export default function NotificationsPage() {
     // Check for tournament-related types
     if (type === 'TOURNAMENT_PUBLISHED' || type === 'GROUP_DRAW' || type === 'NEW_TOURNAMENT_MATCH') {
       return (
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-          <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#dbeafe] flex items-center justify-center">
+          <svg className="w-5 h-5 text-[#1e3a5f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         </div>
@@ -238,7 +238,7 @@ export default function NotificationsPage() {
             {mergedNotifications.map((notification) => (
               <Card 
                 key={notification.id}
-                className={!notification.isRead ? 'ring-2 ring-indigo-500' : ''}
+                className={!notification.isRead ? 'ring-2 ring-[#1e3a5f]' : ''}
               >
                 <CardContent className="py-4">
                   <div className="flex gap-4">

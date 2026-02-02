@@ -147,10 +147,10 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-[#dbeafe]">
             Find answers to common questions about tournamente.com
           </p>
         </div>
@@ -176,7 +176,7 @@ export default function FAQPage() {
                       </h3>
                       <span className="ml-4 group-open:rotate-180 transition-transform flex-shrink-0">
                         <svg
-                          className="w-5 h-5 text-indigo-600 "
+                          className="w-5 h-5 text-[#1e3a5f] "
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -203,7 +203,7 @@ export default function FAQPage() {
         </div>
 
         {/* Still Have Questions */}
-        <div className="mt-12 bg-indigo-50 /20 rounded-lg p-8 text-center">
+        <div className="mt-12 bg-[#dbeafe] /20 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900  mb-4">
             Still have questions?
           </h2>
@@ -213,13 +213,13 @@ export default function FAQPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
+              className="px-8 py-3 bg-[#1e3a5f] text-white rounded-md hover:bg-[#152a45] transition-colors font-semibold"
             >
               Contact Support
             </Link>
             <Link
               href="/help"
-              className="px-8 py-3 border-2 border-indigo-600 text-indigo-600   rounded-md hover:bg-indigo-50 /20 transition-colors font-semibold"
+              className="px-8 py-3 border-2 border-[#1e3a5f] text-[#1e3a5f]   rounded-md hover:bg-[#dbeafe] /20 transition-colors font-semibold"
             >
               Visit Help Center
             </Link>

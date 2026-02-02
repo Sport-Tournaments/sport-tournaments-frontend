@@ -93,7 +93,7 @@ export default function HomePage() {
     <MainLayout>
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-slate-50">
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#dbeafe] via-white to-slate-50">
         <div className="container mx-auto px-4 py-12 sm:py-16 lg:py-32">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="text-center lg:text-left">
@@ -117,22 +117,22 @@ export default function HomePage() {
               </div>
               <div className="mt-8 lg:mt-12 flex flex-wrap items-center justify-center lg:justify-start gap-4 sm:gap-6 lg:gap-8">
                 <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-teal-600">1000+</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#1e3a5f]">1000+</p>
                   <p className="text-sm sm:text-base text-slate-600">{t('home.stats.tournaments')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-teal-600">5000+</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#1e3a5f]">5000+</p>
                   <p className="text-sm sm:text-base text-slate-600">{t('home.stats.clubs')}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-teal-600">50K+</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-[#1e3a5f]">50K+</p>
                   <p className="text-sm sm:text-base text-slate-600">{t('home.stats.players')}</p>
                 </div>
               </div>
             </div>
             <div className="hidden lg:block">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-teal-200/30 to-emerald-200/30 blur-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#bfdbfe]/30 to-[#dbeafe]/30 blur-3xl"></div>
                 <img
                   src="/images/hero-illustration.svg"
                   alt="Football Tournament"
@@ -167,7 +167,7 @@ export default function HomePage() {
                 tabIndex={0}
                 aria-label={feature.title}
                 aria-disabled={isLoading}
-                className="border border-slate-200 hover:border-teal-300 bg-white"
+                className="border border-slate-200 hover:border-[#1e3a5f]/30 bg-white"
                 onClick={() => handleFeatureNavigation(feature.href)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -177,7 +177,7 @@ export default function HomePage() {
                 }}
               >
                 <CardContent className="p-6">
-                  <div className="w-14 h-14 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 mb-4">
+                  <div className="w-14 h-14 bg-[#dbeafe] rounded-xl flex items-center justify-center text-[#1e3a5f] mb-4">
                     {feature.icon}
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
@@ -192,13 +192,13 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-[#1e3a5f] to-[#0f1d2e] text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">{t('home.cta.title')}</h2>
-          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-teal-100">{t('home.cta.subtitle')}</p>
+          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-blue-100">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?role=ORGANIZER">
-              <Button variant="secondary" size="lg" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+              <Button variant="secondary" size="lg" className="bg-white text-[#1e3a5f] hover:bg-blue-50 shadow-lg">
                 {t('home.cta.organizer')}
               </Button>
             </Link>

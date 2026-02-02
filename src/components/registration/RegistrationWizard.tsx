@@ -483,9 +483,9 @@ export function RegistrationWizard({
       <div className="min-h-[400px]">
         {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             {STEPS.map((step, index) => (
-              <div key={step} className="flex items-center">
+              <div key={step} className={cn('flex items-center', index < STEPS.length - 1 && 'flex-1')}>
                 <div className={cn(
                   'flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium transition-colors',
                   index < currentStepIndex
@@ -504,9 +504,9 @@ export function RegistrationWizard({
                 </div>
                 {index < STEPS.length - 1 && (
                   <div className={cn(
-                    'w-full h-1 mx-2',
+                    'h-1 flex-1',
                     index < currentStepIndex ? 'bg-primary' : 'bg-gray-200'
-                  )} style={{ width: '80px' }} />
+                  )} />
                 )}
               </div>
             ))}

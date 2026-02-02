@@ -109,7 +109,7 @@ export default function Sidebar() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-white/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-[#04122c]/70 backdrop-blur-sm lg:hidden"
           onClick={closeSidebar}
           aria-hidden="true"
         />
@@ -118,21 +118,21 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-white border-r border-slate-200 shadow-sm transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto',
+          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-[var(--uefa-blue)] text-white transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4">
           {/* Logo */}
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100">
+          <div className="flex h-16 shrink-0 items-center justify-between">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-2xl font-black tracking-tight text-white">
                 tournamente
               </span>
             </Link>
             <button
               onClick={closeSidebar}
-              className="lg:hidden rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+              className="lg:hidden rounded-md p-1.5 text-white/70 hover:bg-white/10 hover:text-white"
               aria-label="Close sidebar"
             >
               <svg className="size-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
@@ -156,13 +156,13 @@ export default function Sidebar() {
                           className={cn(
                             'group flex gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-colors',
                             isActive
-                              ? 'bg-[#dbeafe] text-[#1e3a5f]'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                              ? 'bg-white/15 text-white'
+                              : 'text-white/75 hover:bg-white/10 hover:text-white'
                           )}
                         >
                           <span className={cn(
                             'shrink-0 size-5',
-                            isActive ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-600'
+                            isActive ? 'text-white' : 'text-white/70 group-hover:text-white'
                           )}>
                             {item.icon}
                           </span>
@@ -178,17 +178,17 @@ export default function Sidebar() {
 
           {/* User info at bottom */}
           {user && (
-            <div className="-mx-2 mt-auto border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-x-4 rounded-lg px-2 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#dbeafe] text-[#1e3a5f] font-semibold">
+            <div className="-mx-2 mt-auto pt-4">
+              <div className="flex items-center gap-x-4 rounded-lg px-2 py-3 text-sm font-medium text-white/90 hover:bg-white/10">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white font-semibold">
                   {user.firstName.charAt(0)}
                   {user.lastName.charAt(0)}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="truncate text-slate-900 font-semibold">
+                  <p className="truncate text-white font-semibold">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="truncate text-xs text-slate-500">{user.email}</p>
+                  <p className="truncate text-xs text-white/65">{user.email}</p>
                 </div>
               </div>
             </div>

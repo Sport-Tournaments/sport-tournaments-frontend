@@ -37,26 +37,26 @@ export default function Tabs({
   const activeContent = tabs.find((tab) => tab.id === activeTab)?.content;
 
   const variantContainerStyles = {
-    underline: 'border-b border-slate-200',
-    pills: '',
-    'pills-gray': 'bg-slate-100 p-1 rounded-lg',
+    underline: 'bg-white px-2 pt-1 pb-0.5 rounded-md',
+    pills: 'bg-[var(--uefa-blue)] px-1 pt-1 pb-0.5 rounded-md',
+    'pills-gray': 'bg-white px-1 pt-1 pb-0.5 rounded-md',
   };
 
   const variantTabStyles = {
     underline: {
-      base: 'border-b-2 px-1 pb-4 text-sm font-medium whitespace-nowrap',
-      active: 'border-[#1e3a5f] text-[#1e3a5f]',
-      inactive: 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700',
+      base: 'border-b-2 px-1 pb-2 text-sm font-medium whitespace-nowrap text-[#0b2b5b]/80',
+      active: 'border-[#0b2b5b] text-white bg-[var(--uefa-blue)] rounded-md px-3 py-1',
+      inactive: 'border-transparent text-[#0b2b5b]/70 hover:text-[#0b2b5b]',
     },
     pills: {
-      base: 'rounded-lg px-3 py-2 text-sm font-medium',
-      active: 'bg-[#dbeafe] text-[#1e3a5f]',
-      inactive: 'text-slate-500 hover:text-slate-700',
+      base: 'rounded-md px-2.5 py-1 text-sm font-medium text-white/80',
+      active: 'bg-white/10 text-white',
+      inactive: 'bg-transparent hover:bg-white/10 hover:text-white',
     },
     'pills-gray': {
-      base: 'rounded-lg px-3 py-1.5 text-sm font-medium',
-      active: 'bg-white text-slate-900 shadow-sm',
-      inactive: 'text-slate-500 hover:text-slate-700',
+      base: 'rounded-md px-2.5 py-1 text-sm font-medium text-[#0b2b5b] border border-transparent',
+      active: 'bg-[var(--uefa-blue)] text-white',
+      inactive: 'text-[#0b2b5b]/80 hover:text-[#0b2b5b]',
     },
   };
 
@@ -72,7 +72,7 @@ export default function Tabs({
           name="tabs"
           value={activeTab}
           onChange={(e) => handleTabChange(e.target.value)}
-          className="block w-full rounded-lg border border-slate-200 py-2 pl-3 pr-10 text-slate-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]"
+          className="block w-full rounded-lg bg-[var(--uefa-blue)] py-2 pl-3 pr-10 text-white focus:ring-2 focus:ring-white/80"
         >
           {tabs.map((tab) => (
             <option key={tab.id} value={tab.id} disabled={tab.disabled}>
@@ -84,7 +84,7 @@ export default function Tabs({
 
       {/* Desktop tabs */}
       <div className={cn('hidden sm:block', variantContainerStyles[variant])}>
-        <nav className={cn(variant === 'underline' ? '-mb-px flex gap-x-8' : 'flex gap-x-4')} role="tablist">
+        <nav className={cn(variant === 'underline' ? '-mb-px flex gap-x-6' : 'flex gap-x-2')} role="tablist">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -99,14 +99,14 @@ export default function Tabs({
               aria-selected={activeTab === tab.id}
               aria-controls={`tabpanel-${tab.id}`}
             >
-              {tab.icon && <span className="mr-2 -ml-0.5">{tab.icon}</span>}
+              {tab.icon && <span className="mr-2 -ml-0.5 uefa-icon-chip-sm">{tab.icon}</span>}
               {tab.label}
               {tab.count !== undefined && (
                 <span className={cn(
                   'ml-3 rounded-full px-2.5 py-0.5 text-xs font-medium',
                   activeTab === tab.id
-                    ? 'bg-[#dbeafe] text-[#1e3a5f]'
-                    : 'bg-slate-100 text-slate-600'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-white/10 text-white/80'
                 )}>
                   {tab.count}
                 </span>

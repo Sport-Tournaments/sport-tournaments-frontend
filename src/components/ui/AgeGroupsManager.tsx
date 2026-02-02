@@ -242,7 +242,7 @@ export function AgeGroupsManager({
                     ({ageGroup.birthYear})
                   </span>
                   {ageGroup.gameSystem && (
-                    <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                    <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
                       {ageGroup.gameSystem}
                     </span>
                   )}

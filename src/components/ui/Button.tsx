@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/utils/helpers';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'soft';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'soft' | 'paid' | 'unpaid' | 'view';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'icon';
   isLoading?: boolean;
   fullWidth?: boolean;
@@ -31,13 +31,16 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
     
     const variantStyles = {
-      primary: 'rounded-lg bg-[#1e3a5f] text-white shadow-sm hover:bg-[#152a45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f]',
-      secondary: 'rounded-lg bg-white text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
-      outline: 'rounded-lg border-2 border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f]',
-      ghost: 'rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600',
-      danger: 'rounded-lg bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600',
-      success: 'rounded-lg bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600',
-      soft: 'rounded-lg bg-[#dbeafe] text-[#1e3a5f] hover:bg-[#bfdbfe]',
+      primary: 'rounded-lg bg-[var(--uefa-blue)] text-white hover:bg-[var(--uefa-blue-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+      secondary: 'rounded-lg bg-[var(--uefa-blue-soft)] text-white hover:bg-[var(--uefa-blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+      outline: 'rounded-lg bg-[var(--uefa-blue)] text-white hover:bg-[var(--uefa-blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+      ghost: 'rounded-lg bg-[var(--uefa-blue)] text-white/90 hover:bg-[var(--uefa-blue-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+      danger: 'rounded-lg bg-red-600 text-white hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500',
+      paid: 'rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500',
+      unpaid: 'rounded-lg bg-amber-500 text-white hover:bg-amber-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400',
+      view: 'rounded-lg bg-white text-[#0b2b5b] border border-[#0b2b5b] hover:bg-[#f8fafc] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b2b5b]',
+      success: 'rounded-lg bg-[var(--uefa-blue-soft)] text-white hover:bg-[var(--uefa-blue-light)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white',
+      soft: 'rounded-lg bg-[var(--uefa-blue-light)] text-white hover:bg-[var(--uefa-blue-hover)]',
     };
 
     const sizeStyles = {
@@ -89,9 +92,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon && <span className="shrink-0">{leftIcon}</span>}
+            {leftIcon && <span className="shrink-0 uefa-icon-chip-sm">{leftIcon}</span>}
             {children}
-            {rightIcon && <span className="shrink-0">{rightIcon}</span>}
+            {rightIcon && <span className="shrink-0 uefa-icon-chip-sm">{rightIcon}</span>}
           </>
         )}
       </button>

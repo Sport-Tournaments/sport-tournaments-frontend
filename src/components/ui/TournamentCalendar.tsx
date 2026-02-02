@@ -116,33 +116,33 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
         </h2>
         <div className="flex items-center gap-2">
           {/* View Toggle */}
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden mr-2">
+          <div className="flex border border-[var(--uefa-blue)] rounded-lg overflow-hidden mr-2 bg-white">
             <button
               onClick={() => setView('month')}
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 view === 'month' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-white text-gray-700 hover:bg-primary/5'
+                  ? 'bg-[var(--uefa-blue)] text-white' 
+                  : 'bg-white text-[var(--uefa-blue)] hover:bg-[var(--uefa-blue)]/10'
               }`}
             >
               {t('calendar.month', 'Month')}
             </button>
             <button
               onClick={() => setView('week')}
-              className={`px-3 py-1.5 text-sm font-medium border-l border-gray-200 transition-colors ${
+              className={`px-3 py-1.5 text-sm font-medium border-l border-[var(--uefa-blue)] transition-colors ${
                 view === 'week' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-white text-gray-700 hover:bg-primary/5'
+                  ? 'bg-[var(--uefa-blue)] text-white' 
+                  : 'bg-white text-[var(--uefa-blue)] hover:bg-[var(--uefa-blue)]/10'
               }`}
             >
               {t('calendar.week', 'Week')}
             </button>
             <button
               onClick={() => setView('day')}
-              className={`px-3 py-1.5 text-sm font-medium border-l border-gray-200 transition-colors ${
+              className={`px-3 py-1.5 text-sm font-medium border-l border-[var(--uefa-blue)] transition-colors ${
                 view === 'day' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-white text-gray-700 hover:bg-primary/5'
+                  ? 'bg-[var(--uefa-blue)] text-white' 
+                  : 'bg-white text-[var(--uefa-blue)] hover:bg-[var(--uefa-blue)]/10'
               }`}
             >
               {t('calendar.day', 'Day')}
@@ -202,9 +202,9 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                   onClick={() => setSelectedDate(day)}
                   className={`
                     relative min-h-[80px] p-2 border-b border-r border-gray-200 text-left
-                    transition-colors hover:bg-primary/5
+                    transition-colors hover:bg-blue-50
                     ${!isCurrentMonth ? 'bg-gray-50 text-gray-400' : 'bg-white'}
-                    ${isSelected ? 'ring-2 ring-inset ring-primary' : ''}
+                    ${isSelected ? 'ring-2 ring-inset ring-blue-500' : ''}
                     ${dayIdx % 7 === 6 ? 'border-r-0' : ''}
                   `}
                 >
@@ -212,8 +212,8 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                     dateTime={format(day, 'yyyy-MM-dd')}
                     className={`
                       flex items-center justify-center w-7 h-7 text-sm font-medium rounded-full
-                      ${isDayToday ? 'bg-primary text-white' : ''}
-                      ${isSelected && !isDayToday ? 'bg-primary text-white' : ''}
+                      ${isDayToday ? 'bg-blue-600 text-white' : ''}
+                      ${isSelected && !isDayToday ? 'bg-gray-900 text-white' : ''}
                     `}
                   >
                     {format(day, 'd')}
@@ -224,7 +224,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                       {dayTournaments.slice(0, 2).map((tournament) => (
                         <div
                           key={tournament.id}
-                          className="truncate text-xs px-1.5 py-0.5 bg-primary/10 text-primary rounded"
+                          className="truncate text-xs px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded"
                           title={tournament.name}
                         >
                           {tournament.name}
@@ -258,7 +258,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                   </div>
                   <div className={`
                     mt-1 w-8 h-8 mx-auto flex items-center justify-center text-sm font-medium rounded-full
-                    ${isDayToday ? 'bg-primary text-white' : 'text-gray-900'}
+                    ${isDayToday ? 'bg-blue-600 text-white' : 'text-gray-900'}
                   `}>
                     {format(day, 'd')}
                   </div>
@@ -279,8 +279,8 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                   onClick={() => setSelectedDate(day)}
                   className={`
                     p-2 border-r border-gray-200 last:border-r-0 text-left
-                    transition-colors hover:bg-primary/5 align-top
-                    ${isSelected ? 'bg-primary/5' : 'bg-white'}
+                    transition-colors hover:bg-blue-50 align-top
+                    ${isSelected ? 'bg-blue-50' : 'bg-white'}
                   `}
                 >
                   {dayTournaments.length > 0 ? (
@@ -288,11 +288,11 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                       {dayTournaments.map((tournament) => (
                         <div
                           key={tournament.id}
-                          className="p-2 bg-primary/10 text-primary rounded text-xs"
+                          className="p-2 bg-blue-100 text-blue-800 rounded text-xs"
                           title={tournament.name}
                         >
                           <div className="font-medium truncate">{tournament.name}</div>
-                          <div className="text-primary/80 mt-0.5">{tournament.location}</div>
+                          <div className="text-blue-600 mt-0.5">{tournament.location}</div>
                         </div>
                       ))}
                     </div>
@@ -315,7 +315,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
           <div className="bg-gray-50 border-b border-gray-200 p-4">
             <div className={`
               inline-flex items-center justify-center w-12 h-12 text-lg font-semibold rounded-full
-                ${isToday(currentDate) ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}
+              ${isToday(currentDate) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'}
             `}>
               {format(currentDate, 'd')}
             </div>
@@ -344,7 +344,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                     <Link
                       key={tournament.id}
                       href={getTournamentPublicPath(tournament)}
-                      className="block p-4 bg-primary/5 border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors"
+                      className="block p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -389,7 +389,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                 <Link
                   key={tournament.id}
                   href={getTournamentPublicPath(tournament)}
-                  className="block p-4 bg-white border border-gray-200 rounded-lg hover:border-primary/40 hover:shadow-sm transition-all"
+                  className="block p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div>

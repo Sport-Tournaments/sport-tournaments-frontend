@@ -22,14 +22,14 @@ export default function DashboardHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-sm border-b border-slate-200">
+    <header className="sticky top-0 z-40 w-full bg-[var(--uefa-blue)] text-white">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Mobile menu button and breadcrumb area */}
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
-              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-lg p-2.5 text-slate-600 hover:bg-slate-100"
+              className="lg:hidden -m-2.5 inline-flex items-center justify-center rounded-lg p-2.5 text-white/80 hover:bg-white/10"
               aria-label="Toggle menu"
             >
               <span className="sr-only">{t('common.openMenu', 'Open menu')}</span>
@@ -40,7 +40,7 @@ export default function DashboardHeader() {
 
             {/* Optional: Show logo on mobile */}
             <Link href="/" className="lg:hidden flex items-center">
-              <span className="text-xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-xl font-black tracking-tight text-white">
                 tournamente
               </span>
             </Link>
@@ -51,7 +51,7 @@ export default function DashboardHeader() {
             {/* Language selector */}
             <Dropdown
               trigger={
-                <button className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+                <button className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-white/85 hover:bg-white/10 transition-colors">
                   <span className="uppercase">
                     {i18n.language}
                   </span>
@@ -71,17 +71,17 @@ export default function DashboardHeader() {
             {user && (
               <Dropdown
                 trigger={
-                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-slate-100 transition-colors">
+                  <button className="flex items-center gap-2 rounded-full p-1 hover:bg-white/10 transition-colors">
                     <Avatar
                       src={user.profileImageUrl}
                       firstName={user.firstName}
                       lastName={user.lastName}
                       size="sm"
                     />
-                    <span className="hidden md:inline text-sm font-medium text-slate-700">
+                    <span className="hidden md:inline text-sm font-medium text-white/90">
                       {user.firstName}
                     </span>
-                    <svg className="size-4 hidden md:inline text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <svg className="size-4 hidden md:inline text-white/70" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                     </svg>
                   </button>

@@ -21,12 +21,12 @@ export default function Badge({
 }: BadgeProps) {
   // Map aliases to color variants
   const colorMap: Record<string, string> = {
-    primary: 'primary',
+    primary: 'teal',
     success: 'green',
     error: 'red',
     danger: 'red',
     warning: 'yellow',
-    info: 'primary',
+    info: 'blue',
     neutral: 'gray',
     default: 'gray',
   };
@@ -34,29 +34,27 @@ export default function Badge({
   const color = colorMap[variant] || variant;
   
   const colorStyles: Record<string, string> = {
-    primary: 'bg-primary/10 text-primary',
     gray: 'bg-slate-100 text-slate-600',
     red: 'bg-red-50 text-red-700',
     yellow: 'bg-amber-50 text-amber-700',
     green: 'bg-emerald-50 text-emerald-700',
-    blue: 'bg-primary/10 text-primary',
+    blue: 'bg-blue-50 text-blue-700',
     indigo: 'bg-indigo-50 text-indigo-700',
     purple: 'bg-purple-50 text-purple-700',
     pink: 'bg-pink-50 text-pink-700',
-    teal: 'bg-primary/10 text-primary',
+    teal: 'bg-[#dbeafe] text-[#1e3a5f]',
   };
 
   const dotColorStyles: Record<string, string> = {
-    primary: 'fill-primary',
     gray: 'fill-slate-500',
     red: 'fill-red-500',
     yellow: 'fill-amber-500',
     green: 'fill-emerald-500',
-    blue: 'fill-primary',
+    blue: 'fill-blue-500',
     indigo: 'fill-indigo-500',
     purple: 'fill-purple-500',
     pink: 'fill-pink-500',
-    teal: 'fill-primary',
+    teal: 'fill-[#1e3a5f]',
   };
 
   const sizeStyles = {

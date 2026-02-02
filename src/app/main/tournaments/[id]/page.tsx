@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap } from '@/components/ui';
 import { tournamentService, registrationService, clubService, fileService } from '@/services';
-import { Tournament, TournamentStatus, Registration, Club } from '@/types';
+import { Tournament, TournamentStatus, Registration, Club, AgeGroup } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { useAuthStore } from '@/store';
 import { RegistrationWizard } from '@/components/registration';
@@ -299,6 +299,14 @@ export default function TournamentDetailPage() {
     return `U${currentYear - birthYear}`;
   };
 
+  const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
+    ageGroup.teamCount
+      ?? ageGroup.maxTeams
+      ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
+        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+        : 0)
+  );
+
   if (loading) {
     return (
       <MainLayout>
@@ -383,283 +391,340 @@ export default function TournamentDetailPage() {
     (registration) => registration.status === 'APPROVED'
   );
 
-  const tabs = [
-    {
-      id: 'overview',
-      label: t('tournament.tabs.overview'),
-      content: (
-        <div className="space-y-6">
-          {/* Details */}
+  const buildOverviewTab = (ageGroup?: AgeGroup) => {
+    const ageGroupId = ageGroup?.id;
+    const scopedRegistrations = ageGroupId
+      ? registrations.filter((registration) => registration.ageGroupId === ageGroupId)
+      : registrations;
+    const ageGroupMaxTeams = ageGroup ? getAgeGroupMaxTeams(ageGroup) : maxTeamsDisplay;
+    const ageGroupCurrentTeams = ageGroup
+      ? (ageGroup.currentTeams ?? scopedRegistrations.length)
+      : currentTeamsDisplay;
+    const ageGroupSpotsLeft = ageGroupMaxTeams > 0
+      ? Math.max(ageGroupMaxTeams - ageGroupCurrentTeams, 0)
+      : null;
+
+    return (
+      <div className="space-y-6">
+        {/* Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('tournament.details', 'Tournament Details')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {tournament.isPrivate && (
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.visibility', 'Visibility')}</span>
+                  <Badge variant="warning">{t('tournament.privateTournament', 'Private')}</Badge>
+                </div>
+              )}
+              {tournament.registrationFee && tournament.registrationFee > 0 && (
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.registrationFee', 'Registration Fee')}</span>
+                  <span className="font-medium">€{tournament.registrationFee}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                <span className="text-gray-600">{t('tournament.spotsLeft')}</span>
+                <span className="font-medium">
+                  {ageGroupSpotsLeft ?? t('tournament.unlimited', 'Unlimited')}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                <span className="text-gray-600">{t('tournament.ageCategory.label')}</span>
+                <span className="font-medium">
+                  {ageGroup?.ageCategory
+                    ? t(`tournament.ageCategory.${ageGroup.ageCategory}`)
+                    : tournament.ageCategory || 'Open'}
+                </span>
+              </div>
+              {tournament.numberOfMatches && (
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.numberOfMatches')}</span>
+                  <span className="font-medium">{tournament.numberOfMatches}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                <span className="text-gray-600">{t('tournament.teamsRegistered', 'Teams Registered')}</span>
+                <span className="font-medium">{ageGroupCurrentTeams} / {ageGroupMaxTeams}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Description */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('tournament.description')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap">{tournament.description}</p>
+          </CardContent>
+        </Card>
+
+        {/* Rules */}
+        {tournament.rules && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.details', 'Tournament Details')}</CardTitle>
+              <CardTitle>{t('tournament.rules')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {tournament.isPrivate && (
-                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                    <span className="text-gray-600">{t('tournament.visibility', 'Visibility')}</span>
-                    <Badge variant="warning">{t('tournament.privateTournament', 'Private')}</Badge>
-                  </div>
-                )}
-                {tournament.registrationFee && tournament.registrationFee > 0 && (
-                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                    <span className="text-gray-600">{t('tournament.registrationFee', 'Registration Fee')}</span>
-                    <span className="font-medium">€{tournament.registrationFee}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.spotsLeft')}</span>
-                  <span className="font-medium">{spotsLeft}</span>
+              <p className="whitespace-pre-wrap">{tournament.rules}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Age Categories */}
+        {!ageGroup && tournament.ageGroups && tournament.ageGroups.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {tournament.ageGroups.map((ag, index) => {
+                  const displayLabel = getAgeGroupLabel(ag.birthYear, ag.displayLabel);
+                  const groupMaxTeams = getAgeGroupMaxTeams(ag);
+                  const ageGroupCurrentTeams = ag.currentTeams ?? 0;
+                  const ageGroupRegistration = myRegistrations.find(
+                    (registration) => registration.ageGroupId === ag.id
+                  );
+                  const isRegistered = !!ageGroupRegistration;
+                  const statusLabel = ageGroupRegistration?.status?.toLowerCase() || 'pending';
+                  const groupSpotsLeft = groupMaxTeams > 0
+                    ? Math.max(groupMaxTeams - ageGroupCurrentTeams, 0)
+                    : null;
+                  const ageGroupIsFull = groupMaxTeams > 0 && groupSpotsLeft === 0;
+                  return (
+                    <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-gray-900">{displayLabel}</span>
+                        <div className="flex items-center gap-2">
+                          {ag.gameSystem && (
+                            <Badge variant="info">{ag.gameSystem}</Badge>
+                          )}
+                          {isRegistered && (
+                            <Badge variant={getRegistrationStatusVariant(ageGroupRegistration?.status)}>
+                              {t(`registration.status.${statusLabel}`, ageGroupRegistration?.status)}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+                        <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
+                        {ag.ageCategory && (
+                          <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
+                        )}
+                        {ag.level && (
+                          <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
+                        )}
+                        {ag.format && (
+                          <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
+                        )}
+                        {groupMaxTeams > 0 && (
+                          <span>
+                            {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {groupMaxTeams}
+                          </span>
+                        )}
+
+                        {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                          <div className="col-span-2">
+                            <hr className="border-t border-gray-200 my-2" />
+                          </div>
+                        )}
+
+                        {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                          <div className="col-span-2">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500">
+                              {ag.registrationStartDate && (
+                                <div>{t('tournament.registrationOpens', 'Registration Opens')}: {formatDate(ag.registrationStartDate)}</div>
+                              )}
+                              {ag.registrationEndDate && (
+                                <div>{t('tournament.registrationCloses', 'Registration Closes')}: {formatDate(ag.registrationEndDate)}</div>
+                              )}
+                              {ag.startDate && (
+                                <div>{t('tournaments.ageGroups.startDate', 'Tournament Starts')}: {formatDate(ag.startDate)}</div>
+                              )}
+                              {ag.endDate && (
+                                <div>{t('tournaments.ageGroups.endDate', 'Tournament Ends')}: {formatDate(ag.endDate)}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                          <div className="col-span-2">
+                            <hr className="border-t border-gray-200 my-2" />
+                          </div>
+                        )}
+
+                        {ag.locationAddress && (
+                          <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
+                        )}
+                        {ag.participationFee !== undefined && ag.participationFee !== null && (
+                          <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
+                        )}
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="text-xs text-gray-500">
+                          {groupMaxTeams > 0
+                            ? t('tournament.spotsLeft', 'Spots left') + `: ${groupSpotsLeft}`
+                            : t('tournament.unlimited', 'Unlimited')}
+                        </span>
+                        <Button
+                          variant={isRegistered ? 'secondary' : 'primary'}
+                          size="sm"
+                          disabled={isRegistered || ageGroupIsFull}
+                          onClick={() => handleRegisterForAgeGroup(ag.id)}
+                        >
+                          {isRegistered
+                            ? t('registration.status.registered', 'Registered')
+                            : t('tournament.register')}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Selected Age Category Summary */}
+        {ageGroup && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-3 bg-white border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-gray-900">
+                    {getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel)}
+                  </span>
+                  {ageGroup.gameSystem && <Badge variant="info">{ageGroup.gameSystem}</Badge>}
                 </div>
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.ageCategory.label')}</span>
-                  <span className="font-medium">{tournament.ageCategory || 'Open'}</span>
-                </div>
-                {tournament.numberOfMatches && (
-                  <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                    <span className="text-gray-600">{t('tournament.numberOfMatches')}</span>
-                    <span className="font-medium">{tournament.numberOfMatches}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.teamsRegistered', 'Teams Registered')}</span>
-                  <span className="font-medium">{currentTeamsDisplay} / {maxTeamsDisplay}</span>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+                  <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ageGroup.birthYear}</span>
+                  {ageGroup.ageCategory && (
+                    <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ageGroup.ageCategory}`)}</span>
+                  )}
+                  {ageGroup.format && (
+                    <span>{t('tournament.format.label')}: {t(`tournament.format.${ageGroup.format}`)}</span>
+                  )}
+                  {ageGroup.level && (
+                    <span>{t('tournament.level.label')}: {t(`tournament.level.${ageGroup.level}`)}</span>
+                  )}
+                  {ageGroupMaxTeams > 0 && (
+                    <span>
+                      {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {ageGroupMaxTeams}
+                    </span>
+                  )}
+                  {ageGroup.participationFee !== undefined && ageGroup.participationFee !== null && (
+                    <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ageGroup.participationFee}</span>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
+        )}
 
-          {/* Description */}
+        {/* Regulations Document Download */}
+        {tournament.regulationsDocument && (
           <Card>
             <CardHeader>
-              <CardTitle>{t('tournament.description')}</CardTitle>
+              <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap">{tournament.description}</p>
-            </CardContent>
-          </Card>
-
-          {/* Rules */}
-          {tournament.rules && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('tournament.rules')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="whitespace-pre-wrap">{tournament.rules}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Age Categories */}
-          {tournament.ageGroups && tournament.ageGroups.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('tournaments.ageGroups.title', 'Age Categories')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {tournament.ageGroups.map((ag, index) => {
-                    const displayLabel = getAgeGroupLabel(ag.birthYear, ag.displayLabel);
-                    const ageGroupMaxTeams =
-                      ag.teamCount ??
-                      ag.maxTeams ??
-                      (ag.teamsPerGroup && ag.groupsCount
-                        ? ag.teamsPerGroup * ag.groupsCount
-                        : 0);
-                    const ageGroupCurrentTeams = ag.currentTeams ?? 0;
-                    const ageGroupRegistration = myRegistrations.find(
-                      (registration) => registration.ageGroupId === ag.id
-                    );
-                    const isRegistered = !!ageGroupRegistration;
-                    const statusLabel = ageGroupRegistration?.status?.toLowerCase() || 'pending';
-                    const ageGroupSpotsLeft = ageGroupMaxTeams > 0
-                      ? Math.max(ageGroupMaxTeams - ageGroupCurrentTeams, 0)
-                      : null;
-                    const ageGroupIsFull = ageGroupMaxTeams > 0 && ageGroupSpotsLeft === 0;
-                    return (
-                      <div key={ag.id || index} className="p-3 bg-white border border-gray-200 rounded-lg">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-gray-900">{displayLabel}</span>
-                          <div className="flex items-center gap-2">
-                            {ag.gameSystem && (
-                              <Badge variant="info">{ag.gameSystem}</Badge>
-                            )}
-                            {isRegistered && (
-                              <Badge variant={getRegistrationStatusVariant(ageGroupRegistration?.status)}>
-                                {t(`registration.status.${statusLabel}`, ageGroupRegistration?.status)}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
-                          <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
-                          {ag.ageCategory && (
-                            <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
-                          )}
-                          {ag.level && (
-                            <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
-                          )}
-                          {ag.format && (
-                            <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
-                          )}
-                          {ageGroupMaxTeams > 0 && (
-                            <span>
-                              {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {ageGroupMaxTeams}
-                            </span>
-                          )}
-
-                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
-                            <div className="col-span-2">
-                              <hr className="border-t border-gray-200 my-2" />
-                            </div>
-                          )}
-
-                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
-                            <div className="col-span-2">
-                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500">
-                                {ag.registrationStartDate && (
-                                  <div>{t('tournament.registrationOpens', 'Registration Opens')}: {formatDate(ag.registrationStartDate)}</div>
-                                )}
-                                {ag.registrationEndDate && (
-                                  <div>{t('tournament.registrationCloses', 'Registration Closes')}: {formatDate(ag.registrationEndDate)}</div>
-                                )}
-                                {ag.startDate && (
-                                  <div>{t('tournaments.ageGroups.startDate', 'Tournament Starts')}: {formatDate(ag.startDate)}</div>
-                                )}
-                                {ag.endDate && (
-                                  <div>{t('tournaments.ageGroups.endDate', 'Tournament Ends')}: {formatDate(ag.endDate)}</div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
-                            <div className="col-span-2">
-                              <hr className="border-t border-gray-200 my-2" />
-                            </div>
-                          )}
-
-                          {ag.locationAddress && (
-                            <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
-                          )}
-                          {ag.participationFee !== undefined && ag.participationFee !== null && (
-                            <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
-                          )}
-                        </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <span className="text-xs text-gray-500">
-                            {ageGroupMaxTeams > 0
-                              ? t('tournament.spotsLeft', 'Spots left') + `: ${ageGroupSpotsLeft}`
-                              : t('tournament.unlimited', 'Unlimited')}
-                          </span>
-                          <Button
-                            variant={isRegistered ? 'secondary' : 'primary'}
-                            size="sm"
-                            disabled={isRegistered || ageGroupIsFull}
-                            onClick={() => handleRegisterForAgeGroup(ag.id)}
-                          >
-                            {isRegistered
-                              ? t('registration.status.registered', 'Registered')
-                              : t('tournament.register')}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Regulations Document Download */}
-          {tournament.regulationsDocument && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('tournament.regulationsDocument', 'Regulations Document')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
-                        <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {t('tournament.clickToDownload', 'Click to view or download')}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleDownloadRegulations}
-                    isLoading={downloadingRegulations}
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <div className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                      <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
                     </svg>
-                    {t('tournament.viewRegulations', 'View PDF')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {tournament.whatsappGroupLink && hasApprovedRegistration && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('tournament.whatsappGroup', 'WhatsApp Group')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg">
+                  </div>
                   <div>
                     <p className="font-medium text-gray-900">
-                      {t('tournament.whatsappGroupAccess', 'Join the tournament WhatsApp group')}
+                      {t('tournament.regulationsPdf', 'Tournament Regulations (PDF)')}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {t('tournament.whatsappGroupHelp', 'Available after your club is approved.')}
+                      {t('tournament.clickToDownload', 'Click to view or download')}
                     </p>
                   </div>
-                  <a
-                    href={tournament.whatsappGroupLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="primary" size="sm">
-                      {t('tournament.whatsappGroupJoin', 'Open WhatsApp')}
-                    </Button>
-                  </a>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleDownloadRegulations}
+                  isLoading={downloadingRegulations}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  {t('tournament.viewRegulations', 'View PDF')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
+        {tournament.whatsappGroupLink && hasApprovedRegistration && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('tournament.whatsappGroup', 'WhatsApp Group')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg">
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {t('tournament.whatsappGroupAccess', 'Join the tournament WhatsApp group')}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {t('tournament.whatsappGroupHelp', 'Available after your club is approved.')}
+                  </p>
+                </div>
+                <a
+                  href={tournament.whatsappGroupLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="primary" size="sm">
+                    {t('tournament.whatsappGroupJoin', 'Open WhatsApp')}
+                  </Button>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
 
-        </div>
-      ),
-    },
-    {
+  const buildTeamsTab = (ageGroup?: AgeGroup) => {
+    const ageGroupId = ageGroup?.id;
+    const scopedRegistrations = ageGroupId
+      ? registrations.filter((registration) => registration.ageGroupId === ageGroupId)
+      : registrations;
+    const teamsLabel = ageGroup
+      ? `${t('tournament.tabs.teams')} (${scopedRegistrations.length})`
+      : `${t('tournament.tabs.teams')} (${registrations.length})`;
+
+    return {
       id: 'teams',
-      label: `${t('tournament.tabs.teams')} (${registrations.length})`,
+      label: teamsLabel,
       content: (
         <Card>
           <CardHeader>
             <CardTitle>{t('tournament.registeredTeams')}</CardTitle>
           </CardHeader>
           <CardContent>
-            {registrations.length === 0 ? (
+            {scopedRegistrations.length === 0 ? (
               <p className="text-center text-gray-500 py-8">{t('tournament.noTeamsYet')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {registrations.map((registration) => (
+                {scopedRegistrations.map((registration) => (
                   <div
                     key={registration.id}
                     className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg"
@@ -690,40 +755,85 @@ export default function TournamentDetailPage() {
           </CardContent>
         </Card>
       ),
-    },
-    {
-      id: 'groups',
-      label: t('tournament.tabs.groups'),
-      content: (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('tournament.groups')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-gray-500 py-8">
-              {normalizeStatus(tournament.status) === 'PUBLISHED'
-                ? t('tournament.groupsNotDrawn')
-                : t('tournament.noGroups')}
+    };
+  };
+
+  const buildGroupsTab = (ageGroup?: AgeGroup) => ({
+    id: 'groups',
+    label: t('tournament.tabs.groups'),
+    content: (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('tournament.groups')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-500 py-8">
+            {normalizeStatus(tournament.status) === 'PUBLISHED'
+              ? t('tournament.groupsNotDrawn')
+              : t('tournament.noGroups')}
+          </p>
+          {ageGroup && (
+            <p className="text-center text-xs text-gray-400 mt-2">
+              {getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel)}
             </p>
-          </CardContent>
-        </Card>
-      ),
-    },
+          )}
+        </CardContent>
+      </Card>
+    ),
+  });
+
+  const buildMatchesTab = (ageGroup?: AgeGroup) => ({
+    id: 'matches',
+    label: t('tournament.tabs.matches'),
+    content: (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('tournament.matches')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-gray-500 py-8">{t('tournament.noMatches')}</p>
+          {ageGroup && (
+            <p className="text-center text-xs text-gray-400 mt-2">
+              {getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel)}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    ),
+  });
+
+  const buildInnerTabs = (ageGroup?: AgeGroup) => [
     {
-      id: 'matches',
-      label: t('tournament.tabs.matches'),
-      content: (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('tournament.matches')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center text-gray-500 py-8">{t('tournament.noMatches')}</p>
-          </CardContent>
-        </Card>
-      ),
+      id: 'overview',
+      label: t('tournament.tabs.overview'),
+      content: buildOverviewTab(ageGroup),
     },
+    buildTeamsTab(ageGroup),
+    buildGroupsTab(ageGroup),
+    buildMatchesTab(ageGroup),
   ];
+
+  const tabs = buildInnerTabs();
+  const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
+    ? [
+        {
+          id: 'all',
+          label: t('common.all', 'All'),
+          content: <Tabs tabs={tabs} defaultTab="overview" variant="pills-gray" />,
+        },
+        ...tournament.ageGroups.map((ageGroup, index) => ({
+          id: `age-group-${ageGroup.id ?? index}`,
+          label: getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel),
+          content: (
+            <Tabs
+              tabs={buildInnerTabs(ageGroup)}
+              defaultTab="overview"
+              variant="pills-gray"
+            />
+          ),
+        })),
+      ]
+    : tabs;
 
   return (
     <MainLayout>
@@ -798,7 +908,7 @@ export default function TournamentDetailPage() {
               </div>
               </div>
 
-              <Tabs tabs={tabs} />
+              <Tabs tabs={ageGroupTabs} defaultTab={ageGroupTabs[0]?.id} />
             </div>
 
             {/* Sidebar */}

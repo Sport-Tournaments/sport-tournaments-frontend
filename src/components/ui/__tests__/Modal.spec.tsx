@@ -273,7 +273,7 @@ describe('Modal Component', () => {
         </Modal>
       );
       const iconContainer = screen.getByText('ℹ').parentElement;
-      expect(iconContainer).toHaveClass('bg-primary/10');
+      expect(iconContainer).toHaveClass('bg-blue-100');
     });
   });
 

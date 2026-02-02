@@ -214,7 +214,7 @@ export default function RegistrationDetailPage() {
                   </p>
                 </div>
                 <Link href={getTournamentPublicPath(tournament)}>
-                  <Button variant="outline" size="sm">{t('common.view')}</Button>
+                  <Button variant="view" size="sm">{t('common.view')}</Button>
                 </Link>
               </div>
             </CardContent>

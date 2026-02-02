@@ -244,14 +244,14 @@ export default function TournamentDetailPage() {
                   <>
                     <Button
                       size="sm"
-                      variant="primary"
+                      variant="paid"
                       onClick={() => handleApproveRegistrationWithPayment(registration.id)}
                     >
                       {t('registration.approveWithPayment', 'Approve (Paid)')}
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="unpaid"
                       onClick={() => handleApproveRegistrationWithoutPayment(registration.id)}
                     >
                       {t('registration.approveWithoutPayment', 'Approve (Unpaid)')}
@@ -266,7 +266,7 @@ export default function TournamentDetailPage() {
                   </>
                 )}
                 <Link href={`/dashboard/registrations/${registration.id}`}>
-                  <Button size="sm" variant="ghost">{t('common.view')}</Button>
+                  <Button size="sm" variant="view">{t('common.view')}</Button>
                 </Link>
               </td>
             </tr>
@@ -421,7 +421,7 @@ export default function TournamentDetailPage() {
                   </div>
                 </div>
                 <Button
-                  variant="primary"
+                  variant="view"
                   size="sm"
                   onClick={handleDownloadRegulations}
                   isLoading={downloadingRegulations}
@@ -606,7 +606,7 @@ export default function TournamentDetailPage() {
           </div>
           <div className="flex gap-2">
             <Link href={`${getTournamentPublicPath(tournament)}?preview=true`}>
-              <Button variant="outline">
+              <Button variant="view">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

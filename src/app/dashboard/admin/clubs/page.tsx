@@ -216,7 +216,7 @@ export default function AdminClubsPage() {
 
                     <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200">
                       <Link href={`/clubs/${club.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">View</Button>
+                        <Button variant="view" size="sm" className="w-full">View</Button>
                       </Link>
                       {!club.isVerified && (
                         <Button

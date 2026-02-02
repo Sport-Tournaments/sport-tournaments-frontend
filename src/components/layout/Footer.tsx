@@ -28,17 +28,17 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white border-t border-slate-200">
+    <footer className="bg-[var(--uefa-blue)] text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center mb-4">
-              <span className="text-2xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-2xl font-black tracking-tight text-white">
                 tournamente
               </span>
             </Link>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm text-white/80 mb-4">
               {t('footer.description')}
             </p>
             {/* <div className="flex gap-4">
@@ -80,7 +80,7 @@ export default function Footer() {
 
           {/* Platform links */}
           <div>
-            <h3 className="font-semibold text-slate-900 mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {t('footer.platform')}
             </h3>
             <ul className="space-y-2">
@@ -88,7 +88,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -99,7 +99,7 @@ export default function Footer() {
 
           {/* Support links */}
           <div>
-            <h3 className="font-semibold text-slate-900 mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {t('footer.support')}
             </h3>
             <ul className="space-y-2">
@@ -107,7 +107,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -118,7 +118,7 @@ export default function Footer() {
 
           {/* Legal links */}
           <div>
-            <h3 className="font-semibold text-slate-900 mb-4">
+            <h3 className="font-semibold text-white mb-4">
               {t('footer.legal')}
             </h3>
             <ul className="space-y-2">
@@ -126,7 +126,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-white/80 hover:text-white transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -137,8 +137,8 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 pt-8 border-t border-slate-200">
-          <p className="text-sm text-center text-slate-500">
+        <div className="mt-12 pt-8">
+          <p className="text-sm text-center text-white/70">
             © {currentYear} tournamente. {t('footer.allRightsReserved')}
           </p>
         </div>

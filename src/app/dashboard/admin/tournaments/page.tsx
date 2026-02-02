@@ -227,7 +227,7 @@ export default function AdminTournamentsPage() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/tournaments/${tournament.id}`}>
-                          <Button variant="outline" size="sm">View</Button>
+                          <Button variant="view" size="sm">View</Button>
                         </Link>
                         <Link href={`/dashboard/tournaments/${tournament.id}/edit`}>
                           <Button variant="outline" size="sm">Edit</Button>

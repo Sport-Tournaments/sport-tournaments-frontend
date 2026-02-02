@@ -62,10 +62,10 @@ export default function Pagination({
 
   const visiblePages = getVisiblePages();
 
-  const buttonBase = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0';
-  const buttonInactive = 'text-gray-900 hover:bg-primary/5';
-  const buttonActive = 'z-10 bg-indigo-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
-  const buttonDisabled = 'text-gray-400 cursor-not-allowed';
+  const buttonBase = 'relative inline-flex items-center px-4 py-2 text-sm font-semibold bg-[var(--uefa-blue)] text-white focus:z-20 focus:outline-offset-0';
+  const buttonInactive = 'text-white/85 hover:bg-[var(--uefa-blue-light)]';
+  const buttonActive = 'z-10 bg-white/15 text-white ring-white/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  const buttonDisabled = 'text-white/40 cursor-not-allowed';
 
   return (
     <nav
@@ -112,7 +112,7 @@ export default function Pagination({
           page === 'ellipsis' ? (
             <span 
               key={`ellipsis-${index}`} 
-              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300"
+              className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white/70 bg-[var(--uefa-blue)]"
             >
               ...
             </span>
@@ -134,7 +134,7 @@ export default function Pagination({
       </span>
 
       {/* Mobile: show current page indicator */}
-      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 sm:hidden">
+      <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-white/80 bg-[var(--uefa-blue)] sm:hidden">
         {currentPage} / {totalPages}
       </span>
 

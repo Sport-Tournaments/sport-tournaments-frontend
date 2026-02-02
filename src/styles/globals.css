@@ -35,6 +35,20 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
+/* UEFA-inspired surface tokens */
+:root {
+  --uefa-blue: #0b2b5b;
+  --uefa-blue-hover: #09234a;
+  --uefa-blue-light: #123b7a;
+  --uefa-blue-soft: #0f346d;
+  --uefa-blue-deep: #061a3d;
+  --uefa-white: #ffffff;
+  --uefa-border: rgba(255, 255, 255, 0.25);
+  --uefa-border-strong: rgba(255, 255, 255, 0.45);
+  --uefa-shadow: 0 10px 24px -18px rgba(5, 20, 45, 0.55);
+  --uefa-shadow-soft: 0 6px 16px -14px rgba(5, 20, 45, 0.45);
+}
+
 /* Base styles - Light mode (default) */
 * {
   @apply border-[var(--color-border)];
@@ -170,4 +184,84 @@ html {
   height: 1px;
   background-color: rgb(241 245 249);
   margin: 0.25rem 0;
+}
+
+/* UEFA theme utility classes */
+.uefa-surface {
+  background: var(--uefa-blue);
+  color: var(--uefa-white);
+  border-color: var(--uefa-border);
+  box-shadow: var(--uefa-shadow);
+}
+
+.uefa-surface-soft {
+  background: var(--uefa-blue-soft);
+  color: var(--uefa-white);
+  border-color: var(--uefa-border);
+  box-shadow: var(--uefa-shadow-soft);
+}
+
+.uefa-surface-light {
+  background: var(--uefa-blue-light);
+  color: var(--uefa-white);
+  border-color: var(--uefa-border);
+  box-shadow: var(--uefa-shadow-soft);
+}
+
+.uefa-surface-deep {
+  background: var(--uefa-blue-deep);
+  color: var(--uefa-white);
+  border-color: var(--uefa-border-strong);
+  box-shadow: var(--uefa-shadow);
+}
+
+.uefa-text {
+  color: var(--uefa-white);
+}
+
+.uefa-text-muted {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.uefa-border {
+  border-color: var(--uefa-border);
+}
+
+.uefa-border-strong {
+  border-color: var(--uefa-border-strong);
+}
+
+.uefa-link {
+  color: var(--uefa-white);
+}
+
+.uefa-link:hover {
+  color: var(--uefa-white);
+}
+
+.uefa-focus:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+
+.uefa-icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: var(--uefa-blue-light);
+  color: var(--uefa-white);
+}
+
+.uefa-icon-chip-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--uefa-blue-light);
+  color: var(--uefa-white);
 }

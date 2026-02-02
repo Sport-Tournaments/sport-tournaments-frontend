@@ -133,7 +133,7 @@ export function RegistrationReviewCard({
           {registration.status === 'PENDING' && (
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
-                variant="primary"
+                variant="paid"
                 size="sm"
                 onClick={handleApproveWithPayment}
                 isLoading={isApprovingPaid}
@@ -141,7 +141,7 @@ export function RegistrationReviewCard({
                 Approve (Paid)
               </Button>
               <Button
-                variant="outline"
+                variant="unpaid"
                 size="sm"
                 onClick={handleApproveWithoutPayment}
                 isLoading={isApprovingUnpaid}
@@ -149,10 +149,9 @@ export function RegistrationReviewCard({
                 Approve (Unpaid)
               </Button>
               <Button
-                variant="outline"
+                variant="danger"
                 size="sm"
                 onClick={() => setShowRejectModal(true)}
-                className="text-red-600 border-red-300 hover:bg-red-50"
               >
                 Reject
               </Button>
@@ -219,10 +218,9 @@ export function RegistrationReviewCard({
               Cancel
             </Button>
             <Button
-              variant="primary"
+              variant="danger"
               onClick={handleReject}
               isLoading={isRejecting}
-              className="bg-red-600 hover:bg-red-700"
             >
               Reject Registration
             </Button>
@@ -356,7 +354,7 @@ export function BulkRegistrationReview({
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2">
               <Button
-                variant="primary"
+                variant="paid"
                 size="sm"
                 onClick={handleBulkApprove}
                 isLoading={isProcessing}
@@ -364,10 +362,9 @@ export function BulkRegistrationReview({
                 Approve Selected
               </Button>
               <Button
-                variant="outline"
+                variant="danger"
                 size="sm"
                 onClick={() => setShowBulkRejectModal(true)}
-                className="text-red-600 border-red-300 hover:bg-red-50"
               >
                 Reject Selected
               </Button>
@@ -440,10 +437,9 @@ export function BulkRegistrationReview({
               Cancel
             </Button>
             <Button
-              variant="primary"
+              variant="danger"
               onClick={handleBulkReject}
               isLoading={isProcessing}
-              className="bg-red-600 hover:bg-red-700"
             >
               Reject All Selected
             </Button>

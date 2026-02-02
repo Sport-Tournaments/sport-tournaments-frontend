@@ -71,7 +71,7 @@ export default function Dropdown({
       {isOpen && (
         <div
           className={cn(
-            'absolute z-10 mt-2 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none',
+            'absolute z-10 mt-2 origin-top-right rounded-md bg-[var(--uefa-blue)] text-white shadow-md focus:outline-none',
             'animate-slideDown',
             widthStyles[width],
             align === 'left' ? 'left-0' : 'right-0'
@@ -82,11 +82,11 @@ export default function Dropdown({
           <div className="py-1" role="none">
             {items.map((item, index) =>
               item.divider ? (
-                <div key={index} className="my-1 h-px bg-gray-100" role="separator" />
+                <div key={index} className="my-1 h-px bg-white/15" role="separator" />
               ) : item.header ? (
                 <div
                   key={index}
-                  className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                  className="px-4 py-2 text-xs font-semibold text-white/60 uppercase tracking-wider"
                 >
                   {item.label}
                 </div>
@@ -103,8 +103,8 @@ export default function Dropdown({
                   className={cn(
                     'group flex w-full items-center gap-x-3 px-4 py-2 text-sm',
                     item.danger
-                      ? 'text-red-600 hover:bg-red-50'
-                      : 'text-gray-700 hover:bg-gray-100',
+                      ? 'text-white hover:bg-white/10'
+                      : 'text-white/85 hover:bg-white/10',
                     item.disabled && 'opacity-50 cursor-not-allowed'
                   )}
                   role="menuitem"
@@ -113,8 +113,8 @@ export default function Dropdown({
                     <span className={cn(
                       'shrink-0 size-5',
                       item.danger
-                        ? 'text-red-500 group-hover:text-red-600'
-                        : 'text-gray-400 group-hover:text-gray-500'
+                        ? 'text-white/80 group-hover:text-white'
+                        : 'text-white/70 group-hover:text-white'
                     )}>
                       {item.icon}
                     </span>
@@ -122,7 +122,7 @@ export default function Dropdown({
                   <div className="flex flex-col items-start">
                     <span>{item.label}</span>
                     {item.description && (
-                      <span className="text-xs text-gray-500">{item.description}</span>
+                      <span className="text-xs text-white/60">{item.description}</span>
                     )}
                   </div>
                 </button>

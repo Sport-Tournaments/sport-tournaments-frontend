@@ -49,7 +49,7 @@ export default function Modal({
     success: 'bg-green-100 text-green-600',
     error: 'bg-red-100 text-red-600',
     warning: 'bg-yellow-100 text-yellow-600',
-    info: 'bg-primary/10 text-primary',
+    info: 'bg-blue-100 text-blue-600',
   };
 
   const handleEscKey = useCallback(
@@ -85,7 +85,7 @@ export default function Modal({
     <div className="fixed inset-0 z-[1200]">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-white/80 transition-opacity z-[1200]"
+        className="fixed inset-0 bg-black/40 transition-opacity z-[1200]"
         aria-hidden="true"
       />
       
@@ -99,7 +99,7 @@ export default function Modal({
           <div
             ref={contentRef}
             className={cn(
-              'relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full',
+              'relative transform overflow-hidden rounded-lg bg-white text-left text-slate-900 border border-[#0b2b5b] shadow-lg transition-all sm:my-8 sm:w-full',
               sizeStyles[size],
               className
             )}
@@ -114,7 +114,7 @@ export default function Modal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="rounded-md bg-white text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0b2b5b] focus:ring-offset-2"
                   aria-label="Close modal"
                 >
                   <span className="sr-only">Close</span>
@@ -140,7 +140,7 @@ export default function Modal({
                   {title && (
                     <h3
                       id="modal-title"
-                      className="text-base font-semibold text-gray-900"
+                      className="text-base font-semibold text-slate-900"
                     >
                       {title}
                     </h3>
@@ -148,7 +148,7 @@ export default function Modal({
                   {description && (
                     <p
                       id="modal-description"
-                      className="mt-2 text-sm text-gray-500"
+                      className="mt-2 text-sm text-slate-600"
                     >
                       {description}
                     </p>
@@ -164,7 +164,7 @@ export default function Modal({
 
             {/* Footer */}
             {footer && (
-              <div className="bg-white border-t border-gray-200 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <div className="bg-white border-t border-[#0b2b5b] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 {footer}
               </div>
             )}

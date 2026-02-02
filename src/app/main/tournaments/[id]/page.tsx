@@ -509,7 +509,38 @@ export default function TournamentDetailPage() {
                               {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {ageGroupMaxTeams}
                             </span>
                           )}
-                          {ag.startDate && <span>{t('tournaments.ageGroups.startDate', 'Start')}: {formatDate(ag.startDate)}</span>}
+
+                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                            <div className="col-span-2">
+                              <hr className="border-t border-gray-200 my-2" />
+                            </div>
+                          )}
+
+                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                            <div className="col-span-2">
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500">
+                                {ag.registrationStartDate && (
+                                  <div>{t('tournament.registrationOpens', 'Registration Opens')}: {formatDate(ag.registrationStartDate)}</div>
+                                )}
+                                {ag.registrationEndDate && (
+                                  <div>{t('tournament.registrationCloses', 'Registration Closes')}: {formatDate(ag.registrationEndDate)}</div>
+                                )}
+                                {ag.startDate && (
+                                  <div>{t('tournaments.ageGroups.startDate', 'Tournament Starts')}: {formatDate(ag.startDate)}</div>
+                                )}
+                                {ag.endDate && (
+                                  <div>{t('tournaments.ageGroups.endDate', 'Tournament Ends')}: {formatDate(ag.endDate)}</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {(ag.registrationStartDate || ag.registrationEndDate || ag.startDate || ag.endDate) && (
+                            <div className="col-span-2">
+                              <hr className="border-t border-gray-200 my-2" />
+                            </div>
+                          )}
+
                           {ag.locationAddress && (
                             <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
                           )}
@@ -611,18 +642,7 @@ export default function TournamentDetailPage() {
             </Card>
           )}
 
-          {/* Tournament Start */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('tournament.tournamentStart', 'Tournament Start')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <span className="text-gray-600">{t('tournament.startDate', 'Start Date')}</span>
-                <span className="font-medium">{formatDateTime(tournament.startDate)}</span>
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
       ),
     },

@@ -20,7 +20,29 @@ const GAME_SYSTEMS = [
   { value: '10+1', label: '10+1 (11-a-side)' },
 ];
 
-const AGE_CATEGORY_OPTIONS = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'U21', 'SENIOR', 'VETERANS'] as const;
+const AGE_CATEGORY_OPTIONS = [
+  'U5',
+  'U6',
+  'U7',
+  'U8',
+  'U9',
+  'U10',
+  'U11',
+  'U12',
+  'U13',
+  'U14',
+  'U15',
+  'U16',
+  'U17',
+  'U18',
+  'U19',
+  'U20',
+  'U21',
+  'U22',
+  'U23',
+  'SENIOR',
+  'VETERANS',
+] as const;
 const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
 const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
 const GROUPS_COUNT_OPTIONS = Array.from({ length: 16 }, (_, i) => {
@@ -31,9 +53,10 @@ const GROUPS_COUNT_OPTIONS = Array.from({ length: 16 }, (_, i) => {
   };
 });
 
-// Generate birth years from 2005 to current year
+// Generate birth years from current year down to U23
 const currentYear = new Date().getFullYear();
-const BIRTH_YEARS = Array.from({ length: currentYear - 2005 + 1 }, (_, i) => {
+const MIN_BIRTH_YEAR = currentYear - 23;
+const BIRTH_YEARS = Array.from({ length: currentYear - MIN_BIRTH_YEAR + 1 }, (_, i) => {
   const year = currentYear - i;
   return { value: year.toString(), label: year.toString() };
 });
@@ -50,6 +73,8 @@ export interface AgeGroupFormData {
   participationFee?: number;
   startDate?: string;
   endDate?: string;
+  registrationStartDate?: string;
+  registrationEndDate?: string;
   locationId?: string;
   locationAddress?: string;
   groupsCount?: number;
@@ -68,7 +93,6 @@ interface AgeGroupsManagerProps {
 
 const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
   ageCategory: undefined,
-  level: 'II',
   format: 'GROUPS_PLUS_KNOCKOUT',
   gameSystem: '7+1',
   teamCount: 16,
@@ -90,10 +114,13 @@ export function AgeGroupsManager({
     value: cat,
     label: t(`tournament.ageCategory.${cat}`),
   }));
-  const levelOptions = TOURNAMENT_LEVELS.map((level) => ({
-    value: level,
-    label: t(`tournament.level.${level}`),
-  }));
+  const levelOptions = [
+    { value: '', label: t('common.none') },
+    ...TOURNAMENT_LEVELS.map((level) => ({
+      value: level,
+      label: t(`tournament.level.${level}`),
+    })),
+  ];
   const formatOptions = TOURNAMENT_FORMATS.map((format) => ({
     value: format,
     label: t(`tournament.format.${format}`, format.replace(/_/g, ' ')),
@@ -290,7 +317,7 @@ export function AgeGroupsManager({
                     <Select
                       label={t('tournament.level.label')}
                       options={levelOptions}
-                      value={ageGroup.level || 'II'}
+                      value={ageGroup.level ?? ''}
                       onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { level: (e.target.value || undefined) as TournamentLevel | undefined })}
                       disabled={disabled}
                     />
@@ -381,6 +408,26 @@ export function AgeGroupsManager({
                       value={ageGroup.endDate || ''}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { endDate: e.target.value || undefined })}
                       disabled={disabled}
+                    />
+
+                    {/* Registration Start Date */}
+                    <Input
+                      type="date"
+                      label={t('tournaments.ageGroups.registrationStartDate', 'Registration Opens')}
+                      value={ageGroup.registrationStartDate || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { registrationStartDate: e.target.value || undefined })}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.registrationStartDateHelp', 'Leave empty to use tournament default')}
+                    />
+
+                    {/* Registration End Date */}
+                    <Input
+                      type="date"
+                      label={t('tournaments.ageGroups.registrationEndDate', 'Registration Closes')}
+                      value={ageGroup.registrationEndDate || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { registrationEndDate: e.target.value || undefined })}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.registrationEndDateHelp', 'Leave empty to use tournament default')}
                     />
 
                     {/* Location Override */}

@@ -124,7 +124,7 @@ describe('Card Component', () => {
     it('should apply text styling', () => {
       render(<CardDescription>Description</CardDescription>);
       expect(screen.getByText('Description')).toHaveClass('text-sm');
-      expect(screen.getByText('Description')).toHaveClass('text-slate-500');
+      expect(screen.getByText('Description')).toHaveClass('text-gray-500');
     });
 
     it('should apply custom className', () => {

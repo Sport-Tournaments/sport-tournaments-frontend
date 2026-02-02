@@ -513,8 +513,8 @@ export default function CreateTournamentPage() {
                       role="switch"
                       aria-checked={field.value}
                       onClick={() => field.onChange(!field.value)}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:ring-offset-2 ${
-                        field.value ? "bg-[#1e3a5f]" : "bg-gray-200"
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                        field.value ? "bg-indigo-600" : "bg-gray-200"
                       }`}
                     >
                       <span
@@ -528,10 +528,10 @@ export default function CreateTournamentPage() {
               </div>
 
               {isPrivate && (
-                <div className="mt-4 p-4 bg-[#dbeafe] rounded-lg border border-[#1e3a5f]/20">
+                <div className="mt-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                   <div className="flex items-center gap-2 mb-3">
                     <svg
-                      className="w-5 h-5 text-[#1e3a5f]"
+                      className="w-5 h-5 text-indigo-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -543,7 +543,7 @@ export default function CreateTournamentPage() {
                         d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-[#1e3a5f]">
+                    <span className="text-sm font-medium text-indigo-700">
                       {t(
                         "tournament.invitationCodeInfo",
                         "An invitation code will be generated after creation",

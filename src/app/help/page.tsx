@@ -103,10 +103,10 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Help Center</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Find answers and get support
           </p>
           <div className="mt-6">
@@ -136,7 +136,7 @@ export default function HelpPage() {
                   <li key={aIndex}>
                     <Link
                       href={article.slug}
-                      className="text-[#1e3a5f]  hover:underline"
+                      className="text-indigo-600  hover:underline"
                     >
                       {article.title}
                     </Link>
@@ -158,7 +158,7 @@ export default function HelpPage() {
                 key={index}
                 className="p-6 cursor-pointer group"
               >
-                <summary className="flex items-center justify-between font-semibold text-gray-900  hover:text-[#1e3a5f] ">
+                <summary className="flex items-center justify-between font-semibold text-gray-900  hover:text-indigo-600 ">
                   <span>{faq.question}</span>
                   <span className="ml-4 group-open:rotate-180 transition-transform">
                     ▼
@@ -173,7 +173,7 @@ export default function HelpPage() {
         </div>
 
         {/* Contact Support */}
-        <div className="bg-[#dbeafe] /20 rounded-lg p-8 text-center">
+        <div className="bg-indigo-50 /20 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900  mb-4">
             Still need help?
           </h2>
@@ -182,7 +182,7 @@ export default function HelpPage() {
           </p>
           <Link
             href="/contact"
-            className="inline-block px-8 py-3 bg-[#1e3a5f] text-white rounded-md hover:bg-[#152a45] transition-colors font-semibold"
+            className="inline-block px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
           >
             Contact Support
           </Link>

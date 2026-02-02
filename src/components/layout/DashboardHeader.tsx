@@ -40,7 +40,7 @@ export default function DashboardHeader() {
 
             {/* Optional: Show logo on mobile */}
             <Link href="/" className="lg:hidden flex items-center">
-              <span className="text-xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-xl font-black tracking-tight text-teal-600">
                 tournamente
               </span>
             </Link>

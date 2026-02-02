@@ -285,7 +285,7 @@ export default function InvitationCodeManager({
       {isLoading && !code && (
         <div className="flex items-center justify-center py-4">
           <svg
-            className="animate-spin h-5 w-5 text-[#1e3a5f]"
+            className="animate-spin h-5 w-5 text-indigo-600"
             fill="none"
             viewBox="0 0 24 24"
           >

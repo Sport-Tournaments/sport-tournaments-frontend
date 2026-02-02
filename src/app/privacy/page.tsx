@@ -9,10 +9,10 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Privacy Policy</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Last updated: January 14, 2026
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
           {/* Data Controller */}
-          <section className="bg-[#dbeafe] p-6 rounded-lg">
+          <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Controller</h2>
             <div className="text-gray-700 space-y-1">
               <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
             <div className="bg-gray-50 p-4 rounded-lg">
               <p className="text-gray-700"><strong>Authority:</strong> Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP)</p>
               <p className="text-gray-700"><strong>Address:</strong> B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, 010336, București, Romania</p>
-              <p className="text-gray-700"><strong>Website:</strong> <a href="https://www.dataprotection.ro" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">www.dataprotection.ro</a></p>
+              <p className="text-gray-700"><strong>Website:</strong> <a href="https://www.dataprotection.ro" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">www.dataprotection.ro</a></p>
             </div>
           </section>
 

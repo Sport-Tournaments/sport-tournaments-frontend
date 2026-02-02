@@ -192,7 +192,7 @@ export default function LocationAutocomplete({
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
           placeholder={placeholder}
           className={cn(
-            'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#1e3a5f] sm:text-sm/6',
+            'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6',
             error && 'outline-red-300 focus:outline-red-600'
           )}
         />
@@ -265,7 +265,7 @@ export default function LocationAutocomplete({
                 className={cn(
                   'px-4 py-2 cursor-pointer text-sm',
                   index === selectedIndex
-                    ? 'bg-[#dbeafe] text-[#1e3a5f]'
+                    ? 'bg-indigo-50 text-indigo-900'
                     : 'hover:bg-primary/5 text-gray-900'
                 )}
                 onClick={() => handleSelect(suggestion)}

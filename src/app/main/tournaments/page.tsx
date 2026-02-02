@@ -465,7 +465,7 @@ export default function TournamentsPage() {
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       checked={hasAvailableSpots}
                       onChange={(e) => setHasAvailableSpots(e.target.checked)}
                     />
@@ -474,7 +474,7 @@ export default function TournamentsPage() {
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       checked={isPremium}
                       onChange={(e) => setIsPremium(e.target.checked)}
                     />
@@ -483,7 +483,7 @@ export default function TournamentsPage() {
                   <label className="flex items-center gap-2 text-sm text-gray-700">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       checked={isFeatured}
                       onChange={(e) => setIsFeatured(e.target.checked)}
                     />

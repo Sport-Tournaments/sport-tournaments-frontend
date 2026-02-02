@@ -9,10 +9,10 @@ export default function CookiesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Cookie Policy</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Last updated: January 14, 2026
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function CookiesPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
           {/* Data Controller */}
-          <section className="bg-[#dbeafe] p-6 rounded-lg">
+          <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Controller</h2>
             <div className="text-gray-700 space-y-1">
               <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
@@ -149,7 +149,7 @@ export default function CookiesPage() {
                 </p>
                 <p className="text-sm text-gray-600">
                   <strong>Provider:</strong> Google LLC<br />
-                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a><br />
+                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a><br />
                   <strong>Data Transfer:</strong> Data may be transferred to the United States under Standard Contractual Clauses
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function CookiesPage() {
                 </p>
                 <p className="text-sm text-gray-600">
                   <strong>Provider:</strong> Google LLC<br />
-                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>
+                  <strong>Privacy Policy:</strong> <a href="https://policies.google.com/privacy" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a>
                 </p>
               </div>
 
@@ -200,8 +200,8 @@ export default function CookiesPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-3">5.2 Opt-Out Tools</h3>
             <p className="text-gray-700 mb-3">You can opt out of specific tracking technologies:</p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
-              <li><strong>Google Analytics:</strong> <a href="https://tools.google.com/dlpage/gaoptout" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a></li>
-              <li><strong>Advertising Cookies:</strong> <a href="http://www.youronlinechoices.com/" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">Your Online Choices</a></li>
+              <li><strong>Google Analytics:</strong> <a href="https://tools.google.com/dlpage/gaoptout" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a></li>
+              <li><strong>Advertising Cookies:</strong> <a href="http://www.youronlinechoices.com/" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">Your Online Choices</a></li>
             </ul>
 
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">

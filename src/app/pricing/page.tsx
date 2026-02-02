@@ -63,10 +63,10 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Choose the perfect plan for your needs
           </p>
         </div>
@@ -80,12 +80,12 @@ export default function PricingPage() {
               key={index}
               className={`rounded-lg overflow-hidden transition-transform hover:scale-105 ${
                 plan.highlighted
-                  ? 'ring-2 ring-[#1e3a5f] shadow-2xl'
+                  ? 'ring-2 ring-indigo-600 shadow-2xl'
                   : 'border border-gray-200'
               } bg-white`}
             >
               {plan.highlighted && (
-                <div className="bg-[#1e3a5f] text-white text-center py-2 font-semibold">
+                <div className="bg-indigo-600 text-white text-center py-2 font-semibold">
                   Most Popular
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function PricingPage() {
                 <button
                   className={`w-full py-3 rounded-md font-semibold transition-colors mb-8 ${
                     plan.highlighted
-                      ? 'bg-[#1e3a5f] text-white hover:bg-[#152a45]'
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
@@ -178,7 +178,7 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-[#dbeafe] rounded-lg p-8 text-center">
+        <div className="bg-indigo-50 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Ready to Start?
           </h2>
@@ -187,7 +187,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/auth/register"
-            className="inline-block px-8 py-3 bg-[#1e3a5f] text-white rounded-md hover:bg-[#152a45] transition-colors font-semibold"
+            className="inline-block px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
           >
             Create Free Account
           </Link>

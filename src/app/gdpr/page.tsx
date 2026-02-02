@@ -8,10 +8,10 @@ export default function GDPRPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('pages.gdpr.title')}</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             {t('pages.gdpr.subtitle')}
           </p>
         </div>
@@ -20,7 +20,7 @@ export default function GDPRPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
           {/* Data Controller */}
-          <section className="bg-[#dbeafe] p-6 rounded-lg">
+          <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages.gdpr.dataController.title')}</h2>
             <div className="text-gray-700 space-y-1">
               <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
@@ -207,7 +207,7 @@ export default function GDPRPage() {
               </div>
             </div>
 
-            <div className="mt-4 p-4 border border-[#1e3a5f]/20 rounded-lg bg-[#dbeafe]">
+            <div className="mt-4 p-4 border border-indigo-200 rounded-lg bg-indigo-50">
               <h4 className="font-semibold text-gray-900 mb-2">{t('pages.gdpr.consent.withdraw.title')}</h4>
               <p className="text-gray-700">
                 {t('pages.gdpr.consent.withdraw.description')}
@@ -239,7 +239,7 @@ export default function GDPRPage() {
               {t('pages.gdpr.supervisory.description')}
             </p>
             <p className="text-gray-700">
-              {t('pages.gdpr.supervisory.link')}: <a href="https://edpb.europa.eu/about-edpb/board/members_en" className="text-[#1e3a5f] hover:text-[#152a45] underline" target="_blank" rel="noopener noreferrer">European Data Protection Board</a>
+              {t('pages.gdpr.supervisory.link')}: <a href="https://edpb.europa.eu/about-edpb/board/members_en" className="text-indigo-600 hover:text-indigo-500 underline" target="_blank" rel="noopener noreferrer">European Data Protection Board</a>
             </p>
           </section>
 

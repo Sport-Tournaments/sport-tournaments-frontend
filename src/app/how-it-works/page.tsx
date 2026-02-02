@@ -76,10 +76,10 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">How It Works</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Follow these simple steps to organize and manage your football tournaments
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function HowItWorksPage() {
               >
                 <div className="text-5xl mb-4">{step.icon}</div>
                 <div className="flex items-center justify-center mb-3">
-                  <div className="w-10 h-10 rounded-full bg-[#1e3a5f] text-white flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
                     {step.number}
                   </div>
                 </div>
@@ -133,7 +133,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-[#dbeafe] rounded-lg p-8 text-center">
+        <section className="bg-indigo-50 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Ready to Get Started?
           </h2>
@@ -143,13 +143,13 @@ export default function HowItWorksPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/auth/register"
-              className="px-8 py-3 bg-[#1e3a5f] text-white rounded-md hover:bg-[#152a45] transition-colors font-semibold"
+              className="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
             >
               Sign Up Now
             </Link>
             <Link
               href="/main/tournaments"
-              className="px-8 py-3 border border-[#1e3a5f] text-[#1e3a5f] rounded-md hover:bg-[#dbeafe] transition-colors font-semibold"
+              className="px-8 py-3 border border-indigo-600 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors font-semibold"
             >
               Browse Tournaments
             </Link>

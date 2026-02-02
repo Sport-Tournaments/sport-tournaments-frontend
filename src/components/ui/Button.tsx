@@ -30,15 +30,14 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
     
-    // UEFA-inspired color scheme with navy blue primary
     const variantStyles = {
-      primary: 'rounded-lg bg-[#1e3a5f] text-white shadow-sm hover:bg-[#152a45] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f]',
+      primary: 'rounded-lg bg-teal-600 text-white shadow-sm hover:bg-teal-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600',
       secondary: 'rounded-lg bg-white text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
-      outline: 'rounded-lg border-2 border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1e3a5f]',
+      outline: 'rounded-lg border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600',
       ghost: 'rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600',
       danger: 'rounded-lg bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600',
       success: 'rounded-lg bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600',
-      soft: 'rounded-lg bg-[#dbeafe] text-[#1e3a5f] hover:bg-[#bfdbfe]',
+      soft: 'rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100',
     };
 
     const sizeStyles = {

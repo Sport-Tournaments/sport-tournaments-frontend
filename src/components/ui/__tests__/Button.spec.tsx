@@ -13,7 +13,7 @@ describe('Button Component', () => {
     it('should render with default variant (primary)', () => {
       render(<Button>Primary Button</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-[#1e3a5f]');
+      expect(button).toHaveClass('bg-indigo-600');
     });
 
     it('should render with custom className', () => {
@@ -26,7 +26,7 @@ describe('Button Component', () => {
     it('should render primary variant correctly', () => {
       render(<Button variant="primary">Primary</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-[#1e3a5f]');
+      expect(button).toHaveClass('bg-indigo-600');
       expect(button).toHaveClass('text-white');
     });
 
@@ -34,20 +34,20 @@ describe('Button Component', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
       expect(button).toHaveClass('bg-white');
-      expect(button).toHaveClass('text-slate-700');
+      expect(button).toHaveClass('text-gray-900');
     });
 
     it('should render outline variant correctly', () => {
       render(<Button variant="outline">Outline</Button>);
       const button = screen.getByRole('button');
       expect(button).toHaveClass('border-2');
-      expect(button).toHaveClass('border-[#1e3a5f]');
+      expect(button).toHaveClass('border-indigo-600');
     });
 
     it('should render ghost variant correctly', () => {
       render(<Button variant="ghost">Ghost</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('text-slate-600');
+      expect(button).toHaveClass('text-gray-700');
     });
 
     it('should render danger variant correctly', () => {
@@ -59,14 +59,14 @@ describe('Button Component', () => {
     it('should render success variant correctly', () => {
       render(<Button variant="success">Success</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-emerald-600');
+      expect(button).toHaveClass('bg-green-600');
     });
 
     it('should render soft variant correctly', () => {
       render(<Button variant="soft">Soft</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('bg-[#dbeafe]');
-      expect(button).toHaveClass('text-[#1e3a5f]');
+      expect(button).toHaveClass('bg-indigo-50');
+      expect(button).toHaveClass('text-indigo-600');
     });
   });
 

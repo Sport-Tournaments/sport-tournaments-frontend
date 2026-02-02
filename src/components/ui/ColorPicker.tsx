@@ -86,7 +86,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
           <div className="relative">
             <div
               className={cn(
-                'h-10 w-10 rounded-lg border-2 border-gray-300 cursor-pointer transition-all hover:border-[#1e3a5f]',
+                'h-10 w-10 rounded-lg border-2 border-gray-300 cursor-pointer transition-all hover:border-indigo-500',
                 error && 'border-red-500'
               )}
               style={{ backgroundColor: (value as string) || '#ffffff' }}
@@ -120,7 +120,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
             }}
             placeholder="#000000"
             className={cn(
-              'block w-28 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-[#1e3a5f] sm:text-sm/6 uppercase font-mono',
+              'block w-28 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 uppercase font-mono',
               error && 'outline-red-300 focus:outline-red-600'
             )}
           />
@@ -134,9 +134,9 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
                 key={color}
                 type="button"
                 className={cn(
-                  'w-6 h-6 rounded-md border transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:ring-offset-2',
+                  'w-6 h-6 rounded-md border transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
                   (value as string)?.toLowerCase() === color.toLowerCase()
-                    ? 'ring-2 ring-[#1e3a5f] ring-offset-2'
+                    ? 'ring-2 ring-indigo-500 ring-offset-2'
                     : 'border-gray-300'
                 )}
                 style={{ backgroundColor: color }}

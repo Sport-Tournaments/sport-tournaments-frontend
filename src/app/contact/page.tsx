@@ -24,10 +24,10 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('pages.contact.title')}</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             {t('pages.contact.subtitle')}
           </p>
         </div>
@@ -47,7 +47,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 placeholder={t('pages.contact.fullName')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
             </div>
             <div>
@@ -57,7 +57,7 @@ export default function ContactPage() {
               <input
                 type="email"
                 placeholder={t('pages.contact.email')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
             </div>
             <div>
@@ -67,7 +67,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 placeholder={t('pages.contact.subject')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
             </div>
             <div>
@@ -77,12 +77,12 @@ export default function ContactPage() {
               <textarea
                 rows={5}
                 placeholder={t('pages.contact.message')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
             </div>
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-[#1e3a5f] text-white rounded-md hover:bg-[#152a45] transition-colors font-semibold"
+              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
             >
               {t('pages.contact.sendButton')}
             </button>
@@ -90,7 +90,7 @@ export default function ContactPage() {
         </div>
 
         {/* Response Time Info */}
-        <div className="bg-[#dbeafe] /20 rounded-lg p-8 text-center">
+        <div className="bg-indigo-50 /20 rounded-lg p-8 text-center">
           <h3 className="text-xl font-bold text-gray-900  mb-2">
             {t('pages.contact.responseTime')}
           </h3>

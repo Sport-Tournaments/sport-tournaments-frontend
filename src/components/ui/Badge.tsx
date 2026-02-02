@@ -42,7 +42,7 @@ export default function Badge({
     indigo: 'bg-indigo-50 text-indigo-700',
     purple: 'bg-purple-50 text-purple-700',
     pink: 'bg-pink-50 text-pink-700',
-    teal: 'bg-[#dbeafe] text-[#1e3a5f]',
+    teal: 'bg-teal-50 text-teal-700',
   };
 
   const dotColorStyles: Record<string, string> = {
@@ -54,7 +54,7 @@ export default function Badge({
     indigo: 'fill-indigo-500',
     purple: 'fill-purple-500',
     pink: 'fill-pink-500',
-    teal: 'fill-[#1e3a5f]',
+    teal: 'fill-teal-500',
   };
 
   const sizeStyles = {

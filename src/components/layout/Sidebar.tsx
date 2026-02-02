@@ -126,7 +126,7 @@ export default function Sidebar() {
           {/* Logo */}
           <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-2xl font-black tracking-tight text-teal-600">
                 tournamente
               </span>
             </Link>
@@ -156,13 +156,13 @@ export default function Sidebar() {
                           className={cn(
                             'group flex gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-colors',
                             isActive
-                              ? 'bg-[#dbeafe] text-[#1e3a5f]'
+                              ? 'bg-teal-50 text-teal-700'
                               : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                           )}
                         >
                           <span className={cn(
                             'shrink-0 size-5',
-                            isActive ? 'text-[#1e3a5f]' : 'text-slate-400 group-hover:text-slate-600'
+                            isActive ? 'text-teal-600' : 'text-slate-400 group-hover:text-slate-600'
                           )}>
                             {item.icon}
                           </span>
@@ -180,7 +180,7 @@ export default function Sidebar() {
           {user && (
             <div className="-mx-2 mt-auto border-t border-slate-100 pt-4">
               <div className="flex items-center gap-x-4 rounded-lg px-2 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#dbeafe] text-[#1e3a5f] font-semibold">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-teal-700 font-semibold">
                   {user.firstName.charAt(0)}
                   {user.lastName.charAt(0)}
                 </span>

@@ -9,10 +9,10 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#2563eb] text-white py-12 px-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Terms of Service</h1>
-          <p className="text-xl text-[#dbeafe]">
+          <p className="text-xl text-indigo-100">
             Last updated: January 14, 2026
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="bg-white rounded-lg p-8 space-y-8">
           {/* Company Information */}
-          <section className="bg-[#dbeafe] p-6 rounded-lg">
+          <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Company Information</h2>
             <div className="text-gray-700 space-y-1">
               <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>
@@ -245,7 +245,7 @@ export default function TermsPage() {
           </section>
 
           {/* Acceptance */}
-          <section className="bg-[#dbeafe] p-6 rounded-lg">
+          <section className="bg-indigo-50 p-6 rounded-lg">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Acceptance of Terms</h2>
             <p className="text-gray-700">
               By using tournamente.com, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.

@@ -34,7 +34,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center mb-4">
-              <span className="text-2xl font-black tracking-tight text-[#1e3a5f]">
+              <span className="text-2xl font-black tracking-tight text-teal-600">
                 tournamente
               </span>
             </Link>
@@ -88,7 +88,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-slate-600 hover:text-teal-600 transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -107,7 +107,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-slate-600 hover:text-teal-600 transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -126,7 +126,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-slate-600 hover:text-[#1e3a5f] transition-colors"
+                    className="text-sm text-slate-600 hover:text-teal-600 transition-colors"
                   >
                     {link.name}
                   </Link>

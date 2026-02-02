@@ -21,7 +21,7 @@ export function setCookie(
 
   const {
     path = '/',
-    maxAge = 60 * 60 * 24 * 7, // 7 days
+    maxAge = 60 * 60 * 24 * 60, // 60 days (2 months)
     secure = process.env.NODE_ENV === 'production',
     sameSite = 'lax',
   } = options;
@@ -66,9 +66,9 @@ export function setTokenCookie(
   tokenName: 'accessToken' | 'refreshToken',
   token: string
 ): void {
-  const defaultMaxAge = tokenName === 'accessToken' 
-    ? 60 * 15 // 15 minutes for access token
-    : 60 * 60 * 24 * 7; // 7 days for refresh token
+  const defaultMaxAge = tokenName === 'accessToken'
+    ? 60 * 60 * 24 * 60 // 60 days (2 months) for access token
+    : 60 * 60 * 24 * 60; // 60 days (2 months) for refresh token
   
   const tokenMaxAge = getTokenMaxAge(token);
   const maxAge = tokenMaxAge ?? defaultMaxAge;

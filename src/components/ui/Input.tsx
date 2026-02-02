@@ -78,7 +78,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       [onChange, type]
     );
 
-    const baseInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 sm:text-sm transition-colors';
+    const baseInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] sm:text-sm transition-colors';
     
     const errorInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-red-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors';
 

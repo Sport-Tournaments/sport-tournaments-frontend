@@ -389,40 +389,16 @@ export default function TournamentsPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Select
-                label={t("tournament.ageCategory.label")}
-                options={ageCategoryOptions}
-                value={ageCategory}
-                onChange={(e) => setAgeCategory(e.target.value)}
-              />
-              <Select
                 label={t("tournament.level.label")}
                 options={levelOptions}
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
-              />
-              <Input
-                label={t("common.country")}
-                placeholder={t("common.country")}
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
               />
               <Select
                 label={t("tournament.filters.gameSystem")}
                 options={gameSystemOptions}
                 value={gameSystem}
                 onChange={(e) => setGameSystem(e.target.value)}
-              />
-              <Input
-                label={t("tournament.filters.startDateFrom")}
-                type="date"
-                value={startDateFromInput}
-                onChange={(e) => setStartDateFromInput(e.target.value)}
-              />
-              <Input
-                label={t("tournament.filters.startDateTo")}
-                type="date"
-                value={startDateToInput}
-                onChange={(e) => setStartDateToInput(e.target.value)}
               />
               <Input
                 label={t("tournament.filters.matchesMin")}

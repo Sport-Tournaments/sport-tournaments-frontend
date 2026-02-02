@@ -49,7 +49,7 @@ export default function Modal({
     success: 'bg-green-100 text-green-600',
     error: 'bg-red-100 text-red-600',
     warning: 'bg-yellow-100 text-yellow-600',
-    info: 'bg-blue-100 text-blue-600',
+    info: 'bg-primary/10 text-primary',
   };
 
   const handleEscKey = useCallback(
@@ -114,7 +114,7 @@ export default function Modal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   aria-label="Close modal"
                 >
                   <span className="sr-only">Close</span>

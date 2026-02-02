@@ -33,11 +33,11 @@ const variantStyles: Record<AlertVariant, { container: string; title: string; te
     icon: 'text-yellow-500',
   },
   info: {
-    container: 'bg-blue-50',
-    title: 'text-blue-800',
-    text: 'text-blue-700',
-    border: 'border-blue-400',
-    icon: 'text-blue-500',
+    container: 'bg-primary/5',
+    title: 'text-primary',
+    text: 'text-primary/80',
+    border: 'border-primary/30',
+    icon: 'text-primary',
   },
 };
 

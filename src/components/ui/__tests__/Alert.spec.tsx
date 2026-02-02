@@ -43,13 +43,13 @@ describe('Alert Component', () => {
     it('should render info variant (default)', () => {
       render(<Alert variant="info">Info message</Alert>);
       const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('bg-blue-50');
+      expect(alert).toHaveClass('bg-primary/5');
     });
 
     it('should default to info variant', () => {
       render(<Alert>Default message</Alert>);
       const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('bg-blue-50');
+      expect(alert).toHaveClass('bg-primary/5');
     });
   });
 
@@ -87,7 +87,7 @@ describe('Alert Component', () => {
     it('should apply correct border color for info', () => {
       render(<Alert accentBorder variant="info">Message</Alert>);
       const alert = screen.getByRole('alert');
-      expect(alert).toHaveClass('border-blue-400');
+      expect(alert).toHaveClass('border-primary/30');
     });
   });
 
@@ -177,7 +177,7 @@ describe('Alert Component', () => {
     it('should apply info text colors', () => {
       render(<Alert variant="info" title="Title">Message</Alert>);
       const title = screen.getByText('Title');
-      expect(title).toHaveClass('text-blue-800');
+      expect(title).toHaveClass('text-primary');
     });
   });
 

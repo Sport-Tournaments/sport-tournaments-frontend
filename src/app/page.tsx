@@ -195,10 +195,10 @@ export default function HomePage() {
       <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">{t('home.cta.title')}</h2>
-          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-teal-100">{t('home.cta.subtitle')}</p>
+          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-white/80">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?role=ORGANIZER">
-              <Button variant="secondary" size="lg" className="bg-white text-teal-700 hover:bg-teal-50 shadow-lg">
+              <Button variant="secondary" size="lg" className="bg-white text-[#1e3a5f] hover:bg-primary/5 shadow-lg">
                 {t('home.cta.organizer')}
               </Button>
             </Link>

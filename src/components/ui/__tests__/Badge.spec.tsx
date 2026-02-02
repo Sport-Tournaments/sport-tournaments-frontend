@@ -28,7 +28,7 @@ describe('Badge Component', () => {
 
     it('should render primary variant', () => {
       render(<Badge variant="primary">Badge</Badge>);
-      expect(screen.getByText('Badge')).toHaveClass('bg-indigo-100');
+      expect(screen.getByText('Badge')).toHaveClass('bg-primary/10');
     });
 
     it('should render success variant', () => {
@@ -48,7 +48,7 @@ describe('Badge Component', () => {
 
     it('should render info variant', () => {
       render(<Badge variant="info">Badge</Badge>);
-      expect(screen.getByText('Badge')).toHaveClass('bg-blue-100');
+      expect(screen.getByText('Badge')).toHaveClass('bg-primary/10');
     });
 
     it('should render danger variant (alias for error)', () => {
@@ -83,7 +83,7 @@ describe('Badge Component', () => {
 
     it('should render blue variant', () => {
       render(<Badge variant="blue">Badge</Badge>);
-      expect(screen.getByText('Badge')).toHaveClass('bg-blue-100');
+      expect(screen.getByText('Badge')).toHaveClass('bg-primary/10');
     });
 
     it('should render indigo variant', () => {
@@ -154,7 +154,7 @@ describe('Badge Component', () => {
     it('should render dot with correct color for info', () => {
       render(<Badge variant="info" dot>Badge</Badge>);
       const svg = document.querySelector('svg');
-      expect(svg).toHaveClass('fill-blue-500');
+      expect(svg).toHaveClass('fill-primary');
     });
 
     it('should have aria-hidden on dot svg', () => {
@@ -211,7 +211,7 @@ describe('Badge Component', () => {
 
     it('should apply correct text color for info', () => {
       render(<Badge variant="info">Badge</Badge>);
-      expect(screen.getByText('Badge')).toHaveClass('text-blue-700');
+      expect(screen.getByText('Badge')).toHaveClass('text-primary');
     });
   });
 

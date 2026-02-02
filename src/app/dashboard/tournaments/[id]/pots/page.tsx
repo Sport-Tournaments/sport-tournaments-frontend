@@ -237,7 +237,7 @@ export default function PotManagementPage() {
               <Button
                 onClick={handleExecuteDraw}
                 disabled={!canExecuteDraw() || executing}
-                className="bg-green-600 hover:bg-green-700"
+                variant="primary"
               >
                 <Shuffle className="w-4 h-4 mr-2" />
                 {executing ? 'Executing...' : 'Execute Draw'}
@@ -312,12 +312,7 @@ export default function PotManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {pots.map((pot) => (
             <Card key={pot.potNumber}>
-              <CardHeader className={`
-                ${pot.potNumber === 1 ? 'bg-yellow-50' : ''}
-                ${pot.potNumber === 2 ? 'bg-blue-50' : ''}
-                ${pot.potNumber === 3 ? 'bg-green-50' : ''}
-                ${pot.potNumber === 4 ? 'bg-white' : ''}
-              `}>
+              <CardHeader className="bg-primary/5">
                 <CardTitle className="flex items-center justify-between">
                   <span>Pot {pot.potNumber}</span>
                   <Badge variant={pot.count > 0 ? 'primary' : 'default'}>

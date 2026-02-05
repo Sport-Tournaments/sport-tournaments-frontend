@@ -314,7 +314,7 @@
       "empty": "No age categories defined. Click \"Add Category\" to create one.",
       "birthYear": "Birth Year",
       "displayLabel": "Display Label",
-      "displayLabelHelp": "Custom label (e.g., \"U12 Elite\")",
+      "displayLabelHelp": "Auto-filled from birth year and fully editable (e.g., \"U12 Elite\")",
       "gameSystem": "Game System",
       "teamCount": "Target Teams",
       "teamCountHelp": "Expected number of teams",

@@ -815,24 +815,17 @@ export default function TournamentDetailPage() {
 
   const tabs = buildInnerTabs();
   const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
-    ? [
-        {
-          id: 'all',
-          label: t('common.all', 'All'),
-          content: <Tabs tabs={tabs} defaultTab="overview" variant="pills-gray" />,
-        },
-        ...tournament.ageGroups.map((ageGroup, index) => ({
-          id: `age-group-${ageGroup.id ?? index}`,
-          label: getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel),
-          content: (
-            <Tabs
-              tabs={buildInnerTabs(ageGroup)}
-              defaultTab="overview"
-              variant="pills-gray"
-            />
-          ),
-        })),
-      ]
+    ? tournament.ageGroups.map((ageGroup, index) => ({
+        id: `age-group-${ageGroup.id ?? index}`,
+        label: getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel),
+        content: (
+          <Tabs
+            tabs={buildInnerTabs(ageGroup)}
+            defaultTab="overview"
+            variant="pills-gray"
+          />
+        ),
+      }))
     : tabs;
 
   return (

@@ -631,26 +631,18 @@ export default function TournamentDetailPage() {
   };
 
   const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
-    ? [
-        {
-          id: 'all',
-          label: t('common.all', 'All'),
-          count: getPendingBadgeCount(),
-          content: <Tabs tabs={tabs} defaultTab="overview" variant="pills-gray" />,
-        },
-        ...tournament.ageGroups.map((ageGroup, index) => ({
-          id: `age-group-${ageGroup.id ?? index}`,
-          label: getAgeGroupLabel(ageGroup),
-          count: getPendingBadgeCount(ageGroup.id),
-          content: (
-            <Tabs
-              tabs={buildTabsForAgeGroup(ageGroup)}
-              defaultTab="overview"
-              variant="pills-gray"
-            />
-          ),
-        })),
-      ]
+    ? tournament.ageGroups.map((ageGroup, index) => ({
+        id: `age-group-${ageGroup.id ?? index}`,
+        label: getAgeGroupLabel(ageGroup),
+        count: getPendingBadgeCount(ageGroup.id),
+        content: (
+          <Tabs
+            tabs={buildTabsForAgeGroup(ageGroup)}
+            defaultTab="overview"
+            variant="pills-gray"
+          />
+        ),
+      }))
     : tabs;
 
   return (

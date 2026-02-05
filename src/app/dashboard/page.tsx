@@ -21,6 +21,7 @@ export default function DashboardPage() {
     tournaments: 0,
     clubs: 0,
     registrations: 0,
+    approved: 0,
     pending: 0,
   });
   const [recentTournaments, setRecentTournaments] = useState<Tournament[]>([]);
@@ -63,20 +64,47 @@ export default function DashboardPage() {
       const tournamentById = new Map(tournamentData.map((tournament) => [tournament.id, tournament]));
 
       let registrationData: Registration[] = [];
+      let approvedCount = 0;
+      let pendingCount = 0;
+      let totalApplied = 0;
       if (user?.role === 'ORGANIZER') {
-        const registrationsResults = await Promise.allSettled(
-          tournamentData.map((tournament) =>
-            registrationService.getTournamentRegistrations(tournament.id, {
-              page: 1,
-              pageSize: 5,
-            })
-          )
-        );
+        const [registrationsResults, statisticsResults] = await Promise.all([
+          Promise.allSettled(
+            tournamentData.map((tournament) =>
+              registrationService.getTournamentRegistrations(tournament.id, {
+                page: 1,
+                pageSize: 5,
+              })
+            )
+          ),
+          Promise.allSettled(
+            tournamentData.map((tournament) =>
+              registrationService.getRegistrationStatistics(tournament.id)
+            )
+          ),
+        ]);
 
         registrationData = registrationsResults.flatMap((result) => {
           if (result.status !== 'fulfilled') return [];
           return result.value?.data?.items || [];
         });
+
+        const aggregated = statisticsResults.reduce(
+          (acc, result) => {
+            if (result.status !== 'fulfilled') return acc;
+            const statsData = result.value?.data;
+            if (!statsData) return acc;
+            acc.total += statsData.total || 0;
+            acc.approved += statsData.approved || 0;
+            acc.pending += statsData.pending || 0;
+            return acc;
+          },
+          { total: 0, approved: 0, pending: 0 }
+        );
+
+        totalApplied = aggregated.total;
+        approvedCount = aggregated.approved;
+        pendingCount = aggregated.pending;
       } else {
         const registrationsRes = await registrationService.getMyRegistrations();
         const rData = registrationsRes.data as any;
@@ -87,6 +115,10 @@ export default function DashboardPage() {
         } else if (rData?.items && Array.isArray(rData.items)) {
           registrationData = rData.items;
         }
+
+        totalApplied = registrationData.length;
+        approvedCount = registrationData.filter((r) => r.status === ('APPROVED' as any)).length;
+        pendingCount = registrationData.filter((r) => r.status === ('PENDING' as any)).length;
       }
 
       const normalizedRegistrations = registrationData.map((registration) => {
@@ -123,8 +155,9 @@ export default function DashboardPage() {
       setStats({
         tournaments: tournamentTotal,
         clubs: clubTotal,
-        registrations: normalizedRegistrations.length,
-        pending: normalizedRegistrations.filter((r: Registration) => r.status === ('PENDING' as any)).length,
+        registrations: totalApplied || normalizedRegistrations.length,
+        approved: approvedCount,
+        pending: pendingCount,
       });
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -157,7 +190,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
           <Link href="/dashboard/tournaments" className="block">
             <Card variant="hover" className="h-full">
               <CardContent className="p-6">
@@ -205,7 +238,25 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.registrations}</p>
-                  <p className="text-sm text-gray-500">{t('dashboard.registrations')}</p>
+                  <p className="text-sm text-gray-500">{t('registration.applied', 'Applied')}</p>
+                </div>
+              </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/registrations" className="block">
+            <Card variant="hover" className="h-full">
+              <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-emerald-100 rounded-lg">
+                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.approved}</p>
+                  <p className="text-sm text-gray-500">{t('registration.approved', 'Approved')}</p>
                 </div>
               </div>
               </CardContent>

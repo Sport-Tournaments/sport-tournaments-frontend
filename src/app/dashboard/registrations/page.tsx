@@ -16,6 +16,11 @@ const PAGE_SIZE = 10;
 export default function RegistrationsPage() {
   const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all');
+  const [summaryCounts, setSummaryCounts] = useState({
+    total: 0,
+    approved: 0,
+    pending: 0,
+  });
   
   // Withdraw modal state
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
@@ -40,6 +45,12 @@ export default function RegistrationsPage() {
     }
     
     console.log('[MyRegistrations] Raw data count:', registrationData.length, 'Filter:', statusFilter);
+
+    setSummaryCounts({
+      total: registrationData.length,
+      approved: registrationData.filter((reg) => reg.status === 'APPROVED').length,
+      pending: registrationData.filter((reg) => reg.status === 'PENDING').length,
+    });
     
     // Apply client-side filter since backend doesn't support it
     if (statusFilter !== 'all') {
@@ -134,6 +145,28 @@ export default function RegistrationsPage() {
               {t('registrations.browseTournaments')}
             </Button>
           </Link>
+        </div>
+
+        {/* Summary counts */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-xs sm:text-sm text-gray-500">{t('registration.applied', 'Applied')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{summaryCounts.total}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-xs sm:text-sm text-gray-500">{t('registration.approved', 'Approved')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">{summaryCounts.approved}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-xs sm:text-sm text-gray-500">{t('registration.pending', 'Pending')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-600">{summaryCounts.pending}</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Status Filter */}

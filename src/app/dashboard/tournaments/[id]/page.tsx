@@ -8,7 +8,7 @@ import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal } from '@/components/ui';
 import { tournamentService, registrationService, fileService } from '@/services';
-import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup } from '@/types';
+import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
 
@@ -18,6 +18,7 @@ export default function TournamentDetailPage() {
   const router = useRouter();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [statistics, setStatistics] = useState<RegistrationStatisticsByAgeGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
@@ -68,6 +69,17 @@ export default function TournamentDetailPage() {
       } catch (regErr) {
         console.error('Failed to load registrations:', regErr);
         setRegistrations([]);
+      }
+
+      // Fetch registration statistics by age group
+      try {
+        const statsData = await registrationService.getRegistrationStatisticsByAgeGroup(params.id as string);
+        if (statsData.data) {
+          setStatistics(statsData.data);
+        }
+      } catch (statsErr) {
+        console.error('Failed to load registration statistics:', statsErr);
+        setStatistics(null);
       }
     } catch (err: any) {
       setError('Failed to load tournament');
@@ -184,7 +196,14 @@ export default function TournamentDetailPage() {
     return total + (ageGroupMaxTeams || 0);
   }, 0);
   const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
-  const registeredTeamsDisplay = tournament.registeredTeams ?? registrations.length ?? 0;
+  const registeredTeamsDisplay = statistics?.overall?.approved ?? tournament.registeredTeams ?? registrations.length ?? 0;
+
+  const statsByAgeGroupId = new Map(
+    (statistics?.byAgeGroup || []).map((stat) => [stat.ageGroupId, stat])
+  );
+
+  const getAgeGroupStats = (ageGroupId?: string) =>
+    ageGroupId ? statsByAgeGroupId.get(ageGroupId) : undefined;
 
   const getAgeGroupLabel = (ageGroup: AgeGroup) => {
     if (ageGroup.displayLabel) return ageGroup.displayLabel;
@@ -285,9 +304,26 @@ export default function TournamentDetailPage() {
     const maxTeams = ageGroup
       ? getAgeGroupMaxTeams(ageGroup)
       : maxTeamsDisplay;
+
+    const ageGroupStats = getAgeGroupStats(ageGroupId);
+    const totalApplied = ageGroupStats?.total
+      ?? (ageGroupId
+        ? scopedRegistrations.length
+        : statistics?.overall?.total ?? scopedRegistrations.length);
+    const approvedCount = ageGroupStats?.approved
+      ?? (ageGroupId
+        ? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length
+        : statistics?.overall?.approved
+          ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length);
+    const pendingCount = ageGroupStats?.pending
+      ?? (ageGroupId
+        ? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length
+        : statistics?.overall?.pending
+          ?? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length);
+
     const registeredTeams = ageGroup
-      ? (ageGroup.currentTeams ?? scopedRegistrations.length)
-      : registeredTeamsDisplay;
+      ? (ageGroup.currentTeams ?? approvedCount)
+      : (statistics?.overall?.approved ?? registeredTeamsDisplay);
 
     const entryFee = ageGroup?.participationFee ?? tournament.entryFee ?? 0;
     const prizeMoney = tournament.prizeMoney || 0;
@@ -295,11 +331,35 @@ export default function TournamentDetailPage() {
     return (
       <div className="space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           <Card>
             <CardContent className="p-3 sm:p-4 text-center">
-              <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
-              <p className="text-xl sm:text-2xl font-bold text-primary">
+              <p className="text-xs sm:text-sm text-gray-500">{t('registration.applied', 'Applied')}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                {totalApplied}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('registration.approved', 'Approved')}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {approvedCount}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('registration.pending')}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {pendingCount}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <p className="text-sm text-gray-500">{t('common.teams')}</p>
+              <p className="text-2xl font-bold text-primary">
                 {registeredTeams} / {maxTeams}
               </p>
             </CardContent>
@@ -315,14 +375,6 @@ export default function TournamentDetailPage() {
               <p className="text-sm text-gray-500">{t('tournament.prizeMoney')}</p>
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(prizeMoney)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('registration.pending')}</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {scopedRegistrations.filter(r => (r.status as string) === 'PENDING').length}
               </p>
             </CardContent>
           </Card>
@@ -468,6 +520,12 @@ export default function TournamentDetailPage() {
       ? registrations.filter((reg) => reg.ageGroupId === ageGroupId)
       : registrations;
 
+    const ageGroupStats = getAgeGroupStats(ageGroupId);
+    const totalApplied = ageGroupStats?.total
+      ?? (ageGroupId
+        ? scopedRegistrations.length
+        : statistics?.overall?.total ?? scopedRegistrations.length);
+
     return [
       {
         id: 'overview',
@@ -476,7 +534,7 @@ export default function TournamentDetailPage() {
       },
       {
         id: 'registrations',
-        label: `${t('registration.title')} (${scopedRegistrations.length})`,
+        label: `${t('registration.title')} (${totalApplied})`,
         content: (
           <Card>
             <CardContent className="p-0">
@@ -555,16 +613,35 @@ export default function TournamentDetailPage() {
 
   const tabs = buildTabsForAgeGroup();
 
+  const getPendingCountForAgeGroup = (ageGroupId?: string) => {
+    const ageGroupStats = getAgeGroupStats(ageGroupId);
+    if (ageGroupStats) return ageGroupStats.pending;
+    if (!ageGroupId) {
+      return statistics?.overall?.pending
+        ?? registrations.filter((reg) => reg.status === 'PENDING').length;
+    }
+    return registrations.filter(
+      (reg) => reg.ageGroupId === ageGroupId && reg.status === 'PENDING'
+    ).length;
+  };
+
+  const getPendingBadgeCount = (ageGroupId?: string) => {
+    const pendingCount = getPendingCountForAgeGroup(ageGroupId);
+    return pendingCount > 0 ? pendingCount : undefined;
+  };
+
   const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
     ? [
         {
           id: 'all',
           label: t('common.all', 'All'),
+          count: getPendingBadgeCount(),
           content: <Tabs tabs={tabs} defaultTab="overview" variant="pills-gray" />,
         },
         ...tournament.ageGroups.map((ageGroup, index) => ({
           id: `age-group-${ageGroup.id ?? index}`,
           label: getAgeGroupLabel(ageGroup),
+          count: getPendingBadgeCount(ageGroup.id),
           content: (
             <Tabs
               tabs={buildTabsForAgeGroup(ageGroup)}

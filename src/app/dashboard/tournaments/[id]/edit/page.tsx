@@ -262,8 +262,14 @@ export default function EditTournamentPage() {
               gameSystem: ag.gameSystem,
               teamCount: ag.teamCount,
               participationFee: (ag as any).participationFee,
-              startDate: ag.startDate,
-              endDate: ag.endDate,
+              startDate: formatDateForInput(ag.startDate || ""),
+              endDate: formatDateForInput(ag.endDate || ""),
+              registrationStartDate: formatDateForInput(
+                (ag as any).registrationStartDate || "",
+              ),
+              registrationEndDate: formatDateForInput(
+                (ag as any).registrationEndDate || "",
+              ),
               locationId: ag.locationId,
               locationAddress: ag.locationAddress,
               groupsCount: ag.groupsCount,

@@ -27,6 +27,7 @@ import { tournamentService, fileService } from "@/services";
 import { getCurrentLocation } from "@/services/location.service";
 import type { LocationSuggestion } from "@/types";
 import { slugify, getTournamentPublicPath } from "@/utils/helpers";
+import { formatDateForInput } from "@/utils/date";
 
 const tournamentSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").max(100),
@@ -52,6 +53,14 @@ const tournamentSchema = z.object({
 });
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
+
+const normalizeDateForPayload = (value?: string) => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const normalized = formatDateForInput(trimmed);
+  return normalized || undefined;
+};
 
 export default function CreateTournamentPage() {
   const { t } = useTranslation();
@@ -209,6 +218,13 @@ export default function CreateTournamentPage() {
       }
 
       // Transform frontend field names to backend DTO field names
+      const normalizedAgeGroups = ageGroups.map((ag) => ({
+        ...ag,
+        startDate: normalizeDateForPayload(ag.startDate),
+        endDate: normalizeDateForPayload(ag.endDate),
+        registrationStartDate: normalizeDateForPayload(ag.registrationStartDate),
+        registrationEndDate: normalizeDateForPayload(ag.registrationEndDate),
+      }));
       const tournamentData = {
         name: data.name,
         urlSlug: data.urlSlug?.trim() || undefined,
@@ -223,7 +239,7 @@ export default function CreateTournamentPage() {
         // Only include rules if provided (as regulationsData)
         ...(data.rules && { regulationsData: { rules: data.rules } }),
         // Include age groups (required now - they handle all dates)
-        ageGroups,
+        ageGroups: normalizedAgeGroups,
       };
       const response = await tournamentService.createTournament(tournamentData);
       const tournamentId = response.data?.id;

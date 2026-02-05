@@ -70,6 +70,14 @@ const tournamentSchema = z.object({
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
 
+const normalizeDateForPayload = (value?: string) => {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const normalized = formatDateForInput(trimmed);
+  return normalized || undefined;
+};
+
 export default function EditTournamentPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -302,6 +310,20 @@ export default function EditTournamentPage() {
     setSaving(true);
     setError(null);
     try {
+      const normalizedStartDate = normalizeDateForPayload(data.startDate);
+      const normalizedEndDate = normalizeDateForPayload(data.endDate);
+      const normalizedRegistrationStartDate = normalizeDateForPayload(
+        data.registrationStartDate,
+      );
+      const normalizedRegistrationEndDate = normalizeDateForPayload(
+        data.registrationEndDate,
+      );
+      const normalizedRegistrationDeadline = normalizeDateForPayload(
+        data.registrationDeadline,
+      );
+      const effectiveRegistrationDeadline =
+        normalizedRegistrationEndDate || normalizedRegistrationDeadline;
+
       // Transform form data to match backend UpdateTournamentDto
       // Backend doesn't accept: venue, city, minTeams, format, entryFee, prizeMoney, rules
       const updateData = {
@@ -309,12 +331,17 @@ export default function EditTournamentPage() {
         ...(data.urlSlug &&
           data.urlSlug.trim() !== "" && { urlSlug: data.urlSlug.trim() }),
         description: data.description,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        registrationStartDate: data.registrationStartDate,
-        registrationEndDate: data.registrationEndDate,
-        registrationDeadline:
-          data.registrationEndDate || data.registrationDeadline, // Backward compatibility
+        ...(normalizedStartDate && { startDate: normalizedStartDate }),
+        ...(normalizedEndDate && { endDate: normalizedEndDate }),
+        ...(normalizedRegistrationStartDate && {
+          registrationStartDate: normalizedRegistrationStartDate,
+        }),
+        ...(normalizedRegistrationEndDate && {
+          registrationEndDate: normalizedRegistrationEndDate,
+        }),
+        ...(effectiveRegistrationDeadline && {
+          registrationDeadline: effectiveRegistrationDeadline,
+        }),
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
@@ -363,7 +390,17 @@ export default function EditTournamentPage() {
               guaranteedMatches,
               ...allowed
             } = ag as any;
-            return allowed;
+            return {
+              ...allowed,
+              startDate: normalizeDateForPayload(allowed.startDate),
+              endDate: normalizeDateForPayload(allowed.endDate),
+              registrationStartDate: normalizeDateForPayload(
+                allowed.registrationStartDate,
+              ),
+              registrationEndDate: normalizeDateForPayload(
+                allowed.registrationEndDate,
+              ),
+            };
           });
           await tournamentService.updateTournamentAgeGroups(
             params.id as string,

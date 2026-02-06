@@ -128,14 +128,28 @@ export function AgeGroupsManager({
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
+  const getAutoDisplayLabel = (birthYear: number) => {
+    const age = currentYear - birthYear;
+    return `U${age}`;
+  };
+
+  const getAutoAgeCategory = (birthYear: number): AgeCategory | undefined => {
+    const age = currentYear - birthYear;
+    const category = `U${age}` as AgeCategory;
+    return AGE_CATEGORY_OPTIONS.includes(category) ? category : undefined;
+  };
+
   const handleAddAgeGroup = useCallback(() => {
     // Find the next birth year not already used
     const usedYears = new Set(ageGroups.map((ag) => ag.birthYear));
     const nextYear = BIRTH_YEARS.find((y) => !usedYears.has(parseInt(y.value)));
-    
+
+    const birthYear = nextYear ? parseInt(nextYear.value) : currentYear - 10;
     const newAgeGroup: AgeGroupFormData = {
       ...defaultAgeGroup,
-      birthYear: nextYear ? parseInt(nextYear.value) : currentYear - 10,
+      birthYear,
+      displayLabel: getAutoDisplayLabel(birthYear),
+      ageCategory: getAutoAgeCategory(birthYear),
       ...(tournamentStartDate ? { startDate: tournamentStartDate } : {}),
       ...(tournamentEndDate ? { endDate: tournamentEndDate } : {}),
     };
@@ -167,8 +181,13 @@ export function AgeGroupsManager({
   const handleUpdateAgeGroup = useCallback((index: number, updates: Partial<AgeGroupFormData>) => {
     const newAgeGroups = ageGroups.map((ag, i) => {
       if (i !== index) return ag;
-      
+
       const updated = { ...ag, ...updates };
+
+      if (updates.birthYear && updates.birthYear !== ag.birthYear) {
+        updated.displayLabel = getAutoDisplayLabel(updates.birthYear);
+        updated.ageCategory = getAutoAgeCategory(updates.birthYear);
+      }
       
       // Auto-calculate groupsCount when teamCount or teamsPerGroup changes
       if (('teamCount' in updates || 'teamsPerGroup' in updates) && updated.teamCount && updated.teamsPerGroup) {
@@ -182,9 +201,7 @@ export function AgeGroupsManager({
 
   const getDisplayLabel = (ag: AgeGroupFormData) => {
     if (ag.displayLabel) return ag.displayLabel;
-    // Calculate U-category based on birth year
-    const age = currentYear - ag.birthYear;
-    return `U${age}`;
+    return getAutoDisplayLabel(ag.birthYear);
   };
 
   const getLocationDifferentLabel = () =>
@@ -301,7 +318,10 @@ export function AgeGroupsManager({
                       value={ageGroup.displayLabel || ''}
                       onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { displayLabel: e.target.value || undefined })}
                       disabled={disabled}
-                      helperText={t('tournaments.ageGroups.displayLabelHelp', 'Custom label (e.g., "U12 Elite")')}
+                      helperText={t(
+                        'tournaments.ageGroups.displayLabelHelp',
+                        'Auto-filled from birth year and fully editable (e.g., "U12 Elite")'
+                      )}
                     />
 
                     {/* Age Category */}

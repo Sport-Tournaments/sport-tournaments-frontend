@@ -348,7 +348,7 @@
       "empty": "Nu sunt definite categorii de vârstă. Click pe \"Adaugă categorie\" pentru a crea una.",
       "birthYear": "Anul nașterii",
       "displayLabel": "Etichetă afișată",
-      "displayLabelHelp": "Etichetă personalizată (ex., \"U12 Elite\")",
+      "displayLabelHelp": "Completată automat din anul nașterii și complet editabilă (ex., \"U12 Elite\")",
       "gameSystem": "Sistem de joc",
       "teamCount": "Echipe maxim",
       "teamCountHelp": "Numărul estimat de echipe",

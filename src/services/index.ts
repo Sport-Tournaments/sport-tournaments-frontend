@@ -31,5 +31,8 @@ export { paymentService, fileService } from './payment.service';
 export { default as locationService } from './location.service';
 export * from './location.service';
 
+export { default as teamService } from './team.service';
+export * from './team.service';
+
 export { potDrawService } from './pot-draw.service';
 export * from './pot-draw.service';

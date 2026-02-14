@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Modal, Alert, Loading, Input } from '@/components/ui';
-import { registrationService, clubService } from '@/services';
+import { Button, Modal, Alert, Loading, Input, Select } from '@/components/ui';
+import { registrationService, clubService, teamService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
-import type { Club, Tournament, Registration } from '@/types';
+import type { Club, Tournament, Registration, Team } from '@/types';
 import { cn } from '@/utils/helpers';
 
 interface RegistrationWizardProps {
@@ -40,6 +40,13 @@ export function RegistrationWizard({
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [loadingClubs, setLoadingClubs] = useState(false);
   const [selectedAgeGroupId, setSelectedAgeGroupId] = useState<string>('');
+
+  // Team selection step
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [newTeamName, setNewTeamName] = useState('');
+  const [creatingTeam, setCreatingTeam] = useState(false);
   
   // Registration state
   const [registration, setRegistration] = useState<Registration | null>(null);
@@ -97,6 +104,18 @@ export function RegistrationWizard({
     }
   }, [selectedClub, user]);
 
+  useEffect(() => {
+    if (selectedClub) {
+      setSelectedTeamId('');
+      setNewTeamName('');
+      fetchTeams(selectedClub.id);
+    } else {
+      setTeams([]);
+      setSelectedTeamId('');
+      setNewTeamName('');
+    }
+  }, [selectedClub]);
+
   // Reset on close
   useEffect(() => {
     if (!isOpen) {
@@ -104,6 +123,10 @@ export function RegistrationWizard({
         setCurrentStep('club');
         setSelectedClub(null);
         setSelectedAgeGroupId('');
+        setTeams([]);
+        setSelectedTeamId('');
+        setNewTeamName('');
+        setCreatingTeam(false);
         setRegistration(null);
         setFitnessConfirmed(false);
         setFitnessNotes('');
@@ -129,6 +152,43 @@ export function RegistrationWizard({
     }
   };
 
+  const fetchTeams = async (clubId: string) => {
+    setLoadingTeams(true);
+    try {
+      const response = await teamService.getTeamsByClub(clubId);
+      setTeams(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch teams:', err);
+      setTeams([]);
+      setError(t('registration.wizard.fetchTeamsError', 'Failed to load teams for this club'));
+    } finally {
+      setLoadingTeams(false);
+    }
+  };
+
+  const handleCreateTeam = async () => {
+    if (!selectedClub || !newTeamName.trim()) return;
+
+    setCreatingTeam(true);
+    try {
+      const response = await teamService.createTeam({
+        clubId: selectedClub.id,
+        name: newTeamName.trim(),
+      });
+
+      if (response.data) {
+        setTeams((prev) => [...prev, response.data].sort((a, b) => a.name.localeCompare(b.name)));
+        setSelectedTeamId(response.data.id);
+        setNewTeamName('');
+      }
+    } catch (err: any) {
+      console.error('Failed to create team:', err);
+      setError(err.response?.data?.message || t('registration.wizard.createTeamError', 'Failed to create team'));
+    } finally {
+      setCreatingTeam(false);
+    }
+  };
+
   const currentStepIndex = STEPS.indexOf(currentStep);
 
   const getStepTitle = (step: WizardStep): string => {
@@ -144,9 +204,9 @@ export function RegistrationWizard({
     switch (currentStep) {
       case 'club':
         if (tournament.ageGroups && tournament.ageGroups.length > 0) {
-          return !!selectedClub && !!selectedAgeGroupId;
+          return !!selectedClub && !!selectedAgeGroupId && !!selectedTeamId;
         }
-        return !!selectedClub;
+        return !!selectedClub && !!selectedTeamId;
       case 'fitness':
         return fitnessConfirmed;
       case 'review':
@@ -165,6 +225,7 @@ export function RegistrationWizard({
       try {
         const response = await registrationService.registerForTournament(tournament.id, {
           clubId: selectedClub.id,
+          teamId: selectedTeamId,
           ageGroupId: selectedAgeGroupId || undefined,
           coachName: coachName || undefined,
           coachPhone: coachPhone || undefined,
@@ -338,39 +399,83 @@ export function RegistrationWizard({
                 </div>
 
                 {selectedClub && (
-                  <div className="space-y-4 pt-4 border-t border-gray-200">
-                    <h4 className="text-sm font-medium text-gray-900">
-                      {t('registration.wizard.additionalInfo', 'Additional Information (Optional)')}
-                    </h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Input
-                        label={t('registration.wizard.coachName', 'Coach Name')}
-                        value={coachName}
-                        onChange={(e) => setCoachName(e.target.value)}
-                        placeholder={t('registration.wizard.coachNamePlaceholder', 'Enter coach name')}
-                      />
-                      <Input
-                        label={t('registration.wizard.coachPhone', 'Coach Phone')}
-                        value={coachPhone}
-                        onChange={(e) => setCoachPhone(e.target.value)}
-                        placeholder={t('registration.wizard.coachPhonePlaceholder', '+1 234 567 8900')}
-                      />
-                      <Input
-                        type="number"
-                        label={t('registration.wizard.numberOfPlayers', 'Number of Players')}
-                        value={numberOfPlayers || ''}
-                        onChange={(e) => setNumberOfPlayers(e.target.value ? parseInt(e.target.value) : undefined)}
-                        placeholder={t('registration.wizard.numberOfPlayersPlaceholder', 'e.g., 18')}
-                        min={1}
-                        max={50}
-                      />
-                      <Input
-                        label={t('registration.wizard.emergencyContact', 'Emergency Contact')}
-                        value={emergencyContact}
-                        onChange={(e) => setEmergencyContact(e.target.value)}
-                        placeholder={t('registration.wizard.emergencyContactPlaceholder', 'Phone number')}
-                      />
+                  <div className="space-y-6 pt-4 border-t border-gray-200">
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {t('registration.wizard.teamSection', 'Team Selection')}
+                      </h4>
+
+                      {loadingTeams ? (
+                        <div className="flex justify-center py-6">
+                          <Loading size="md" />
+                        </div>
+                      ) : (
+                        <Select
+                          label={t('registration.wizard.teamLabel', 'Team')} 
+                          required
+                          placeholder={t('registration.wizard.teamPlaceholder', 'Select a team')}
+                          value={selectedTeamId}
+                          onChange={(e) => setSelectedTeamId(e.target.value)}
+                          options={teams.map((team) => ({
+                            value: team.id,
+                            label: team.name,
+                          }))}
+                        />
+                      )}
+
+                      <div className="flex flex-col sm:flex-row gap-3 items-end">
+                        <Input
+                          label={t('registration.wizard.newTeamLabel', 'Create new team')}
+                          value={newTeamName}
+                          onChange={(e) => setNewTeamName(e.target.value)}
+                          placeholder={t('registration.wizard.newTeamPlaceholder', 'e.g., U17 A')}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={handleCreateTeam}
+                          isLoading={creatingTeam}
+                          disabled={!newTeamName.trim() || creatingTeam}
+                          className="sm:mb-1"
+                        >
+                          {t('registration.wizard.addTeam', 'Add Team')}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-gray-900">
+                        {t('registration.wizard.additionalInfo', 'Additional Information (Optional)')}
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          label={t('registration.wizard.coachName', 'Coach Name')}
+                          value={coachName}
+                          onChange={(e) => setCoachName(e.target.value)}
+                          placeholder={t('registration.wizard.coachNamePlaceholder', 'Enter coach name')}
+                        />
+                        <Input
+                          label={t('registration.wizard.coachPhone', 'Coach Phone')}
+                          value={coachPhone}
+                          onChange={(e) => setCoachPhone(e.target.value)}
+                          placeholder={t('registration.wizard.coachPhonePlaceholder', '+1 234 567 8900')}
+                        />
+                        <Input
+                          type="number"
+                          label={t('registration.wizard.numberOfPlayers', 'Number of Players')}
+                          value={numberOfPlayers || ''}
+                          onChange={(e) => setNumberOfPlayers(e.target.value ? parseInt(e.target.value) : undefined)}
+                          placeholder={t('registration.wizard.numberOfPlayersPlaceholder', 'e.g., 18')}
+                          min={1}
+                          max={50}
+                        />
+                        <Input
+                          label={t('registration.wizard.emergencyContact', 'Emergency Contact')}
+                          value={emergencyContact}
+                          onChange={(e) => setEmergencyContact(e.target.value)}
+                          placeholder={t('registration.wizard.emergencyContactPlaceholder', 'Phone number')}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -440,6 +545,12 @@ export function RegistrationWizard({
                 <div className="flex justify-between">
                   <span className="text-gray-500">{t('registration.wizard.club', 'Club')}</span>
                   <span className="font-medium text-gray-900">{selectedClub?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">{t('registration.wizard.team', 'Team')}</span>
+                  <span className="font-medium text-gray-900">
+                    {teams.find((team) => team.id === selectedTeamId)?.name || '-'}
+                  </span>
                 </div>
                 {coachName && (
                   <div className="flex justify-between">

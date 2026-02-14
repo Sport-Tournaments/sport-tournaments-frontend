@@ -211,14 +211,9 @@ export default function TournamentDetailPage() {
         if (clubs.length === 0) {
           setError(t('tournament.noClubsToRegister', 'You need to be part of a club to register for tournaments.'));
           return;
-        } else if (clubs.length === 1) {
-          // Auto-select if user has only one club
-          setSelectedClubId(clubs[0].id);
-          await performRegistration(clubs[0].id);
-        } else {
-          // Show modal for club selection
-          setShowClubModal(true);
         }
+        setShowClubModal(false);
+        setShowRegistrationWizard(true);
       } catch (err) {
         console.error('Failed to fetch clubs:', err);
         setError(t('tournament.fetchClubsError', 'Failed to load your clubs. Please try again.'));
@@ -229,36 +224,13 @@ export default function TournamentDetailPage() {
     }
 
     // If clubs already loaded
-    if (userClubs.length === 1) {
-      await performRegistration(userClubs[0].id);
-    } else {
-      setShowClubModal(true);
-    }
+    setShowClubModal(false);
+    setShowRegistrationWizard(true);
   };
 
-  const performRegistration = async (clubId: string) => {
-    setRegistering(true);
+  const performRegistration = async () => {
     setShowClubModal(false);
-    setError(null);
-    try {
-      await registrationService.registerForTournament(id as string, { clubId });
-      fetchTournament();
-    } catch (err: any) {
-      console.error('Registration failed:', err);
-      
-      // Handle specific error codes
-      if (err.response?.status === 409) {
-        setError(t('club.alreadyRegistered', 'You are already registered for this tournament.'));
-      } else if (err.response?.status === 400) {
-        setError(err.response?.data?.message || t('tournament.registrationFailed', 'Registration failed. Please try again.'));
-      } else if (err.response?.status === 403) {
-        setError(t('tournament.registrationNotAllowed', 'You are not allowed to register for this tournament.'));
-      } else {
-        setError(err.response?.data?.message || t('tournament.registrationFailed', 'Registration failed. Please try again.'));
-      }
-    } finally {
-      setRegistering(false);
-    }
+    setShowRegistrationWizard(true);
   };
 
   const handleClubSelect = async () => {
@@ -266,7 +238,8 @@ export default function TournamentDetailPage() {
       setError(t('tournament.selectClub', 'Please select a club to register with.'));
       return;
     }
-    await performRegistration(selectedClubId);
+    setShowClubModal(false);
+    setShowRegistrationWizard(true);
   };
 
   const normalizeStatus = (status: TournamentStatus) =>
@@ -744,6 +717,9 @@ export default function TournamentDetailPage() {
                     </div>
                     <div>
                       <p className="font-medium">{registration.club?.name || 'Unknown'}</p>
+                      {registration.team?.name && (
+                        <p className="text-xs text-gray-500">{registration.team.name}</p>
+                      )}
                       <p className="text-sm text-gray-500">
                         {formatDate(registration.createdAt)}
                       </p>
@@ -1035,6 +1011,11 @@ export default function TournamentDetailPage() {
                                   <p className="text-xs font-medium text-gray-900 truncate">
                                     {registration.club?.name || t('common.team', 'Team')}
                                   </p>
+                                  {registration.team?.name && (
+                                    <p className="text-xs text-gray-500 truncate">
+                                      {registration.team.name}
+                                    </p>
+                                  )}
                                   <p className="text-xs text-gray-500">
                                     {ageGroupLabel}
                                   </p>

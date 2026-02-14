@@ -11,6 +11,7 @@ import type {
   BulkReviewResult,
   RegistrationFilters,
   RegistrationStatistics,
+  RegistrationStatisticsByAgeGroup,
   ApiResponse,
   PaginatedResponse,
   RegistrationDocument,
@@ -67,6 +68,15 @@ export async function getRegistrationStatistics(
 ): Promise<ApiResponse<RegistrationStatistics>> {
   return apiGet<ApiResponse<RegistrationStatistics>>(
     `/v1/tournaments/${tournamentId}/registrations/status`
+  );
+}
+
+// Get registration statistics grouped by age group
+export async function getRegistrationStatisticsByAgeGroup(
+  tournamentId: string
+): Promise<ApiResponse<RegistrationStatisticsByAgeGroup>> {
+  return apiGet<ApiResponse<RegistrationStatisticsByAgeGroup>>(
+    `/v1/tournaments/${tournamentId}/registrations/statistics-by-age-group`
   );
 }
 
@@ -248,6 +258,7 @@ export const registrationService = {
   registerForTournament,
   getTournamentRegistrations,
   getRegistrationStatistics,
+  getRegistrationStatisticsByAgeGroup,
   getMyRegistrations,
   getMyRegistration,
   getMyRegistrationsForTournament,

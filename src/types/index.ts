@@ -38,22 +38,11 @@ export interface QueryParams extends PaginationParams {
   sortOrder?: 'asc' | 'desc';
 }
 
-// Team interface (placeholder until proper backend integration)
-export interface Team {
-  id: string;
-  name: string;
-  logo?: string;
-  ageCategory: string;
-  playerCount?: number;
-  clubId: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 // Export all types
 export * from './auth';
 export * from './tournament';
 export * from './club';
+export * from './team';
 export * from './registration';
 export * from './groups';
 export * from './notification';

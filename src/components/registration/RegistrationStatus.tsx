@@ -162,6 +162,11 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
               <p className="font-medium text-gray-900">
                 {registration.club.name}
               </p>
+              {registration.team?.name && (
+                <p className="text-sm text-gray-600">
+                  {t('registration.status.teamLabel', 'Team')}: {registration.team.name}
+                </p>
+              )}
               <p className="text-sm text-gray-500">
                 {t('registration.status.registeredAs', 'Registered as team representative')}
               </p>

@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Football Tournament Platform Frontend - Next.js 16",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node server.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -32,6 +33,7 @@
     "classnames": "2.3.2",
     "clsx": "2.1.1",
     "date-fns": "3.6.0",
+    "dotenv": "^17.3.1",
     "i18next": "^25.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.562.0",

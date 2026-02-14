@@ -243,6 +243,12 @@ export default function RegistrationDetailPage() {
                   </Link>
                 </div>
               )}
+              {registration.team && (
+                <div>
+                  <p className="text-sm text-gray-500">Team</p>
+                  <p className="font-medium">{registration.team.name}</p>
+                </div>
+              )}
               <div>
                 <p className="text-sm text-gray-500">Emergency Contact</p>
                 <p className="font-medium">{registration.emergencyContact || '-'}</p>

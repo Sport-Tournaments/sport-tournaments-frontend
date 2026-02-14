@@ -30,12 +30,17 @@ export interface Registration {
     participationFee?: number;
   };
   clubId: string;
+  teamId?: string;
   club?: {
     id: string;
     name: string;
     country: string;
     city: string;
     logo?: string;
+  };
+  team?: {
+    id: string;
+    name: string;
   };
   numberOfPlayers?: number;
   coachName?: string;
@@ -60,6 +65,7 @@ export interface Registration {
 
 export interface CreateRegistrationDto {
   clubId: string;
+  teamId: string;
   ageGroupId?: string;
   numberOfPlayers?: number;
   coachName?: string;
@@ -93,8 +99,28 @@ export interface RegistrationFilters {
 
 export interface RegistrationStatistics {
   total: number;
-  byStatus: Record<RegistrationStatus, number>;
-  byPaymentStatus: Record<PaymentStatus, number>;
+  pending: number;
+  approved: number;
+  rejected: number;
+  withdrawn: number;
+  paidCount: number;
+  unpaidCount: number;
+}
+
+export interface AgeGroupRegistrationStatistics {
+  ageGroupId: string;
+  ageGroupLabel: string;
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  withdrawn: number;
+  maxTeams: number;
+}
+
+export interface RegistrationStatisticsByAgeGroup {
+  overall: RegistrationStatistics;
+  byAgeGroup: AgeGroupRegistrationStatistics[];
 }
 
 export interface ApproveRegistrationDto {

@@ -109,15 +109,28 @@ export default function PaymentsPage() {
                         <Badge variant={getPaymentStatusBadge(registration.paymentStatus)}>
                           {registration.paymentStatus}
                         </Badge>
+                        {(registration as any).ageGroup?.displayLabel && (
+                          <Badge variant="info">
+                            {(registration as any).ageGroup.displayLabel}
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500 space-y-1">
                         <p>Club: {registration.club?.name || 'N/A'}</p>
+                        <p>Team: {registration.team?.name || 'Not specified'}</p>
+                        {(registration as any).ageGroup?.ageCategory && (
+                          <p>Category: {(registration as any).ageGroup.ageCategory}</p>
+                        )}
                         <p>Registered: {formatDateTime(registration.createdAt)}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
-                        {formatCurrency(registration.tournament?.participationFee || 0)}
+                        {formatCurrency(
+                          (registration as any).ageGroup?.participationFee
+                            || registration.tournament?.participationFee
+                            || 0
+                        )}
                       </p>
                       <Link
                         href={`/dashboard/registrations/${registration.id}`}

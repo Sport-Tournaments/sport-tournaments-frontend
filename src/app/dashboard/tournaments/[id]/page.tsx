@@ -244,7 +244,10 @@ export default function TournamentDetailPage() {
             <tr key={registration.id}>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="font-medium text-gray-900">
-                  {registration.club?.name || registration.coachName || '-'}
+                  Team: {registration.team?.name || 'Not specified'}
+                </div>
+                <div className="text-sm text-gray-500">
+                  Club: {registration.club?.name || registration.coachName || '-'}
                 </div>
                 {registration.coachPhone && (
                   <div className="text-sm text-gray-500">{registration.coachPhone}</div>

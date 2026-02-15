@@ -5,39 +5,19 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, Input, ClubColorBadge, ClubColorStripes, ClubColorBanner } from '@/components/ui';
-import { clubService } from '@/services';
-import { Club } from '@/types';
-
-// Player interface for local use until playerService is implemented
-interface Player {
-  id: string;
-  firstName: string;
-  lastName: string;
-  position?: string;
-  jerseyNumber?: number;
-  dateOfBirth?: string;
-  clubId: string;
-}
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, ClubColorBadge, ClubColorStripes, ClubColorBanner } from '@/components/ui';
+import { clubService, teamService } from '@/services';
+import { Club, Team } from '@/types';
 
 export default function ClubDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const [club, setClub] = useState<Club | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showAddPlayer, setShowAddPlayer] = useState(false);
-  const [addingPlayer, setAddingPlayer] = useState(false);
   const [previewImage, setPreviewImage] = useState<{ url: string; alt: string } | null>(null);
-  const [newPlayer, setNewPlayer] = useState({
-    firstName: '',
-    lastName: '',
-    position: '',
-    jerseyNumber: '',
-    dateOfBirth: '',
-  });
 
   useEffect(() => {
     fetchData();
@@ -45,42 +25,18 @@ export default function ClubDetailPage() {
 
   const fetchData = async () => {
     try {
-      const clubData = await clubService.getClubById(params.id as string);
+      const [clubData, teamsData] = await Promise.all([
+        clubService.getClubById(params.id as string),
+        teamService.getTeamsByClub(params.id as string),
+      ]);
       const responseData = (clubData as any)?.data || clubData;
       setClub(responseData);
-      // Players functionality disabled until playerService is implemented
-      setPlayers([]);
+      const teamsList = (teamsData as any)?.data ?? teamsData;
+      setTeams(Array.isArray(teamsList) ? teamsList : (teamsList as any)?.data ?? []);
     } catch (err: any) {
       setError('Failed to load club');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAddPlayer = async () => {
-    if (!newPlayer.firstName || !newPlayer.lastName) return;
-    
-    setAddingPlayer(true);
-    try {
-      // playerService.create disabled until implemented
-      setError('Player management is not yet available');
-      setShowAddPlayer(false);
-      setNewPlayer({ firstName: '', lastName: '', position: '', jerseyNumber: '', dateOfBirth: '' });
-    } catch (err: any) {
-      setError('Failed to add player');
-    } finally {
-      setAddingPlayer(false);
-    }
-  };
-
-  const handleRemovePlayer = async (playerId: string) => {
-    if (!confirm('Are you sure you want to remove this player?')) return;
-    
-    try {
-      // playerService.delete disabled until implemented
-      setError('Player management is not yet available');
-    } catch (err: any) {
-      setError('Failed to remove player');
     }
   };
 
@@ -102,13 +58,6 @@ export default function ClubDetailPage() {
     );
   }
 
-  const positionOptions = [
-    { value: 'goalkeeper', label: 'Goalkeeper' },
-    { value: 'defender', label: 'Defender' },
-    { value: 'midfielder', label: 'Midfielder' },
-    { value: 'forward', label: 'Forward' },
-  ];
-
   const openImagePreview = (url: string, alt: string) => {
     setPreviewImage({ url, alt });
   };
@@ -123,13 +72,13 @@ export default function ClubDetailPage() {
             <Card>
               <CardContent className="p-3 sm:p-4 text-center">
                 <p className="text-xs sm:text-sm text-gray-500">{t('common.players')}</p>
-                <p className="text-xl sm:text-2xl font-bold text-primary">{players.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">{teams.reduce((acc, t) => acc + (t.players?.length || 0), 0)}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-3 sm:p-4 text-center">
                 <p className="text-xs sm:text-sm text-gray-500">{t('common.teams')}</p>
-                <p className="text-xl sm:text-2xl font-bold">{club.teamCount || 0}</p>
+                <p className="text-xl sm:text-2xl font-bold">{teams.length}</p>
               </CardContent>
             </Card>
             <Card>
@@ -205,91 +154,58 @@ export default function ClubDetailPage() {
       ),
     },
     {
-      id: 'players',
-      label: `${t('common.players')} (${players.length})`,
+      id: 'teams',
+      label: `${t('common.teams')} (${teams.length})`,
       content: (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{t('common.players')}</CardTitle>
-            <Button variant="primary" size="sm" onClick={() => setShowAddPlayer(true)}>
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Player
-            </Button>
+            <CardTitle>{t('common.teams')}</CardTitle>
+            <Link href="/dashboard/teams/create">
+              <Button variant="primary" size="sm">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Team
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent className="p-0">
-            {players.length === 0 ? (
+            {teams.length === 0 ? (
               <div className="text-center py-12">
                 <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No players yet
-                </h3>
-                <p className="text-gray-500 mb-4">Add players to your club roster</p>
-                <Button variant="primary" onClick={() => setShowAddPlayer(true)}>
-                  Add First Player
-                </Button>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No teams yet</h3>
+                <p className="text-gray-500 mb-4">Create a team for this club</p>
+                <Link href="/dashboard/teams/create">
+                  <Button variant="primary">Create First Team</Button>
+                </Link>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.name')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Position
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Age
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {t('common.actions')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {players.map((player) => (
-                      <tr key={player.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold">
-                            {player.jerseyNumber || '-'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900">
-                            {player.firstName} {player.lastName}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant="info">{player.position || 'N/A'}</Badge>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {player.dateOfBirth 
-                            ? new Date().getFullYear() - new Date(player.dateOfBirth).getFullYear()
-                            : '-'
-                          }
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemovePlayer(player.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            {t('common.remove')}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="divide-y divide-gray-200">
+                {teams.map((team) => (
+                  <div key={team.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                    <div>
+                      <Link href={`/dashboard/teams/${team.id}`} className="font-medium text-gray-900 hover:text-primary">
+                        {team.name}
+                      </Link>
+                      <div className="flex items-center gap-3 mt-1">
+                        <Badge variant="info">{team.ageCategory}</Badge>
+                        <span className="text-sm text-gray-500">Birth Year: {team.birthyear}</span>
+                        <span className="text-sm text-gray-500">Coach: {team.coach}</span>
+                        <span className="text-sm text-gray-500">{team.players?.length || 0} players</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link href={`/dashboard/teams/${team.id}`}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </Link>
+                      <Link href={`/dashboard/teams/${team.id}/edit`}>
+                        <Button variant="primary" size="sm">Edit</Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>
@@ -451,71 +367,6 @@ export default function ClubDetailPage() {
 
         {/* Tabs */}
         <Tabs tabs={tabs} defaultTab="overview" />
-
-        {/* Add Player Modal */}
-        <Modal
-          isOpen={showAddPlayer}
-          onClose={() => setShowAddPlayer(false)}
-          title="Add Player"
-          size="md"
-        >
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                value={newPlayer.firstName}
-                onChange={(e) => setNewPlayer({ ...newPlayer, firstName: e.target.value })}
-              />
-              <Input
-                label="Last Name"
-                value={newPlayer.lastName}
-                onChange={(e) => setNewPlayer({ ...newPlayer, lastName: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Position
-                </label>
-                <select
-                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2"
-                  value={newPlayer.position}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, position: e.target.value })}
-                >
-                  <option value="">Select position</option>
-                  {positionOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                type="number"
-                label="Jersey Number"
-                value={newPlayer.jerseyNumber}
-                onChange={(e) => setNewPlayer({ ...newPlayer, jerseyNumber: e.target.value })}
-              />
-            </div>
-            <Input
-              type="date"
-              label="Date of Birth"
-              value={newPlayer.dateOfBirth}
-              onChange={(e) => setNewPlayer({ ...newPlayer, dateOfBirth: e.target.value })}
-            />
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowAddPlayer(false)}>
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleAddPlayer}
-                isLoading={addingPlayer}
-                disabled={!newPlayer.firstName || !newPlayer.lastName}
-              >
-                Add Player
-              </Button>
-            </div>
-          </div>
-        </Modal>
 
         <Modal
           isOpen={!!previewImage}

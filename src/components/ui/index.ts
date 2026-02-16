@@ -76,3 +76,6 @@ export { default as TournamentMap } from './TournamentMap';
 
 export { default as ViewModeToggle } from './ViewModeToggle';
 export type { ViewMode } from './ViewModeToggle';
+
+export { default as MatchManagement } from './MatchManagement';
+export type { MatchManagementProps } from './MatchManagement';

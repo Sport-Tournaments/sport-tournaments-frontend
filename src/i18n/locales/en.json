@@ -1548,5 +1548,37 @@
         "description": "We regularly review and update our GDPR compliance practices to ensure we meet all regulatory requirements. Any significant changes will be communicated through our Privacy Policy updates."
       }
     }
+  },
+  "matches": {
+    "title": "Match Management",
+    "bracketType": "Bracket: {{type}}",
+    "noMatches": "No matches yet",
+    "noMatchesDesc": "Generate a bracket to create match schedules for this tournament.",
+    "generateBracket": "Generate Bracket",
+    "generating": "Generating...",
+    "bracketGenerated": "Bracket generated successfully!",
+    "generateError": "Failed to generate bracket.",
+    "loadError": "Failed to load matches. Please try again.",
+    "tbd": "TBD",
+    "match": "match",
+    "matchesPlural": "matches",
+    "matchLabel": "Match",
+    "manualOverride": "Manual",
+    "manualOverrideHint": "Click a team name to manually advance them",
+    "clickToAdvance": "Click to advance this team",
+    "advancementSuccess": "Team advancement updated successfully!",
+    "advancementError": "Failed to update advancement.",
+    "scoreUpdated": "Match score updated successfully!",
+    "scoreError": "Failed to update match score.",
+    "saveScore": "Save Score",
+    "editScore": "Edit Score",
+    "enterScore": "Enter Score",
+    "selectWinner": "Scores are tied - Select advancing team:",
+    "tiedMessage": "Scores are tied! Click a team name above to manually select the advancing team.",
+    "status": {
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "pending": "Pending"
+    }
   }
 }

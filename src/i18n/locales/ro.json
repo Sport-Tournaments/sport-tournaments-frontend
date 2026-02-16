@@ -1748,5 +1748,37 @@
         "description": "Revizuim și actualizăm în mod regulat practicile noastre de conformitate GDPR pentru a ne asigura că îndeplinim toate cerințele de reglementare. Orice modificări semnificative vor fi comunicate prin actualizările Politicii de confidențialitate."
       }
     }
+  },
+  "matches": {
+    "title": "Gestionare Meciuri",
+    "bracketType": "Tablou: {{type}}",
+    "noMatches": "Niciun meci încă",
+    "noMatchesDesc": "Generează un tablou pentru a crea programul meciurilor pentru acest turneu.",
+    "generateBracket": "Generează Tablou",
+    "generating": "Se generează...",
+    "bracketGenerated": "Tabloul a fost generat cu succes!",
+    "generateError": "Eroare la generarea tabloului.",
+    "loadError": "Eroare la încărcarea meciurilor. Vă rugăm să încercați din nou.",
+    "tbd": "De stabilit",
+    "match": "meci",
+    "matchesPlural": "meciuri",
+    "matchLabel": "Meciul",
+    "manualOverride": "Manual",
+    "manualOverrideHint": "Apasă pe numele echipei pentru a o avansa manual",
+    "clickToAdvance": "Apasă pentru a avansa această echipă",
+    "advancementSuccess": "Avansarea echipei a fost actualizată cu succes!",
+    "advancementError": "Eroare la actualizarea avansării.",
+    "scoreUpdated": "Scorul meciului a fost actualizat cu succes!",
+    "scoreError": "Eroare la actualizarea scorului.",
+    "saveScore": "Salvează Scor",
+    "editScore": "Editează Scor",
+    "enterScore": "Introdu Scor",
+    "selectWinner": "Scoruri egale - Selectează echipa care avansează:",
+    "tiedMessage": "Scorurile sunt egale! Apasă pe numele echipei de mai sus pentru a selecta manual echipa care avansează.",
+    "status": {
+      "completed": "Finalizat",
+      "inProgress": "În Desfășurare",
+      "pending": "În Așteptare"
+    }
   }
 }

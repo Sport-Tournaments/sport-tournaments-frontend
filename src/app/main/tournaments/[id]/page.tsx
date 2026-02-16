@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement } from '@/components/ui';
 import { tournamentService, registrationService, clubService, fileService } from '@/services';
 import { Tournament, TournamentStatus, Registration, Club, AgeGroup } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
@@ -767,12 +767,11 @@ export default function TournamentDetailPage() {
           <CardTitle>{t('tournament.matches')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-center text-gray-500 py-8">{t('tournament.noMatches')}</p>
-          {ageGroup && (
-            <p className="text-center text-xs text-gray-400 mt-2">
-              {getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel)}
-            </p>
-          )}
+          <MatchManagement
+            tournamentId={tournament.id}
+            isOrganizer={false}
+            ageGroupId={ageGroup?.id}
+          />
         </CardContent>
       </Card>
     ),

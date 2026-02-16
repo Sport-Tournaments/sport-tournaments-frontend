@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select } from '@/components/ui';
 import { potDrawService, tournamentService, registrationService } from '@/services';
-import type { Tournament, Registration } from '@/types';
+import type { Tournament, Registration, AgeGroup } from '@/types';
 import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,7 +37,9 @@ export default function PotManagementPage() {
   const tournamentId = params.id as string;
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
+  const [ageGroups, setAgeGroups] = useState<AgeGroup[]>([]);
+  const [selectedAgeGroupId, setSelectedAgeGroupId] = useState<string | null>(null);
   const [pots, setPots] = useState<Pot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,38 +47,45 @@ export default function PotManagementPage() {
   const [numberOfGroups, setNumberOfGroups] = useState(4);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // Registrations filtered by selected age group
+  const registrations = selectedAgeGroupId
+    ? allRegistrations.filter((r) => r.ageGroupId === selectedAgeGroupId)
+    : allRegistrations;
+
   useEffect(() => {
-    fetchData();
+    fetchInitialData();
   }, [tournamentId]);
 
+  // When selected age group changes, fetch pots for that age group
   useEffect(() => {
-    // Update pots when numberOfGroups changes
-    if (pots.length !== numberOfGroups) {
-      const newPots = Array.from({ length: numberOfGroups }, (_, i) => ({
-        potNumber: i + 1,
-        count: 0,
-        teams: [],
-      }));
-      setPots(newPots);
+    if (selectedAgeGroupId) {
+      fetchPotAssignments(selectedAgeGroupId);
     }
-  }, [numberOfGroups]);
+  }, [selectedAgeGroupId]);
 
-  const fetchData = async () => {
+  const fetchInitialData = async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Fetch tournament details
       const tournamentRes = await tournamentService.getTournamentById(tournamentId);
-      setTournament(tournamentRes.data);
+      const tournamentData = tournamentRes.data;
+      setTournament(tournamentData);
+
+      // Extract age groups from tournament
+      const groups = tournamentData.ageGroups || [];
+      setAgeGroups(groups);
 
       // Fetch registrations
       const regRes = await registrationService.getTournamentRegistrations(tournamentId);
       const approvedRegs = regRes.data.items.filter((r: Registration) => r.status === 'APPROVED');
-      setRegistrations(approvedRegs);
+      setAllRegistrations(approvedRegs);
 
-      // Fetch pot assignments
-      await fetchPotAssignments();
+      // Auto-select first age group if available
+      if (groups.length > 0) {
+        setSelectedAgeGroupId(groups[0].id || null);
+      }
     } catch (err: any) {
       console.error('Failed to fetch data:', err);
       setError(err.response?.data?.message || 'Failed to load pot management data');
@@ -85,16 +94,16 @@ export default function PotManagementPage() {
     }
   };
 
-  const fetchPotAssignments = async () => {
+  const fetchPotAssignments = async (ageGroupId?: string) => {
     try {
-      const response = await potDrawService.getPotAssignments(tournamentId);
+      const response = await potDrawService.getPotAssignments(tournamentId, ageGroupId);
       // Backend returns PotResponse[]
       const potsData = Array.isArray(response.data) 
         ? response.data 
         : [];
       
-      // Always initialize pots based on numberOfGroups, then merge in assignments
-      const newPots = Array.from({ length: numberOfGroups }, (_, i) => {
+      // Always use 4 pots (pot structure is fixed, independent of group count)
+      const newPots = Array.from({ length: 4 }, (_, i) => {
         const potNumber = i + 1;
         const existingPot = potsData.find((p: Pot) => p.potNumber === potNumber);
         
@@ -108,8 +117,7 @@ export default function PotManagementPage() {
       setPots(newPots);
     } catch (err: any) {
       console.error('Failed to fetch pot assignments:', err);
-      // Don't set error here as this might be the first time accessing pots
-      const initialPots = Array.from({ length: numberOfGroups }, (_, i) => ({
+      const initialPots = Array.from({ length: 4 }, (_, i) => ({
         potNumber: i + 1,
         count: 0,
         teams: [],
@@ -124,7 +132,7 @@ export default function PotManagementPage() {
         registrationId,
         potNumber,
       });
-      await fetchPotAssignments();
+      await fetchPotAssignments(selectedAgeGroupId || undefined);
     } catch (err: any) {
       console.error('Failed to assign team to pot:', err);
       setError(err.response?.data?.message || 'Failed to assign team to pot');
@@ -132,8 +140,13 @@ export default function PotManagementPage() {
   };
 
   const handleExecuteDraw = async () => {
+    if (!selectedAgeGroupId) return;
+
+    const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
+    const groupLabel = selectedGroup?.displayLabel || 'this age group';
+
     if (!window.confirm(
-      `Execute pot-based draw to create ${numberOfGroups} groups? This action cannot be undone.`
+      `Execute pot-based draw for ${groupLabel} to create ${numberOfGroups} groups? This action cannot be undone.`
     )) {
       return;
     }
@@ -144,6 +157,7 @@ export default function PotManagementPage() {
       
       await potDrawService.executePotDraw(tournamentId, {
         numberOfGroups,
+        ageGroupId: selectedAgeGroupId,
       });
 
       setShowSuccessModal(true);
@@ -156,13 +170,16 @@ export default function PotManagementPage() {
   };
 
   const handleClearPots = async () => {
-    if (!window.confirm('Clear all pot assignments? This will remove all team assignments.')) {
+    const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
+    const groupLabel = selectedGroup?.displayLabel || 'this age group';
+
+    if (!window.confirm(`Clear all pot assignments for ${groupLabel}? This will remove all team assignments for this age group.`)) {
       return;
     }
 
     try {
-      await potDrawService.clearPotAssignments(tournamentId);
-      await fetchPotAssignments();
+      await potDrawService.clearPotAssignments(tournamentId, selectedAgeGroupId || undefined);
+      await fetchPotAssignments(selectedAgeGroupId || undefined);
     } catch (err: any) {
       console.error('Failed to clear pot assignments:', err);
       setError(err.response?.data?.message || 'Failed to clear pot assignments');
@@ -187,7 +204,8 @@ export default function PotManagementPage() {
     const totalAssigned = getTotalAssigned();
     return (
       totalAssigned === registrations.length &&
-      totalAssigned > 0
+      totalAssigned > 0 &&
+      selectedAgeGroupId != null
     );
   };
 
@@ -208,6 +226,8 @@ export default function PotManagementPage() {
       </DashboardLayout>
     );
   }
+
+  const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
 
   return (
     <DashboardLayout>
@@ -232,7 +252,7 @@ export default function PotManagementPage() {
                 onClick={handleClearPots}
                 disabled={getTotalAssigned() === 0}
               >
-                Clear All Pots
+                Clear Pots
               </Button>
               <Button
                 onClick={handleExecuteDraw}
@@ -252,157 +272,212 @@ export default function PotManagementPage() {
           </Alert>
         )}
 
-        {/* Draw Configuration */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Draw Configuration</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-600">Total Teams</p>
-                <p className="text-2xl font-bold">{registrations.length}</p>
-              </div>
-              <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                <p className="text-sm text-gray-600">Teams Assigned</p>
-                <p className="text-2xl font-bold">
-                  {getTotalAssigned()} / {registrations.length}
-                </p>
-              </div>
-              <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                <label className="text-sm text-gray-600 block mb-2">Number of Groups</label>
-                <Select
-                  value={numberOfGroups.toString()}
-                  options={NUMBER_OF_GROUPS_OPTIONS}
-                  onChange={(e) => setNumberOfGroups(Number(e.target.value))}
-                />
-              </div>
+        {/* Age Group Tabs */}
+        {ageGroups.length > 0 && (
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Age Groups">
+                {ageGroups.map((ag) => {
+                  const isSelected = ag.id === selectedAgeGroupId;
+                  const agRegs = allRegistrations.filter((r) => r.ageGroupId === ag.id);
+                  return (
+                    <button
+                      key={ag.id}
+                      onClick={() => setSelectedAgeGroupId(ag.id || null)}
+                      className={`whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
+                        isSelected
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {ag.displayLabel || `Year ${ag.birthYear}`}
+                      <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        isSelected ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {agRegs.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
+          </div>
+        )}
 
-            {!canExecuteDraw() && getTotalAssigned() > 0 && (
-              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="flex items-start">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
-                  <div className="text-sm text-yellow-800">
-                    <p className="font-semibold mb-1">Cannot execute draw:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {getTotalAssigned() !== registrations.length && (
-                        <li>All teams must be assigned to pots</li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
+        {ageGroups.length === 0 && (
+          <Alert variant="warning" className="mb-6">
+            No age groups configured for this tournament. Please configure age groups first.
+          </Alert>
+        )}
 
-            {canExecuteDraw() && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 mr-2" />
-                  <p className="text-sm text-green-800 font-semibold">
-                    Ready to execute draw! Click "Execute Draw" to create {numberOfGroups} balanced groups.
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Pots Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          {pots.map((pot) => (
-            <Card key={pot.potNumber}>
-              <CardHeader className={`
-                ${pot.potNumber === 1 ? 'bg-yellow-50' : ''}
-                ${pot.potNumber === 2 ? 'bg-blue-50' : ''}
-                ${pot.potNumber === 3 ? 'bg-green-50' : ''}
-                ${pot.potNumber === 4 ? 'bg-white' : ''}
-              `}>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Pot {pot.potNumber}</span>
-                  <Badge variant={pot.count > 0 ? 'primary' : 'default'}>
-                    {pot.count} teams
-                  </Badge>
+        {/* Draw Configuration */}
+        {selectedAgeGroupId && (
+          <>
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>
+                  Draw Configuration — {selectedGroup?.displayLabel || 'Selected Age Group'}
                 </CardTitle>
-                <p className="text-sm text-gray-600">
-                  {pot.potNumber === 1 && 'Strongest Teams'}
-                  {pot.potNumber === 2 && 'Second Tier'}
-                  {pot.potNumber === 3 && 'Third Tier'}
-                  {pot.potNumber === 4 && 'Weakest Teams'}
-                </p>
               </CardHeader>
               <CardContent>
-                {pot.teams.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">No teams assigned</p>
-                ) : (
-                  <ul className="space-y-2">
-                    {pot.teams.map((team) => (
-                      <li
-                        key={team.registrationId}
-                        className="text-sm p-2 bg-white border rounded hover:bg-primary/5"
-                      >
-                        <p className="font-medium">{team.clubName}</p>
-                        <p className="text-xs text-gray-600">{team.coachName}</p>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <p className="text-sm text-gray-600">Teams in {selectedGroup?.displayLabel || 'Age Group'}</p>
+                    <p className="text-2xl font-bold">{registrations.length}</p>
+                  </div>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <p className="text-sm text-gray-600">Teams Assigned</p>
+                    <p className="text-2xl font-bold">
+                      {getTotalAssigned()} / {registrations.length}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg">
+                    <label className="text-sm text-gray-600 block mb-2">Number of Groups</label>
+                    <Select
+                      value={numberOfGroups.toString()}
+                      options={NUMBER_OF_GROUPS_OPTIONS}
+                      onChange={(e) => setNumberOfGroups(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+
+                {registrations.length === 0 && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
+                      <p className="text-sm text-yellow-800">
+                        No approved registrations found for this age group. Teams must be registered and assigned to this age group first.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!canExecuteDraw() && getTotalAssigned() > 0 && (
+                  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start">
+                      <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
+                      <div className="text-sm text-yellow-800">
+                        <p className="font-semibold mb-1">Cannot execute draw:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          {getTotalAssigned() !== registrations.length && (
+                            <li>All teams must be assigned to pots</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {canExecuteDraw() && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 mr-2" />
+                      <p className="text-sm text-green-800 font-semibold">
+                        Ready to execute draw for {selectedGroup?.displayLabel}! Click "Execute Draw" to create {numberOfGroups} balanced groups.
+                      </p>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Unassigned Teams */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="w-5 h-5 mr-2" />
-              Registered Teams - Assign to Pots
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {registrations.map((reg) => {
-                const assignedPot = isTeamInPot(reg.id);
-                return (
-                  <div
-                    key={reg.id}
-                    className="flex items-center justify-between p-4 bg-white border rounded-lg hover:bg-primary/5"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{reg.club?.name || 'Unknown Club'}</p>
-                      <p className="text-sm text-gray-600">Team: {reg.team?.name || 'Not specified'}</p>
-                      <p className="text-sm text-gray-600">{reg.coachName}</p>
-                      {assignedPot && (
-                        <Badge variant="success" className="mt-1">
-                          Assigned to Pot {assignedPot}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {pots.map((pot) => (
-                        <Button
-                          key={pot.potNumber}
-                          size="sm"
-                          variant={assignedPot === pot.potNumber ? 'primary' : 'outline'}
-                          onClick={() => handleAssignToPot(reg.id, pot.potNumber)}
-                        >
-                          Pot {pot.potNumber}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {registrations.length === 0 && (
-                <p className="text-gray-500 italic text-center py-8">
-                  No approved registrations found
-                </p>
-              )}
+            {/* Pots Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              {pots.map((pot) => (
+                <Card key={pot.potNumber}>
+                  <CardHeader className={`
+                    ${pot.potNumber === 1 ? 'bg-yellow-50' : ''}
+                    ${pot.potNumber === 2 ? 'bg-blue-50' : ''}
+                    ${pot.potNumber === 3 ? 'bg-green-50' : ''}
+                    ${pot.potNumber === 4 ? 'bg-white' : ''}
+                  `}>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Pot {pot.potNumber}</span>
+                      <Badge variant={pot.count > 0 ? 'primary' : 'default'}>
+                        {pot.count} teams
+                      </Badge>
+                    </CardTitle>
+                    <p className="text-sm text-gray-600">
+                      {pot.potNumber === 1 && 'Strongest Teams'}
+                      {pot.potNumber === 2 && 'Second Tier'}
+                      {pot.potNumber === 3 && 'Third Tier'}
+                      {pot.potNumber === 4 && 'Weakest Teams'}
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    {pot.teams.length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">No teams assigned</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {pot.teams.map((team) => (
+                          <li
+                            key={team.registrationId}
+                            className="text-sm p-2 bg-white border rounded hover:bg-primary/5"
+                          >
+                            <p className="font-medium">{team.clubName}</p>
+                            <p className="text-xs text-gray-600">{team.coachName}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Unassigned Teams */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  {selectedGroup?.displayLabel || 'Age Group'} — Assign Teams to Pots
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {registrations.map((reg) => {
+                    const assignedPot = isTeamInPot(reg.id);
+                    return (
+                      <div
+                        key={reg.id}
+                        className="flex items-center justify-between p-4 bg-white border rounded-lg hover:bg-primary/5"
+                      >
+                        <div className="flex-1">
+                          <p className="font-medium">{reg.club?.name || 'Unknown Club'}</p>
+                          <p className="text-sm text-gray-600">Team: {reg.team?.name || 'Not specified'}</p>
+                          <p className="text-sm text-gray-600">{reg.coachName}</p>
+                          {assignedPot && (
+                            <Badge variant="success" className="mt-1">
+                              Assigned to Pot {assignedPot}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {pots.map((pot) => (
+                            <Button
+                              key={pot.potNumber}
+                              size="sm"
+                              variant={assignedPot === pot.potNumber ? 'primary' : 'outline'}
+                              onClick={() => handleAssignToPot(reg.id, pot.potNumber)}
+                            >
+                              Pot {pot.potNumber}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {registrations.length === 0 && (
+                    <p className="text-gray-500 italic text-center py-8">
+                      No approved registrations found for this age group
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       {/* Success Modal */}
@@ -429,7 +504,7 @@ export default function PotManagementPage() {
                 Draw Completed Successfully!
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                Groups have been created.
+                Groups have been created for {selectedGroup?.displayLabel || 'this age group'}.
               </p>
               <Button
                 onClick={() => {

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement } from '@/components/ui';
 import { tournamentService, registrationService, fileService } from '@/services';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
@@ -644,17 +644,12 @@ export default function TournamentDetailPage() {
         label: t('tournament.matches'),
         content: (
           <Card>
-            <CardContent className="text-center py-12">
-              <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Match Schedule
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Generate and manage match schedule
-              </p>
-              <Button variant="primary">Generate Schedule</Button>
+            <CardContent className="p-4 sm:p-6">
+              <MatchManagement
+                tournamentId={tournament.id}
+                isOrganizer={true}
+                ageGroupId={ageGroupId}
+              />
             </CardContent>
           </Card>
         ),

@@ -75,3 +75,49 @@ export interface KnockoutMatch {
   completedAt?: string;
   nextMatchId?: string;
 }
+
+// Match interface aligned with backend bracket-generator
+export interface BracketMatch {
+  id: string;
+  round: number;
+  matchNumber: number;
+  team1Id?: string;
+  team2Id?: string;
+  team1Name?: string;
+  team2Name?: string;
+  team1Score?: number;
+  team2Score?: number;
+  winnerId?: string;
+  loserId?: string;
+  manualWinnerId?: string;
+  isManualOverride?: boolean;
+  scheduledAt?: string;
+  locationId?: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  nextMatchId?: string;
+  loserNextMatchId?: string;
+}
+
+export interface PlayoffRound {
+  roundNumber: number;
+  roundName: string;
+  matches: BracketMatch[];
+}
+
+export interface MatchesResponse {
+  matches: BracketMatch[];
+  bracketType?: string;
+  playoffRounds?: PlayoffRound[];
+  teams: { id: string; name: string; clubName?: string }[];
+}
+
+export interface UpdateMatchAdvancementDto {
+  advancingTeamId: string;
+}
+
+export interface UpdateMatchScoreDto {
+  team1Score?: number;
+  team2Score?: number;
+  advancingTeamId?: string;
+  status?: string;
+}

@@ -1,5 +1,5 @@
 // Registration types
-export type RegistrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
+export type RegistrationStatus = 'PENDING' | 'PENDING_PAYMENT' | 'APPROVED' | 'REJECTED' | 'WITHDRAWN';
 
 // Import PaymentStatus from payment.ts to avoid duplicate exports
 import type { PaymentStatus } from './payment';
@@ -49,6 +49,10 @@ export interface Registration {
   notes?: string;
   status: RegistrationStatus;
   paymentStatus: PaymentStatus;
+  priceAmount?: number;
+  priceCurrency?: string;
+  paid?: boolean;
+  paidAmount?: number;
   groupAssignment?: string;
   reviewedBy?: string;
   reviewedAt?: string;
@@ -100,11 +104,17 @@ export interface RegistrationFilters {
 export interface RegistrationStatistics {
   total: number;
   pending: number;
+  pendingPayment: number;
   approved: number;
   rejected: number;
   withdrawn: number;
   paidCount: number;
   unpaidCount: number;
+}
+
+export interface MarkAsPaidDto {
+  paidAmount?: number;
+  reviewNotes?: string;
 }
 
 export interface AgeGroupRegistrationStatistics {

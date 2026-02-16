@@ -50,7 +50,7 @@ export default function RegistrationsPage() {
     setSummaryCounts({
       total: registrationData.length,
       approved: registrationData.filter((reg) => reg.status === 'APPROVED').length,
-      pending: registrationData.filter((reg) => reg.status === 'PENDING').length,
+      pending: registrationData.filter((reg) => reg.status === 'PENDING' || reg.status === 'PENDING_PAYMENT').length,
     });
     
     // Apply client-side filter since backend doesn't support it
@@ -91,6 +91,7 @@ export default function RegistrationsPage() {
   const getStatusBadge = (status: RegistrationStatus) => {
     const variants: Record<RegistrationStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       'PENDING': 'warning',
+      'PENDING_PAYMENT': 'info',
       'APPROVED': 'success',
       'REJECTED': 'danger',
       'WITHDRAWN': 'default',
@@ -122,6 +123,7 @@ export default function RegistrationsPage() {
   const tabs = [
     { id: 'all', label: t('common.all') },
     { id: 'PENDING', label: t('registration.status.PENDING') },
+    { id: 'PENDING_PAYMENT', label: t('registration.status.PENDING_PAYMENT', 'Pending Payment') },
     { id: 'APPROVED', label: t('registration.status.APPROVED') },
     { id: 'REJECTED', label: t('registration.status.REJECTED') },
   ];
@@ -290,7 +292,7 @@ export default function RegistrationsPage() {
                             {t('common.view')}
                           </Button>
                         </Link>
-                        {registration.status === 'PENDING' && (
+                        {(registration.status === 'PENDING' || registration.status === 'PENDING_PAYMENT') && (
                           <Button
                             variant="danger"
                             size="sm"

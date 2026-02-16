@@ -19,6 +19,7 @@ import type {
   ConfirmFitnessDto,
   FitnessStatus,
   RegistrationWithDetails,
+  MarkAsPaidDto,
 } from '@/types';
 
 // Register a team for a tournament
@@ -186,6 +187,17 @@ export async function withdrawRegistration(id: string): Promise<ApiResponse<Regi
   return apiPost<ApiResponse<Registration>>(`/v1/registrations/${id}/withdraw`);
 }
 
+// Mark registration as paid (Issue #88)
+export async function markRegistrationAsPaid(
+  id: string,
+  data?: MarkAsPaidDto
+): Promise<ApiResponse<Registration>> {
+  return apiPost<ApiResponse<Registration>>(
+    `/v1/registrations/${id}/mark-as-paid`,
+    data || {}
+  );
+}
+
 // Get my registration for a tournament
 export async function getMyRegistration(tournamentId: string): Promise<ApiResponse<RegistrationWithDetails>> {
   return apiGet<ApiResponse<RegistrationWithDetails>>(`/v1/tournaments/${tournamentId}/my-registration`);
@@ -274,6 +286,7 @@ export const registrationService = {
   bulkApproveRegistrations,
   bulkRejectRegistrations,
   withdrawRegistration,
+  markRegistrationAsPaid,
   // Document methods
   uploadDocument,
   getDocuments,

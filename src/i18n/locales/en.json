@@ -297,6 +297,7 @@
       "noSpotsAvailable": "No spots available.",
       "status": {
         "PENDING": "Pending",
+        "PENDING_PAYMENT": "Pending Payment",
         "APPROVED": "Approved",
         "REJECTED": "Rejected",
         "WITHDRAWN": "Withdrawn"
@@ -414,6 +415,7 @@
       "notRegisteredDesc": "You haven't registered for this tournament yet.",
       "registered": "Registered",
       "PENDING": "Pending",
+      "PENDING_PAYMENT": "Pending Payment",
       "APPROVED": "Approved",
       "REJECTED": "Rejected",
       "WITHDRAWN": "Withdrawn"

@@ -61,6 +61,17 @@ const BIRTH_YEARS = Array.from({ length: currentYear - MIN_BIRTH_YEAR + 1 }, (_,
   return { value: year.toString(), label: year.toString() };
 });
 
+// Helper functions for format-based conditional rendering
+const ELIMINATION_FORMATS: TournamentFormat[] = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION'];
+const GROUP_FORMATS: TournamentFormat[] = ['ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'];
+
+const isEliminationFormat = (format?: TournamentFormat): boolean =>
+  !!format && ELIMINATION_FORMATS.includes(format);
+const isGroupFormat = (format?: TournamentFormat): boolean =>
+  !format || GROUP_FORMATS.includes(format);
+const isDoubleElimination = (format?: TournamentFormat): boolean =>
+  format === 'DOUBLE_ELIMINATION';
+
 export interface AgeGroupFormData {
   id?: string;
   birthYear: number;
@@ -79,6 +90,8 @@ export interface AgeGroupFormData {
   locationAddress?: string;
   groupsCount?: number;
   teamsPerGroup?: number;
+  guaranteedMatches?: number;
+  advancementOverride?: number;
 }
 
 interface AgeGroupsManagerProps {
@@ -190,7 +203,35 @@ export function AgeGroupsManager({
       }
       
       // Auto-calculate groupsCount when teamCount or teamsPerGroup changes
-      if (('teamCount' in updates || 'teamsPerGroup' in updates) && updated.teamCount && updated.teamsPerGroup) {
+      // Handle format transition state management
+      if ('format' in updates) {
+        const newFormat = updates.format;
+        if (isEliminationFormat(newFormat)) {
+          // Clear group-specific fields when switching to elimination format
+          updated.groupsCount = undefined;
+          updated.teamsPerGroup = undefined;
+          // Set default guaranteed matches for double elimination
+          if (isDoubleElimination(newFormat)) {
+            updated.guaranteedMatches = updated.guaranteedMatches ?? 2;
+          } else {
+            // Single elimination: clear double-elimination fields
+            updated.guaranteedMatches = undefined;
+            updated.advancementOverride = undefined;
+          }
+        } else if (isGroupFormat(newFormat)) {
+          // Restore group defaults when switching to group format
+          updated.teamsPerGroup = updated.teamsPerGroup ?? 4;
+          updated.groupsCount = updated.teamCount && updated.teamsPerGroup
+            ? Math.ceil(updated.teamCount / updated.teamsPerGroup)
+            : 1;
+          // Clear elimination-specific fields
+          updated.guaranteedMatches = undefined;
+          updated.advancementOverride = undefined;
+        }
+      }
+
+      // Auto-calculate groupsCount when teamCount or teamsPerGroup changes (only for group formats)
+      if (('teamCount' in updates || 'teamsPerGroup' in updates) && updated.teamCount && updated.teamsPerGroup && isGroupFormat(updated.format)) {
         updated.groupsCount = Math.ceil(updated.teamCount / updated.teamsPerGroup);
       }
       
@@ -261,6 +302,16 @@ export function AgeGroupsManager({
                   {ageGroup.gameSystem && (
                     <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
                       {ageGroup.gameSystem}
+                    </span>
+                  )}
+                  {ageGroup.format && (
+                    <span className={cn(
+                      'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium',
+                      isEliminationFormat(ageGroup.format)
+                        ? 'bg-orange-50 text-orange-700'
+                        : 'bg-green-50 text-green-700'
+                    )}>
+                      {t(`tournament.format.${ageGroup.format}`, ageGroup.format.replace(/_/g, ' '))}
                     </span>
                   )}
                   {ageGroup.teamCount && (
@@ -372,32 +423,83 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.teamCountHelp', 'Expected number of teams')}
                     />
 
-                    {/* Teams Per Group - moved here per issue #73 */}
-                    <Input
-                      type="number"
-                      label={t('tournaments.ageGroups.teamsPerGroup', 'Teams Per Group')}
-                      value={ageGroup.teamsPerGroup || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { teamsPerGroup: e.target.value ? parseInt(e.target.value) : undefined })}
-                      min={2}
-                      max={8}
-                      step={1}
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.teamsPerGroupHelp', 'Usually 4 teams per group')}
-                    />
+                    {/* Group Configuration - only shown for group-based formats */}
+                    {isGroupFormat(ageGroup.format) && (
+                      <>
+                        {/* Teams Per Group - moved here per issue #73 */}
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.teamsPerGroup', 'Teams Per Group')}
+                          value={ageGroup.teamsPerGroup || ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { teamsPerGroup: e.target.value ? parseInt(e.target.value) : undefined })}
+                          min={2}
+                          max={8}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.teamsPerGroupHelp', 'Usually 4 teams per group')}
+                        />
 
-                    {/* Number of Groups - moved here per issue #73 */}
-                    <Select
-                      label={t('tournaments.ageGroups.groupsCount', 'Number of Groups')}
-                      options={GROUPS_COUNT_OPTIONS}
-                      value={(ageGroup.groupsCount ?? 1).toString()}
-                      onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                        handleUpdateAgeGroup(index, {
-                          groupsCount: e.target.value ? parseInt(e.target.value) : undefined,
-                        })
-                      }
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
-                    />
+                        {/* Number of Groups - moved here per issue #73 */}
+                        <Select
+                          label={t('tournaments.ageGroups.groupsCount', 'Number of Groups')}
+                          options={GROUPS_COUNT_OPTIONS}
+                          value={(ageGroup.groupsCount ?? 1).toString()}
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                            handleUpdateAgeGroup(index, {
+                              groupsCount: e.target.value ? parseInt(e.target.value) : undefined,
+                            })
+                          }
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
+                        />
+                      </>
+                    )}
+
+                    {/* Double Elimination Configuration */}
+                    {isDoubleElimination(ageGroup.format) && (
+                      <>
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.guaranteedMatches', 'Guaranteed Matches')}
+                          value={ageGroup.guaranteedMatches ?? ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { guaranteedMatches: e.target.value ? parseInt(e.target.value) : undefined })}
+                          min={1}
+                          max={10}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.guaranteedMatchesHelp', 'Minimum matches each team plays via the losers bracket')}
+                        />
+
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.advancementOverride', 'Advancement Override')}
+                          value={ageGroup.advancementOverride ?? ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { advancementOverride: e.target.value ? parseInt(e.target.value) : undefined })}
+                          min={1}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.advancementOverrideHelp', 'Custom number of teams advancing from losers bracket (leave empty for default)')}
+                        />
+                      </>
+                    )}
+
+                    {/* Elimination Format Info Banner */}
+                    {isEliminationFormat(ageGroup.format) && (
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                        <div className="flex items-start gap-2">
+                          <svg className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm font-medium text-blue-800">
+                              {ageGroup.format === 'SINGLE_ELIMINATION'
+                                ? t('tournaments.ageGroups.singleEliminationInfo', 'Single Elimination: Direct knockout – no group stage. Teams are eliminated after one loss.')
+                                : t('tournaments.ageGroups.doubleEliminationInfo', 'Double Elimination: Teams get a second chance through the losers bracket before being eliminated.')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Participation Fee */}
                     <Input

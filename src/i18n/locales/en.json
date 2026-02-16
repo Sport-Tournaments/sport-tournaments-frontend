@@ -335,7 +335,13 @@
       "groupsCount": "Number of Groups",
       "groupsCountHelp": "Number of groups for this category",
       "numberOfMatches": "Guaranteed Matches",
-      "numberOfMatchesHelp": "Minimum matches each team will play"
+      "numberOfMatchesHelp": "Minimum matches each team will play",
+      "guaranteedMatches": "Guaranteed Matches",
+      "guaranteedMatchesHelp": "Minimum matches each team plays via the losers bracket",
+      "advancementOverride": "Advancement Override",
+      "advancementOverrideHelp": "Custom number of teams advancing from losers bracket (leave empty for default)",
+      "singleEliminationInfo": "Single Elimination: Direct knockout – no group stage. Teams are eliminated after one loss.",
+      "doubleEliminationInfo": "Double Elimination: Teams get a second chance through the losers bracket before being eliminated."
     }
   },
   "clubs": {

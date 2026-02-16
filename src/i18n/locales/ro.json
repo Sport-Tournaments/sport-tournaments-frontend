@@ -369,7 +369,13 @@
       "groupsCount": "Număr de grupe",
       "groupsCountHelp": "Numărul de grupe pentru această categorie",
       "numberOfMatches": "Meciuri garantate",
-      "numberOfMatchesHelp": "Meciuri minime pe care le va juca fiecare echipă"
+      "numberOfMatchesHelp": "Meciuri minime pe care le va juca fiecare echipă",
+      "guaranteedMatches": "Meciuri garantate",
+      "guaranteedMatchesHelp": "Meciuri minime pe care le joacă fiecare echipă prin bracket-ul pierzătorilor",
+      "advancementOverride": "Avansare personalizată",
+      "advancementOverrideHelp": "Număr personalizat de echipe care avansează din bracket-ul pierzătorilor (lasă gol pentru implicit)",
+      "singleEliminationInfo": "Eliminare simplă: Knockout direct – fără fază de grupe. Echipele sunt eliminate după o singură înfrângere.",
+      "doubleEliminationInfo": "Eliminare dublă: Echipele primesc o a doua șansă prin bracket-ul pierzătorilor înainte de eliminare."
     }
   },
   "clubs": {

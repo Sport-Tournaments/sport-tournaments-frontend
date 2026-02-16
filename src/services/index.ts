@@ -34,5 +34,8 @@ export * from './location.service';
 export { default as teamService } from './team.service';
 export * from './team.service';
 
+export { default as playerService } from './player.service';
+export * from './player.service';
+
 export { potDrawService } from './pot-draw.service';
 export * from './pot-draw.service';

@@ -371,6 +371,7 @@ export default function PotManagementPage() {
                   >
                     <div className="flex-1">
                       <p className="font-medium">{reg.club?.name || 'Unknown Club'}</p>
+                      <p className="text-sm text-gray-600">Team: {reg.team?.name || 'Not specified'}</p>
                       <p className="text-sm text-gray-600">{reg.coachName}</p>
                       {assignedPot && (
                         <Badge variant="success" className="mt-1">

@@ -345,9 +345,7 @@ export default function DashboardPage() {
                       >
                         <div>
                           <p className="font-medium">{registration.club?.name || 'Unknown Club'}</p>
-                          {registration.team?.name && (
-                            <p className="text-sm text-gray-600">{registration.team.name}</p>
-                          )}
+                          <p className="text-sm text-gray-600">Team: {registration.team?.name || 'Not specified'}</p>
                           <p className="text-sm text-gray-500">
                             {registration.tournament?.name || 'Unknown Tournament'}
                           </p>

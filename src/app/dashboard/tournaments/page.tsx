@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, ViewModeToggle, ViewMode } from '@/components/ui';
 import { tournamentService } from '@/services';
 import { Tournament, TournamentStatus } from '@/types';
 import { formatDate } from '@/utils/date';
@@ -14,6 +14,7 @@ const PAGE_SIZE = 10;
 
 export default function DashboardTournamentsPage() {
   const { t } = useTranslation();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const fetchTournaments = useCallback(async (page: number) => {
     // getMyTournaments returns all tournaments for the user (no pagination)
@@ -86,6 +87,17 @@ export default function DashboardTournamentsPage() {
     return derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
   };
 
+  const getRegisteredTeamsDisplay = (tournament: Tournament) => {
+    if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+      return tournament.ageGroups.reduce(
+        (total, ageGroup) => total + (ageGroup.currentTeams ?? 0),
+        0,
+      );
+    }
+
+    return tournament.registeredTeams ?? tournament.currentTeams ?? 0;
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -98,14 +110,22 @@ export default function DashboardTournamentsPage() {
               {t('dashboard.manageTournaments')}
             </p>
           </div>
-          <Link href="/dashboard/tournaments/create" className="self-start sm:self-auto">
-            <Button variant="primary">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              {t('tournament.create')}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              listLabel={t('common.list', 'List')}
+              gridLabel={t('common.grid', 'Grid')}
+            />
+            <Link href="/dashboard/tournaments/create" className="self-start sm:self-auto">
+              <Button variant="primary">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {t('tournament.create')}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Card>
@@ -140,7 +160,7 @@ export default function DashboardTournamentsPage() {
                   <Button variant="primary">{t('tournament.createFirst')}</Button>
                 </Link>
               </div>
-            ) : (
+            ) : viewMode === 'list' ? (
               <div className="divide-y divide-gray-200">
                 {tournaments.map((tournament) => (
                   <div key={tournament.id} className="p-4 sm:p-6 hover:bg-gray-50">
@@ -168,7 +188,7 @@ export default function DashboardTournamentsPage() {
                             {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
-                            {tournament.registeredTeams ?? 0} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}
+                            {getRegisteredTeamsDisplay(tournament)} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}
                           </div>
                         </div>
                       </div>
@@ -187,8 +207,66 @@ export default function DashboardTournamentsPage() {
                     </div>
                   </div>
                 ))}
-                
-                {/* Infinite scroll sentinel */}
+
+                {hasMore && (
+                  <div 
+                    ref={sentinelRef} 
+                    className="flex justify-center py-8"
+                  >
+                    {isFetchingMore && <Loading size="md" />}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {tournaments.map((tournament) => (
+                    <Card key={tournament.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {tournament.bannerImage ? (
+                            <img src={tournament.bannerImage} alt={tournament.name} className="w-12 h-12 rounded-lg object-cover" />
+                          ) : (
+                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 hover:text-primary block truncate">
+                              {tournament.name}
+                            </Link>
+                            <div className="mt-1">
+                              <Badge variant={getStatusBadge(tournament.status)}>
+                                {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-gray-500 mt-2">
+                              {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
+                            </div>
+                            <div className="text-sm text-gray-500 mt-1">
+                              {getRegisteredTeamsDisplay(tournament)} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <Link href={`/dashboard/tournaments/${tournament.id}`} className="flex-1">
+                            <Button variant="outline" size="sm" className="w-full">
+                              {t('common.view')}
+                            </Button>
+                          </Link>
+                          <Link href={`/dashboard/tournaments/${tournament.id}/edit`} className="flex-1">
+                            <Button variant="primary" size="sm" className="w-full">
+                              {t('common.edit')}
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
                 {hasMore && (
                   <div 
                     ref={sentinelRef} 

@@ -8,6 +8,7 @@ export interface AssignTeamToPotDto {
 
 export interface ExecutePotDrawDto {
   numberOfGroups: number;
+  ageGroupId?: string;
 }
 
 export interface PotAssignment {
@@ -24,10 +25,11 @@ export interface PotResponse {
 
 class PotDrawService {
   /**
-   * Get all pot assignments for a tournament
+   * Get all pot assignments for a tournament, optionally filtered by age group
    */
-  async getPotAssignments(tournamentId: string) {
-    return apiGet<ApiResponse<PotResponse[]>>(`/v1/tournaments/${tournamentId}/pots`);
+  async getPotAssignments(tournamentId: string, ageGroupId?: string) {
+    const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+    return apiGet<ApiResponse<PotResponse[]>>(`/v1/tournaments/${tournamentId}/pots${params}`);
   }
 
   /**
@@ -47,10 +49,11 @@ class PotDrawService {
   }
 
   /**
-   * Validate pot distribution
+   * Validate pot distribution for a specific age group
    */
-  async validatePotDistribution(tournamentId: string) {
-    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/validate`);
+  async validatePotDistribution(tournamentId: string, ageGroupId?: string) {
+    const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+    return apiPost<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots/validate${params}`);
   }
 
   /**
@@ -61,10 +64,11 @@ class PotDrawService {
   }
 
   /**
-   * Clear all pot assignments for a tournament
+   * Clear pot assignments for a tournament, optionally for a specific age group
    */
-  async clearPotAssignments(tournamentId: string) {
-    return apiDelete<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots`);
+  async clearPotAssignments(tournamentId: string, ageGroupId?: string) {
+    const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+    return apiDelete<ApiResponse<unknown>>(`/v1/tournaments/${tournamentId}/pots${params}`);
   }
 }
 

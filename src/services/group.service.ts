@@ -5,6 +5,10 @@ import type {
   ExecuteDrawDto,
   CreateGroupDto,
   UpdateBracketDto,
+  MatchesResponse,
+  UpdateMatchAdvancementDto,
+  UpdateMatchScoreDto,
+  BracketMatch,
   ApiResponse,
 } from '@/types';
 
@@ -53,6 +57,57 @@ export async function updateBracket(
   );
 }
 
+// Get all matches for tournament (optionally filtered by age group)
+export async function getMatches(
+  tournamentId: string,
+  ageGroupId?: string
+): Promise<ApiResponse<MatchesResponse>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiGet<ApiResponse<MatchesResponse>>(
+    `/v1/tournaments/${tournamentId}/matches${params}`
+  );
+}
+
+// Manually set advancing team for a match
+export async function setMatchAdvancement(
+  tournamentId: string,
+  matchId: string,
+  data: UpdateMatchAdvancementDto,
+  ageGroupId?: string
+): Promise<ApiResponse<{ match: BracketMatch; bracketUpdated: boolean }>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPatch<ApiResponse<{ match: BracketMatch; bracketUpdated: boolean }>>(
+    `/v1/tournaments/${tournamentId}/matches/${matchId}/advance${params}`,
+    data
+  );
+}
+
+// Update match score
+export async function updateMatchScore(
+  tournamentId: string,
+  matchId: string,
+  data: UpdateMatchScoreDto,
+  ageGroupId?: string
+): Promise<ApiResponse<{ match: BracketMatch; bracketUpdated: boolean }>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPatch<ApiResponse<{ match: BracketMatch; bracketUpdated: boolean }>>(
+    `/v1/tournaments/${tournamentId}/matches/${matchId}/score${params}`,
+    data
+  );
+}
+
+// Generate bracket structure for tournament
+export async function generateBracket(
+  tournamentId: string,
+  ageGroupId?: string
+): Promise<ApiResponse<any>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPost<ApiResponse<any>>(
+    `/v1/tournaments/${tournamentId}/bracket/generate${params}`,
+    {}
+  );
+}
+
 export const groupService = {
   executeDraw,
   resetDraw,
@@ -60,6 +115,10 @@ export const groupService = {
   createGroup,
   getBracket,
   updateBracket,
+  getMatches,
+  setMatchAdvancement,
+  updateMatchScore,
+  generateBracket,
 };
 
 export default groupService;

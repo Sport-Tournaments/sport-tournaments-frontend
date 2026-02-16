@@ -331,6 +331,7 @@
       "noSpotsAvailable": "Nu mai sunt locuri disponibile.",
       "status": {
         "PENDING": "În așteptare",
+        "PENDING_PAYMENT": "Plată în așteptare",
         "APPROVED": "Aprobat",
         "REJECTED": "Respins",
         "WITHDRAWN": "Retras"
@@ -445,6 +446,7 @@
       "notRegisteredDesc": "Nu te-ai înregistrat încă la acest turneu.",
       "registered": "Înregistrat",
       "PENDING": "În așteptare",
+      "PENDING_PAYMENT": "Plată în așteptare",
       "APPROVED": "Aprobat",
       "REJECTED": "Respins",
       "WITHDRAWN": "Retras"

@@ -12,6 +12,7 @@ import {
   rejectRegistration,
   bulkApproveRegistrations,
   bulkRejectRegistrations,
+  markRegistrationAsPaid,
 } from '@/services/registration.service';
 import type { Registration } from '@/types';
 import { useToast } from '@/hooks';
@@ -30,6 +31,7 @@ export function RegistrationReviewCard({
   const [isApprovingPaid, setIsApprovingPaid] = useState(false);
   const [isApprovingUnpaid, setIsApprovingUnpaid] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [reviewNotes, setReviewNotes] = useState('');
@@ -92,8 +94,25 @@ export function RegistrationReviewCard({
     }
   }, [registration.id, rejectionReason, reviewNotes, showToast, onUpdate]);
 
-  const statusColors: Record<string, 'gray' | 'green' | 'yellow' | 'red'> = {
+  const handleMarkAsPaid = useCallback(async () => {
+    setIsMarkingPaid(true);
+    try {
+      const response = await markRegistrationAsPaid(registration.id, { reviewNotes });
+      if (response.success) {
+        showToast('success', 'Registration marked as paid');
+        onUpdate?.(response.data);
+      }
+    } catch (error) {
+      console.error('Error marking as paid:', error);
+      showToast('error', 'Failed to mark registration as paid');
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }, [registration.id, reviewNotes, showToast, onUpdate]);
+
+  const statusColors: Record<string, 'gray' | 'green' | 'yellow' | 'red' | 'blue'> = {
     PENDING: 'yellow',
+    PENDING_PAYMENT: 'blue',
     APPROVED: 'green',
     REJECTED: 'red',
     WITHDRAWN: 'gray',
@@ -154,6 +173,24 @@ export function RegistrationReviewCard({
                 onClick={() => setShowRejectModal(true)}
               >
                 Reject
+              </Button>
+            </div>
+          )}
+
+          {registration.status === 'PENDING_PAYMENT' && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {registration.priceAmount != null && Number(registration.priceAmount) > 0 && (
+                <span className="text-sm font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                  {registration.priceCurrency || 'EUR'} {Number(registration.priceAmount).toFixed(2)}
+                </span>
+              )}
+              <Button
+                variant="paid"
+                size="sm"
+                onClick={handleMarkAsPaid}
+                isLoading={isMarkingPaid}
+              >
+                Mark as Paid
               </Button>
             </div>
           )}

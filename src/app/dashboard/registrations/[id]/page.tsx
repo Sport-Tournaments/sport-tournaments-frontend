@@ -49,6 +49,7 @@ export default function RegistrationDetailPage() {
   const getStatusBadge = (status: RegistrationStatus) => {
     const variants: Record<RegistrationStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       'PENDING': 'warning',
+      'PENDING_PAYMENT': 'info',
       'APPROVED': 'success',
       'REJECTED': 'danger',
       'WITHDRAWN': 'default',
@@ -126,7 +127,7 @@ export default function RegistrationDetailPage() {
               Registration Details
             </h1>
           </div>
-          {registration.status === 'PENDING' && (
+          {(registration.status === 'PENDING' || registration.status === 'PENDING_PAYMENT') && (
             <Button variant="danger" onClick={handleWithdraw} className="self-start sm:self-auto">
               Withdraw Registration
             </Button>
@@ -137,6 +138,7 @@ export default function RegistrationDetailPage() {
         <Card className={`border-l-4 ${
           registration.status === 'APPROVED' ? 'border-l-green-500' :
           registration.status === 'PENDING' ? 'border-l-yellow-500' :
+          registration.status === 'PENDING_PAYMENT' ? 'border-l-blue-500' :
           registration.status === 'REJECTED' ? 'border-l-red-500' :
           'border-l-gray-500'
         }`}>
@@ -170,6 +172,7 @@ export default function RegistrationDetailPage() {
                   </p>
                   <p className="text-sm text-gray-500">
                     {registration.status === 'PENDING' && 'Your registration is being reviewed'}
+                    {registration.status === 'PENDING_PAYMENT' && 'Your registration is approved but awaiting payment'}
                     {registration.status === 'APPROVED' && 'Your registration has been approved'}
                     {registration.status === 'REJECTED' && (registration as any).rejectionReason}
                   </p>
@@ -283,8 +286,13 @@ export default function RegistrationDetailPage() {
               <div>
                 <p className="text-sm text-gray-500">Entry Fee</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {formatCurrency(tournament?.entryFee || 0)}
+                  {registration.priceAmount != null && Number(registration.priceAmount) > 0
+                    ? `${registration.priceCurrency || 'EUR'} ${Number(registration.priceAmount).toFixed(2)}`
+                    : formatCurrency(tournament?.entryFee || 0)}
                 </p>
+                {registration.paid && registration.paidAmount != null && (
+                  <p className="text-sm text-green-600 mt-1">Paid: {registration.priceCurrency || 'EUR'} {Number(registration.paidAmount).toFixed(2)}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500 mb-1">Payment Status</p>
@@ -293,7 +301,7 @@ export default function RegistrationDetailPage() {
                 </Badge>
               </div>
             </div>
-            {registration.status === 'APPROVED' && registration.paymentStatus !== 'COMPLETED' && (
+            {(registration.status === 'APPROVED' || registration.status === 'PENDING_PAYMENT') && registration.paymentStatus !== 'COMPLETED' && (
               <div className="mt-4">
                 <Button variant="primary" className="w-full">
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

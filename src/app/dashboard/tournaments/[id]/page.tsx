@@ -105,6 +105,7 @@ export default function TournamentDetailPage() {
   const getRegistrationStatusBadge = (status: RegistrationStatus) => {
     const variants: Record<RegistrationStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       'PENDING': 'warning',
+      'PENDING_PAYMENT': 'info',
       'APPROVED': 'success',
       'REJECTED': 'danger',
       'WITHDRAWN': 'default',
@@ -127,6 +128,15 @@ export default function TournamentDetailPage() {
       fetchData();
     } catch (err: any) {
       setError('Failed to approve registration without payment');
+    }
+  };
+
+  const handleMarkAsPaid = async (registrationId: string) => {
+    try {
+      await registrationService.markRegistrationAsPaid(registrationId);
+      fetchData();
+    } catch (err: any) {
+      setError('Failed to mark registration as paid');
     }
   };
 
@@ -313,6 +323,22 @@ export default function TournamentDetailPage() {
                       onClick={() => handleRejectRegistration(registration.id)}
                     >
                       {t('registration.reject')}
+                    </Button>
+                  </>
+                )}
+                {registration.status === 'PENDING_PAYMENT' && (
+                  <>
+                    {registration.priceAmount != null && Number(registration.priceAmount) > 0 && (
+                      <span className="text-sm font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                        {registration.priceCurrency || 'EUR'} {Number(registration.priceAmount).toFixed(2)}
+                      </span>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="paid"
+                      onClick={() => handleMarkAsPaid(registration.id)}
+                    >
+                      {t('registration.markAsPaid', 'Mark as Paid')}
                     </Button>
                   </>
                 )}

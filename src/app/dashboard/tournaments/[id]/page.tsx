@@ -383,56 +383,6 @@ export default function TournamentDetailPage() {
 
     return (
       <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
-          <Card>
-            <CardContent className="p-3 sm:p-4 text-center">
-              <p className="text-xs sm:text-sm text-gray-500">{t('registration.applied', 'Applied')}</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                {totalApplied}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('registration.approved', 'Approved')}</p>
-              <p className="text-2xl font-bold text-green-600">
-                {approvedCount}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('registration.pending')}</p>
-              <p className="text-2xl font-bold text-yellow-600">
-                {pendingCount}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('common.teams')}</p>
-              <p className="text-2xl font-bold text-primary">
-                {registeredTeams} / {maxTeams}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('tournament.entryFee')}</p>
-              <p className="text-2xl font-bold">{formatCurrency(entryFee)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-gray-500">{t('tournament.prizeMoney')}</p>
-              <p className="text-2xl font-bold text-green-600">
-                {formatCurrency(prizeMoney)}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Info */}
         <Card>
           <CardHeader>
@@ -440,6 +390,30 @@ export default function TournamentDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">{t('registration.applied', 'Applied')}</p>
+                <p className="font-medium">{totalApplied}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('registration.approved', 'Approved')}</p>
+                <p className="font-medium">{approvedCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('registration.pending')}</p>
+                <p className="font-medium">{pendingCount}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('common.teams')}</p>
+                <p className="font-medium">{registeredTeams} / {maxTeams}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.entryFee')}</p>
+                <p className="font-medium">{formatCurrency(entryFee)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('tournament.prizeMoney')}</p>
+                <p className="font-medium">{formatCurrency(prizeMoney)}</p>
+              </div>
               <div>
                 <p className="text-sm text-gray-500">{t('tournament.startDate')}</p>
                 <p className="font-medium">{formatDate(ageGroup?.startDate || tournament.startDate)}</p>
@@ -744,11 +718,12 @@ export default function TournamentDetailPage() {
 
         {tournament.status === 'PUBLISHED' && !tournament.isRegistrationClosed && (
           <Alert variant="info" className="flex items-center justify-between">
-            <span>{t('tournament.registrationOpenMessage')}</span>
-            <div className="flex gap-2">
+            <div className="flex w-full items-center gap-3">
+              <span className="min-w-0">{t('tournament.registrationOpenMessage')}</span>
               <Button
                 variant="danger"
                 size="sm"
+                className="ml-auto"
                 onClick={handleStopRegistrations}
                 isLoading={updatingRegistrations}
               >

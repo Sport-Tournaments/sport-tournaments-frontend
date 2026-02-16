@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -41,6 +41,26 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<CalendarView>('month');
+  const hasInitializedFromData = useRef(false);
+
+  useEffect(() => {
+    if (hasInitializedFromData.current || tournaments.length === 0) return;
+
+    const validStartDates = tournaments
+      .map((tournament) => parseISO(tournament.startDate))
+      .filter((date) => !Number.isNaN(date.getTime()))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    if (validStartDates.length === 0) return;
+
+    const today = new Date();
+    const nextOrCurrent = validStartDates.find((date) => date.getTime() >= today.getTime());
+    const initialDate = nextOrCurrent ?? validStartDates[0];
+
+    setCurrentDate(initialDate);
+    setSelectedDate(initialDate);
+    hasInitializedFromData.current = true;
+  }, [tournaments]);
 
   // Get days for month view
   const monthDays = useMemo(() => {
@@ -69,7 +89,12 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
   const getTournamentsForDate = (date: Date) => {
     return tournaments.filter((tournament) => {
       const startDate = parseISO(tournament.startDate);
-      const endDate = parseISO(tournament.endDate);
+      const endDate = parseISO(tournament.endDate || tournament.startDate);
+
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+        return false;
+      }
+
       return date >= startOfDay(startDate) && date <= endOfDay(endDate);
     });
   };

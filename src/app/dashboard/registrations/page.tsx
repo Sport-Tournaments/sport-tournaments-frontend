@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Modal } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Modal, ViewModeToggle, ViewMode } from '@/components/ui';
 import { getTournamentPublicPath } from '@/utils/helpers';
 import { registrationService } from '@/services';
 import type { Registration, RegistrationStatus } from '@/types';
@@ -21,6 +21,7 @@ export default function RegistrationsPage() {
     approved: 0,
     pending: 0,
   });
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   
   // Withdraw modal state
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
@@ -137,14 +138,22 @@ export default function RegistrationsPage() {
               {t('dashboard.manageRegistrations')}
             </p>
           </div>
-          <Link href="/main/tournaments" className="self-start sm:self-auto">
-            <Button variant="primary">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              {t('registrations.browseTournaments')}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              listLabel={t('common.list', 'List')}
+              gridLabel={t('common.grid', 'Grid')}
+            />
+            <Link href="/main/tournaments" className="self-start sm:self-auto">
+              <Button variant="primary">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {t('registrations.browseTournaments')}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Summary counts */}
@@ -227,7 +236,7 @@ export default function RegistrationsPage() {
           </Card>
         ) : (
           <>
-            <div className="space-y-4">
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}>
               {registrations.map((registration) => (
                 <Card key={registration.id} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">

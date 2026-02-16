@@ -73,3 +73,6 @@ export type { AgeGroupFormData } from './AgeGroupsManager';
 
 export { default as TournamentCalendar } from './TournamentCalendar';
 export { default as TournamentMap } from './TournamentMap';
+
+export { default as ViewModeToggle } from './ViewModeToggle';
+export type { ViewMode } from './ViewModeToggle';

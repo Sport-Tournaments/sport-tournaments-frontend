@@ -78,9 +78,33 @@ export default function DashboardPage() {
             )
           ),
           Promise.allSettled(
-            tournamentData.map((tournament) =>
-              registrationService.getRegistrationStatistics(tournament.id)
-            )
+            tournamentData.map(async (tournament) => {
+              const hasAgeGroups = !!(tournament.ageGroups && tournament.ageGroups.length > 0);
+
+              if (hasAgeGroups) {
+                const ageGroupStatsRes = await registrationService.getRegistrationStatisticsByAgeGroup(tournament.id);
+                const byAgeGroup = ageGroupStatsRes?.data?.byAgeGroup || [];
+
+                return byAgeGroup.reduce(
+                  (acc, group) => {
+                    acc.total += group.total || 0;
+                    acc.approved += group.approved || 0;
+                    acc.pending += group.pending || 0;
+                    return acc;
+                  },
+                  { total: 0, approved: 0, pending: 0 }
+                );
+              }
+
+              const statsRes = await registrationService.getRegistrationStatistics(tournament.id);
+              const stats = statsRes?.data;
+
+              return {
+                total: stats?.total || 0,
+                approved: stats?.approved || 0,
+                pending: stats?.pending || 0,
+              };
+            })
           ),
         ]);
 
@@ -92,7 +116,7 @@ export default function DashboardPage() {
         const aggregated = statisticsResults.reduce(
           (acc, result) => {
             if (result.status !== 'fulfilled') return acc;
-            const statsData = result.value?.data;
+            const statsData = result.value;
             if (!statsData) return acc;
             acc.total += statsData.total || 0;
             acc.approved += statsData.approved || 0;

@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Input, Alert } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Input, Alert, ViewModeToggle, ViewMode } from '@/components/ui';
 import { playerService } from '@/services';
 import type { Player } from '@/types';
 
@@ -14,6 +14,7 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const fetchPlayers = useCallback(async () => {
     try {
@@ -68,14 +69,22 @@ export default function PlayersPage() {
               Manage players across your teams
             </p>
           </div>
-          <Link href="/dashboard/players/create" className="self-start sm:self-auto">
-            <Button variant="primary">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Player
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              listLabel={t('common.list', 'List')}
+              gridLabel={t('common.grid', 'Grid')}
+            />
+            <Link href="/dashboard/players/create" className="self-start sm:self-auto">
+              <Button variant="primary">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Player
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Search */}
@@ -107,7 +116,7 @@ export default function PlayersPage() {
               </Link>
             </CardContent>
           </Card>
-        ) : (
+        ) : viewMode === 'list' ? (
           <Card>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -194,6 +203,59 @@ export default function PlayersPage() {
               </div>
             </CardContent>
           </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {players.map((player) => (
+              <Card key={player.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-semibold text-primary">
+                        {player.firstname.charAt(0)}{player.lastname.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <Link href={`/dashboard/players/${player.id}`} className="font-medium text-gray-900 hover:text-primary">
+                        {player.firstname} {player.lastname}
+                      </Link>
+                      <p className="text-sm text-gray-500">
+                        {calculateAge(player.dateOfBirth)} years old
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600 mb-3">
+                    DOB: {new Date(player.dateOfBirth).toLocaleDateString()}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {player.teams && player.teams.length > 0 ? (
+                      player.teams.map((team) => (
+                        <Badge key={team.id} variant="info">
+                          {team.name}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-400">No teams</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link href={`/dashboard/players/${player.id}/edit`} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(player.id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
     </DashboardLayout>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Loading, Select } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Loading, Select, ViewModeToggle, ViewMode } from '@/components/ui';
 import { tournamentService, groupService, registrationService } from '@/services';
 import { Tournament, Group, AgeGroup } from '@/types';
 import { useAuthStore } from '@/store';
@@ -18,6 +18,7 @@ export default function GroupsPage() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const isOrganizer = user?.role === 'ORGANIZER' || user?.role === 'ADMIN';
 
   useEffect(() => {
@@ -209,6 +210,13 @@ export default function GroupsPage() {
               {t('groups.subtitle', 'Manage tournament groups and draw')}
             </p>
           </div>
+          <ViewModeToggle
+            mode={viewMode}
+            onChange={setViewMode}
+            listLabel={t('common.list', 'List')}
+            gridLabel={t('common.grid', 'Grid')}
+            className="self-start sm:self-auto"
+          />
         </div>
 
         {/* Tournament Selector */}
@@ -286,7 +294,7 @@ export default function GroupsPage() {
             <Loading size="lg" />
           </div>
         ) : groups.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}>
             {groups.map((group) => (
               <Card key={group.id}>
                 <CardHeader>

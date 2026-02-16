@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, ViewModeToggle, ViewMode } from '@/components/ui';
 import { notificationService } from '@/services';
 import { Notification } from '@/types';
 import { formatRelativeTime } from '@/utils/date';
@@ -14,6 +14,7 @@ const PAGE_SIZE = 20;
 export default function NotificationsPage() {
   const { t } = useTranslation();
   const [localNotifications, setLocalNotifications] = useState<Notification[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const fetchNotifications = useCallback(async (page: number) => {
     const response = await notificationService.getNotifications({ page, pageSize: PAGE_SIZE });
@@ -225,16 +226,24 @@ export default function NotificationsPage() {
               </p>
             )}
           </div>
-          {unreadCount > 0 && (
-            <Button variant="outline" onClick={handleMarkAllAsRead} className="self-start sm:self-auto">
-              {t('notifications.markAllRead')}
-            </Button>
-          )}
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              listLabel={t('common.list', 'List')}
+              gridLabel={t('common.grid', 'Grid')}
+            />
+            {unreadCount > 0 && (
+              <Button variant="outline" onClick={handleMarkAllAsRead} className="self-start sm:self-auto">
+                {t('notifications.markAllRead')}
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Notifications List */}
         {mergedNotifications.length > 0 ? (
-          <div className="space-y-4">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}>
             {mergedNotifications.map((notification) => (
               <Card 
                 key={notification.id}

@@ -198,6 +198,35 @@ export default function TournamentDetailPage() {
   const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
   const registeredTeamsDisplay = statistics?.overall?.approved ?? tournament.registeredTeams ?? registrations.length ?? 0;
 
+  const inferRegistrationAgeGroupId = (registration: Registration): string | undefined => {
+    if (registration.ageGroupId) return registration.ageGroupId;
+    if (!tournament.ageGroups || tournament.ageGroups.length === 0) return undefined;
+
+    const team = registration.team as (Registration['team'] & { birthyear?: number; ageCategory?: string }) | undefined;
+    if (!team) return undefined;
+
+    if (typeof team.birthyear === 'number') {
+      const byBirthYear = tournament.ageGroups.find((ageGroup) => ageGroup.birthYear === team.birthyear);
+      if (byBirthYear?.id) return byBirthYear.id;
+    }
+
+    if (team.ageCategory) {
+      const byCategory = tournament.ageGroups.find(
+        (ageGroup) => ageGroup.ageCategory === team.ageCategory,
+      );
+      if (byCategory?.id) return byCategory.id;
+    }
+
+    return undefined;
+  };
+
+  const getScopedRegistrations = (ageGroupId?: string) => {
+    if (!ageGroupId) return registrations;
+    return registrations.filter(
+      (reg) => inferRegistrationAgeGroupId(reg) === ageGroupId,
+    );
+  };
+
   const statsByAgeGroupId = new Map(
     (statistics?.byAgeGroup || []).map((stat) => [stat.ageGroupId, stat])
   );
@@ -300,32 +329,27 @@ export default function TournamentDetailPage() {
 
   const buildOverviewTab = (ageGroup?: AgeGroup) => {
     const ageGroupId = ageGroup?.id;
-    const scopedRegistrations = ageGroupId
-      ? registrations.filter((reg) => reg.ageGroupId === ageGroupId)
-      : registrations;
+    const scopedRegistrations = getScopedRegistrations(ageGroupId);
 
     const maxTeams = ageGroup
       ? getAgeGroupMaxTeams(ageGroup)
       : maxTeamsDisplay;
 
     const ageGroupStats = getAgeGroupStats(ageGroupId);
-    const totalApplied = ageGroupStats?.total
-      ?? (ageGroupId
-        ? scopedRegistrations.length
-        : statistics?.overall?.total ?? scopedRegistrations.length);
-    const approvedCount = ageGroupStats?.approved
-      ?? (ageGroupId
-        ? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length
-        : statistics?.overall?.approved
-          ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length);
-    const pendingCount = ageGroupStats?.pending
-      ?? (ageGroupId
-        ? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length
-        : statistics?.overall?.pending
-          ?? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length);
+    const totalApplied = ageGroupId
+      ? scopedRegistrations.length
+      : statistics?.overall?.total ?? scopedRegistrations.length;
+    const approvedCount = ageGroupId
+      ? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length
+      : statistics?.overall?.approved
+        ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length;
+    const pendingCount = ageGroupId
+      ? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length
+      : statistics?.overall?.pending
+        ?? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length;
 
     const registeredTeams = ageGroup
-      ? (ageGroup.currentTeams ?? approvedCount)
+      ? approvedCount
       : (statistics?.overall?.approved ?? registeredTeamsDisplay);
 
     const entryFee = ageGroup?.participationFee ?? tournament.entryFee ?? 0;
@@ -519,9 +543,7 @@ export default function TournamentDetailPage() {
 
   const buildTabsForAgeGroup = (ageGroup?: AgeGroup) => {
     const ageGroupId = ageGroup?.id;
-    const scopedRegistrations = ageGroupId
-      ? registrations.filter((reg) => reg.ageGroupId === ageGroupId)
-      : registrations;
+    const scopedRegistrations = getScopedRegistrations(ageGroupId);
 
     const ageGroupStats = getAgeGroupStats(ageGroupId);
     const totalApplied = ageGroupStats?.total
@@ -623,8 +645,8 @@ export default function TournamentDetailPage() {
       return statistics?.overall?.pending
         ?? registrations.filter((reg) => reg.status === 'PENDING').length;
     }
-    return registrations.filter(
-      (reg) => reg.ageGroupId === ageGroupId && reg.status === 'PENDING'
+    return getScopedRegistrations(ageGroupId).filter(
+      (reg) => reg.status === 'PENDING'
     ).length;
   };
 

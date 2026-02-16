@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Input, Alert } from '@/components/ui';
+import { Card, CardContent, Button, Badge, Loading, Input, Alert, ViewModeToggle, ViewMode } from '@/components/ui';
 import { teamService, clubService } from '@/services';
 import type { Team, Club } from '@/types';
 
@@ -16,6 +16,7 @@ export default function TeamsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [selectedClubId, setSelectedClubId] = useState<string>('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const fetchTeams = useCallback(async () => {
     try {
@@ -76,14 +77,22 @@ export default function TeamsPage() {
               Manage your teams and assign players
             </p>
           </div>
-          <Link href="/dashboard/teams/create" className="self-start sm:self-auto">
-            <Button variant="primary">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Create Team
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <ViewModeToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              listLabel={t('common.list', 'List')}
+              gridLabel={t('common.grid', 'Grid')}
+            />
+            <Link href="/dashboard/teams/create" className="self-start sm:self-auto">
+              <Button variant="primary">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create Team
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}
@@ -128,7 +137,7 @@ export default function TeamsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6' : 'space-y-4'}>
             {teams.map((team) => (
               <Card key={team.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-4 sm:p-6">

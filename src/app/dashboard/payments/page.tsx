@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Badge, Loading } from '@/components/ui';
+import { Card, CardContent, Badge, Loading, ViewModeToggle, ViewMode } from '@/components/ui';
 import { registrationService } from '@/services';
 import type { Registration, PaymentStatus } from '@/types';
 import { formatDateTime } from '@/utils/date';
@@ -13,6 +13,7 @@ export default function PaymentsPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   useEffect(() => {
     fetchPayments();
@@ -65,13 +66,22 @@ export default function PaymentsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            {t('nav.payments')}
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            {t('payments.subtitle')}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              {t('nav.payments')}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
+              {t('payments.subtitle')}
+            </p>
+          </div>
+          <ViewModeToggle
+            mode={viewMode}
+            onChange={setViewMode}
+            listLabel={t('common.list', 'List')}
+            gridLabel={t('common.grid', 'Grid')}
+            className="self-start sm:self-auto"
+          />
         </div>
 
         {loading ? (
@@ -96,7 +106,7 @@ export default function PaymentsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className={viewMode === 'grid' ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : 'space-y-4'}>
             {registrations.map((registration) => (
               <Card key={registration.id}>
                 <CardContent className="p-4 sm:p-6">

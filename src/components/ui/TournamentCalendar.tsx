@@ -43,12 +43,23 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
   const [view, setView] = useState<CalendarView>('month');
   const hasInitializedFromData = useRef(false);
 
+  // Helper to safely parse ISO date strings
+  const safeParseDateString = (dateString: string | null | undefined): Date | null => {
+    if (!dateString) return null;
+    try {
+      const parsed = parseISO(dateString);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    } catch {
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (hasInitializedFromData.current || tournaments.length === 0) return;
 
     const validStartDates = tournaments
-      .map((tournament) => parseISO(tournament.startDate))
-      .filter((date) => !Number.isNaN(date.getTime()))
+      .map((tournament) => safeParseDateString(tournament.startDate))
+      .filter((date): date is Date => date !== null)
       .sort((a, b) => a.getTime() - b.getTime());
 
     if (validStartDates.length === 0) return;
@@ -88,10 +99,10 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
 
   const getTournamentsForDate = (date: Date) => {
     return tournaments.filter((tournament) => {
-      const startDate = parseISO(tournament.startDate);
-      const endDate = parseISO(tournament.endDate || tournament.startDate);
+      const startDate = safeParseDateString(tournament.startDate);
+      const endDate = safeParseDateString(tournament.endDate || tournament.startDate);
 
-      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+      if (!startDate || !endDate) {
         return false;
       }
 
@@ -375,7 +386,11 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                         <div>
                           <h4 className="font-medium text-gray-900">{tournament.name}</h4>
                           <p className="text-sm text-gray-600 mt-1">
-                            {format(parseISO(tournament.startDate), 'MMM d')} - {format(parseISO(tournament.endDate), 'MMM d, yyyy')}
+                            {tournament.startDate && tournament.endDate ? (
+                              <>{format(safeParseDateString(tournament.startDate)!, 'MMM d')} - {format(safeParseDateString(tournament.endDate)!, 'MMM d, yyyy')}</>
+                            ) : (
+                              <span className="text-gray-400">Date TBD</span>
+                            )}
                           </p>
                           <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -420,7 +435,11 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                     <div>
                       <h4 className="font-medium text-gray-900">{tournament.name}</h4>
                       <p className="text-sm text-gray-500 mt-1">
-                        {format(parseISO(tournament.startDate), 'MMM d')} - {format(parseISO(tournament.endDate), 'MMM d, yyyy')}
+                        {tournament.startDate && tournament.endDate ? (
+                          <>{format(safeParseDateString(tournament.startDate)!, 'MMM d')} - {format(safeParseDateString(tournament.endDate)!, 'MMM d, yyyy')}</>
+                        ) : (
+                          <span className="text-gray-400">Date TBD</span>
+                        )}
                       </p>
                       <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -15,6 +15,7 @@ export interface Team {
   birthyear?: number | null;
   coach?: string | null;
   clubId: string;
+  logo?: string;
   club?: {
     id: string;
     name: string;

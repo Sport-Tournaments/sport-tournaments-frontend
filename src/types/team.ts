@@ -11,9 +11,9 @@ export interface Player {
 export interface Team {
   id: string;
   name: string;
-  ageCategory: string;
-  birthyear: number;
-  coach: string;
+  ageCategory?: string | null;
+  birthyear?: number | null;
+  coach?: string | null;
   clubId: string;
   club?: {
     id: string;
@@ -28,9 +28,9 @@ export interface Team {
 export interface CreateTeamDto {
   clubId: string;
   name: string;
-  ageCategory: string;
-  birthyear: number;
-  coach: string;
+  ageCategory?: string;
+  birthyear?: number;
+  coach?: string;
   playerIds?: string[];
 }
 

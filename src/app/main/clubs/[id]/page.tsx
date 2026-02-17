@@ -192,14 +192,14 @@ export default function ClubDetailPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar
-                        src={team.logo}
+                        src={team.club?.logo || club.logo}
                         alt={team.name}
                         size="md"
                       />
                       <div>
                         <p className="font-medium">{team.name}</p>
                         <p className="text-sm text-gray-500">
-                          {team.ageCategory} • {team.playerCount || 0} {t('common.players')}
+                          {team.ageCategory} • {team.players?.length || 0} {t('common.players')}
                         </p>
                       </div>
                     </div>

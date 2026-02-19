@@ -318,6 +318,7 @@ export default function TournamentsPage() {
     return variants[tournamentStatus] || "default";
   };
 
+
   return (
     <MainLayout>
       <div className="container mx-auto px-4 py-8">

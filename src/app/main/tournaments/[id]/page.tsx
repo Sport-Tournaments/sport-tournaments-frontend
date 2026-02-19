@@ -272,6 +272,17 @@ export default function TournamentDetailPage() {
     return `U${currentYear - birthYear}`;
   };
 
+  const getMatchHalvesLabel = (value?: AgeGroup['matchPeriodType']) => {
+    if (value === 'ONE_HALF') return t('tournaments.ageGroups.oneHalf', '1 half');
+    if (value === 'TWO_HALVES') return t('tournaments.ageGroups.twoHalves', '2 halves');
+    return '—';
+  };
+
+  const getHalfDurationLabel = (value?: number) => {
+    if (!value) return '—';
+    return `${value} ${t('common.minutes', 'min')}`;
+  };
+
   const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
     ageGroup.teamCount
       ?? ageGroup.maxTeams
@@ -495,6 +506,8 @@ export default function TournamentDetailPage() {
                         {ag.format && (
                           <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
                         )}
+                        <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ag.matchPeriodType)}</span>
+                        <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ag.halfDurationMinutes)}</span>
                         {groupMaxTeams > 0 && (
                           <span>
                             {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {groupMaxTeams}
@@ -586,6 +599,8 @@ export default function TournamentDetailPage() {
                   {ageGroup.format && (
                     <span>{t('tournament.format.label')}: {t(`tournament.format.${ageGroup.format}`)}</span>
                   )}
+                  <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ageGroup.matchPeriodType)}</span>
+                  <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ageGroup.halfDurationMinutes)}</span>
                   {ageGroup.level && (
                     <span>{t('tournament.level.label')}: {t(`tournament.level.${ageGroup.level}`)}</span>
                   )}

@@ -53,6 +53,11 @@ const GROUPS_COUNT_OPTIONS = Array.from({ length: 16 }, (_, i) => {
   };
 });
 
+const MATCH_PERIOD_TYPE_OPTIONS = [
+  { value: 'ONE_HALF', label: '1 half' },
+  { value: 'TWO_HALVES', label: '2 halves' },
+];
+
 // Generate birth years from current year down to U23
 const currentYear = new Date().getFullYear();
 const MIN_BIRTH_YEAR = currentYear - 23;
@@ -90,6 +95,8 @@ export interface AgeGroupFormData {
   locationAddress?: string;
   groupsCount?: number;
   teamsPerGroup?: number;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
   guaranteedMatches?: number;
   advancementOverride?: number;
 }
@@ -111,6 +118,8 @@ const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
   teamCount: 16,
   teamsPerGroup: 4,
   groupsCount: 1,
+  matchPeriodType: 'TWO_HALVES',
+  halfDurationMinutes: 15,
 };
 
 export function AgeGroupsManager({
@@ -451,6 +460,34 @@ export function AgeGroupsManager({
                           }
                           disabled={disabled}
                           helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
+                        />
+
+                        <Select
+                          label={t('tournaments.ageGroups.matchHalves', 'Match format')}
+                          options={MATCH_PERIOD_TYPE_OPTIONS}
+                          value={ageGroup.matchPeriodType || 'TWO_HALVES'}
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                            handleUpdateAgeGroup(index, {
+                              matchPeriodType: (e.target.value || 'TWO_HALVES') as 'ONE_HALF' | 'TWO_HALVES',
+                            })
+                          }
+                          disabled={disabled}
+                        />
+
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}
+                          value={ageGroup.halfDurationMinutes ?? ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleUpdateAgeGroup(index, {
+                              halfDurationMinutes: e.target.value ? parseInt(e.target.value) : undefined,
+                            })
+                          }
+                          min={5}
+                          max={60}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.halfDurationHelp', 'For 2 halves, this is each half duration (common: 15). For 1 half, use 20-25.')}
                         />
                       </>
                     )}

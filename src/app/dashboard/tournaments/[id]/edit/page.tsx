@@ -274,6 +274,8 @@ export default function EditTournamentPage() {
               locationAddress: ag.locationAddress,
               groupsCount: ag.groupsCount,
               teamsPerGroup: ag.teamsPerGroup,
+              matchPeriodType: (ag as any).matchPeriodType,
+              halfDurationMinutes: (ag as any).halfDurationMinutes,
             }))
           : [];
       setAgeGroups(mappedAgeGroups);
@@ -392,7 +394,6 @@ export default function EditTournamentPage() {
             const {
               minTeams,
               maxTeams,
-              numberOfMatches,
               guaranteedMatches,
               ...allowed
             } = ag as any;

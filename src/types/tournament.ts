@@ -72,6 +72,8 @@ export interface AgeGroup {
   participationFee?: number;
   groupsCount?: number;
   teamsPerGroup?: number;
+  matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
+  halfDurationMinutes?: number;
 }
 
 export interface TournamentLocation {

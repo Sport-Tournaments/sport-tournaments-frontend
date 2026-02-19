@@ -55,6 +55,26 @@ export default function TournamentsPage() {
     : "";
   const dateOnlyTo = startDateToInput ? startDateToInput.split("T")[0] : "";
 
+  const getEffectiveTournamentStatus = (
+    tournament: Tournament,
+  ): TournamentStatus => {
+    if (tournament.status === "CANCELLED") {
+      return "CANCELLED";
+    }
+
+    if (tournament.endDate) {
+      const endDate = new Date(tournament.endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (!Number.isNaN(endDate.getTime()) && endDate < today) {
+        return "COMPLETED";
+      }
+    }
+
+    return tournament.status === "DRAFT" ? "PUBLISHED" : tournament.status;
+  };
+
   const fetchTournaments = useCallback(
     async (page: number) => {
       const params: Record<string, unknown> = {
@@ -62,7 +82,7 @@ export default function TournamentsPage() {
         pageSize: PAGE_SIZE,
       };
       if (debouncedSearch) params.search = debouncedSearch;
-      if (status) params.status = status;
+      if (status && status !== "COMPLETED") params.status = status;
       if (ageCategory) params.ageCategory = ageCategory;
       if (level) params.level = level;
       if (country) params.country = country;
@@ -116,8 +136,16 @@ export default function TournamentsPage() {
         totalPages = resData.totalPages || resData.meta?.totalPages || 1;
       }
 
+      const filteredTournamentData =
+        status === "COMPLETED"
+          ? tournamentData.filter(
+              (tournament) =>
+                getEffectiveTournamentStatus(tournament) === "COMPLETED",
+            )
+          : tournamentData;
+
       return {
-        items: tournamentData,
+        items: filteredTournamentData,
         hasMore: page < totalPages,
         totalPages,
       };
@@ -275,11 +303,7 @@ export default function TournamentsPage() {
     setSortOrder("ASC");
   };
 
-  const normalizeStatus = (tournamentStatus: TournamentStatus) =>
-    tournamentStatus === "DRAFT" ? "PUBLISHED" : tournamentStatus;
-
   const getStatusBadge = (tournamentStatus: TournamentStatus) => {
-    const normalizedStatus = normalizeStatus(tournamentStatus);
     const variants: Partial<
       Record<
         TournamentStatus,
@@ -291,7 +315,7 @@ export default function TournamentsPage() {
       COMPLETED: "success",
       CANCELLED: "danger",
     };
-    return variants[normalizedStatus] || "default";
+    return variants[tournamentStatus] || "default";
   };
 
   return (
@@ -675,9 +699,13 @@ export default function TournamentsPage() {
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 right-2">
-                          <Badge variant={getStatusBadge(tournament.status)}>
+                          <Badge
+                            variant={getStatusBadge(
+                              getEffectiveTournamentStatus(tournament),
+                            )}
+                          >
                             {t(
-                              `tournament.status.${normalizeStatus(tournament.status)}`,
+                              `tournament.status.${getEffectiveTournamentStatus(tournament)}`,
                             )}
                           </Badge>
                         </div>
@@ -689,8 +717,14 @@ export default function TournamentsPage() {
                           {tournament.name}
                         </h3>
                         {!tournament.bannerImage && (
-                          <Badge variant={getStatusBadge(tournament.status)}>
-                            {t(`tournament.status.${tournament.status}`)}
+                          <Badge
+                            variant={getStatusBadge(
+                              getEffectiveTournamentStatus(tournament),
+                            )}
+                          >
+                            {t(
+                              `tournament.status.${getEffectiveTournamentStatus(tournament)}`,
+                            )}
                           </Badge>
                         )}
                       </div>

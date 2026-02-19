@@ -60,18 +60,32 @@ export default function DashboardTournamentsPage() {
     fetchData: fetchTournaments,
   });
 
-  const normalizeStatus = (status: TournamentStatus) =>
-    status === 'DRAFT' ? 'PUBLISHED' : status;
+  const getEffectiveTournamentStatus = (tournament: Tournament): TournamentStatus => {
+    if (tournament.status === 'CANCELLED') {
+      return 'CANCELLED';
+    }
+
+    if (tournament.endDate) {
+      const endDate = new Date(tournament.endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (!Number.isNaN(endDate.getTime()) && endDate < today) {
+        return 'COMPLETED';
+      }
+    }
+
+    return tournament.status === 'DRAFT' ? 'PUBLISHED' : tournament.status;
+  };
 
   const getStatusBadge = (status: TournamentStatus) => {
-    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[normalizedStatus] || 'default';
+    return variants[status] || 'default';
   };
 
   const getMaxTeamsDisplay = (tournament: Tournament) => {
@@ -180,8 +194,8 @@ export default function DashboardTournamentsPage() {
                             <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 hover:text-primary">
                               {tournament.name}
                             </Link>
-                            <Badge variant={getStatusBadge(tournament.status)}>
-                              {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
+                            <Badge variant={getStatusBadge(getEffectiveTournamentStatus(tournament))}>
+                              {t(`tournament.status.${getEffectiveTournamentStatus(tournament)}`)}
                             </Badge>
                           </div>
                           <div className="text-sm text-gray-500">
@@ -238,8 +252,8 @@ export default function DashboardTournamentsPage() {
                               {tournament.name}
                             </Link>
                             <div className="mt-1">
-                              <Badge variant={getStatusBadge(tournament.status)}>
-                                {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
+                              <Badge variant={getStatusBadge(getEffectiveTournamentStatus(tournament))}>
+                                {t(`tournament.status.${getEffectiveTournamentStatus(tournament)}`)}
                               </Badge>
                             </div>
                             <div className="text-sm text-gray-500 mt-2">

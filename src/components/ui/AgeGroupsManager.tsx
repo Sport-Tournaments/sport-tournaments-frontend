@@ -100,6 +100,7 @@ export interface AgeGroupFormData {
   halfDurationMinutes?: number;
   guaranteedMatches?: number;
   advancementOverride?: number;
+  notes?: string;
 }
 
 interface AgeGroupsManagerProps {
@@ -255,17 +256,24 @@ export function AgeGroupsManager({
     return getAutoDisplayLabel(ag.birthYear);
   };
 
-  const getLocationDifferentLabel = () =>
-    tournamentLocation
+  const getLocationDifferentLabel = () => {
+    const locationStr =
+      typeof tournamentLocation === 'string' &&
+      tournamentLocation !== '[object Object]' &&
+      tournamentLocation.trim() !== ''
+        ? tournamentLocation
+        : null;
+    return locationStr
       ? t(
           'tournaments.ageGroups.locationDifferentLabel',
           'This games takes place on a different location than {{location}}',
-          { location: tournamentLocation }
+          { location: locationStr }
         )
       : t(
           'tournaments.ageGroups.locationDifferentLabelFallback',
           'This games takes place on a different location than the tournament address'
         );
+  };
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -606,6 +614,28 @@ export function AgeGroupsManager({
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.registrationEndDateHelp', 'Leave empty to use tournament default')}
                     />
+
+                    {/* Notes */}
+                    <div className="col-span-1 sm:col-span-2 lg:col-span-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('tournaments.ageGroups.notes', 'Notes')}
+                        <span className="ml-1 text-xs font-normal text-gray-400">{t('common.optional', '(optional)')}</span>
+                      </label>
+                      <textarea
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+                        rows={3}
+                        placeholder={t('tournaments.ageGroups.notesPlaceholder', 'e.g. Special rules, equipment requirements, or remarks for this category...')}
+                        value={ageGroup.notes || ''}
+                        onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                          handleUpdateAgeGroup(index, { notes: e.target.value || undefined })
+                        }
+                        disabled={disabled}
+                        maxLength={2000}
+                      />
+                      {ageGroup.notes && (
+                        <p className="mt-1 text-xs text-gray-400">{ageGroup.notes.length}/2000</p>
+                      )}
+                    </div>
 
                     {/* Location Override */}
                     <div className="space-y-3">

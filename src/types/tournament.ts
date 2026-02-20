@@ -75,6 +75,7 @@ export interface AgeGroup {
   teamsPerGroup?: number;
   matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
   halfDurationMinutes?: number;
+  notes?: string;
 }
 
 export interface TournamentLocation {

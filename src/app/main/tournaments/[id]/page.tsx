@@ -557,6 +557,12 @@ export default function TournamentDetailPage() {
                         {ag.participationFee !== undefined && ag.participationFee !== null && (
                           <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
                         )}
+                        {ag.notes && (
+                          <div className="col-span-2 mt-1 text-xs text-gray-600 italic">
+                            <span className="font-medium not-italic text-gray-500">{t('tournaments.ageGroups.notes', 'Notes')}: </span>
+                            {ag.notes}
+                          </div>
+                        )}
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-xs text-gray-500">
@@ -619,6 +625,12 @@ export default function TournamentDetailPage() {
                     <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ageGroup.participationFee}</span>
                   )}
                 </div>
+                {ageGroup.notes && (
+                  <div className="mt-2 text-xs text-gray-600 italic">
+                    <span className="font-medium not-italic text-gray-500">{t('tournaments.ageGroups.notes', 'Notes')}: </span>
+                    {ageGroup.notes}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

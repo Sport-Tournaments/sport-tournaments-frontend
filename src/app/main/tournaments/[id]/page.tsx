@@ -429,6 +429,12 @@ export default function TournamentDetailPage() {
                   <span className="font-medium">{tournament.numberOfMatches}</span>
                 </div>
               )}
+              {tournament.numberOfFields && (
+                <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+                  <span className="text-gray-600">{t('tournament.numberOfFields', 'Number of Fields')}</span>
+                  <span className="font-medium">{tournament.numberOfFields}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                 <span className="text-gray-600">{t('tournament.teamsRegistered', 'Teams Registered')}</span>
                 <span className="font-medium">{ageGroupCurrentTeams} / {ageGroupMaxTeams}</span>

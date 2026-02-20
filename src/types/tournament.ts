@@ -71,6 +71,7 @@ export interface AgeGroup {
   locationAddress?: string;
   participationFee?: number;
   groupsCount?: number;
+  fieldsCount?: number;
   teamsPerGroup?: number;
   matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
   halfDurationMinutes?: number;
@@ -140,6 +141,7 @@ export interface Tournament {
   groupCount?: number;
   teamsPerGroup?: number;
   thirdPlaceMatch?: boolean;
+  numberOfFields?: number;
   regulationsType?: RegulationsType;
   regulationsData?: Record<string, unknown>;
   brochureUrl?: string;
@@ -190,6 +192,7 @@ export interface CreateTournamentDto {
   groupCount?: number;
   teamsPerGroup?: number;
   thirdPlaceMatch?: boolean;
+  numberOfFields?: number;
   regulationsType?: RegulationsType;
   regulationsData?: Record<string, unknown>;
   brochureUrl?: string;

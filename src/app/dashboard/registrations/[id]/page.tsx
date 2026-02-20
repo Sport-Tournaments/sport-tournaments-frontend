@@ -261,9 +261,9 @@ export default function RegistrationDetailPage() {
                     <p className="font-medium">
                       {registration.club.organizer.firstName} {registration.club.organizer.lastName}
                     </p>
-                    {(registration.emergencyContact || registration.club.organizer.phone) && (
+                    {registration.emergencyContact && (
                       <p className="text-sm text-gray-500">
-                        {registration.emergencyContact || registration.club.organizer.phone}
+                        {registration.emergencyContact}
                       </p>
                     )}
                   </div>

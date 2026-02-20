@@ -298,9 +298,12 @@ export default function TournamentDetailPage() {
                     )}
                   </div>
                 )}
-                {registration.club?.organizer && (
+                {(registration.club?.organizer || registration.emergencyContact) && (
                   <div className="text-sm text-gray-400">
-                    Contact: {registration.club.organizer.firstName} {registration.club.organizer.lastName}
+                    Contact:{registration.club?.organizer ? ` ${registration.club.organizer.firstName} ${registration.club.organizer.lastName}` : ''}
+                    {registration.emergencyContact && (
+                      <span className="ml-1">· {registration.emergencyContact}</span>
+                    )}
                   </div>
                 )}
               </td>

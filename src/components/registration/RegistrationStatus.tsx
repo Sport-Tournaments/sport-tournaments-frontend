@@ -206,16 +206,18 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
               </p>
             </div>
           )}
-          {registration.club?.organizer && (
+          {(registration.club?.organizer || registration.emergencyContact) && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 {t('registration.status.emergencyContact', 'Emergency Contact')}
               </p>
-              <p className="mt-1 font-medium text-gray-900">
-                {`${registration.club.organizer.firstName} ${registration.club.organizer.lastName}`}
-              </p>
-              {registration.club.organizer.phone && (
-                <p className="text-xs text-gray-500">{registration.club.organizer.phone}</p>
+              {registration.club?.organizer && (
+                <p className="mt-1 font-medium text-gray-900">
+                  {`${registration.club.organizer.firstName} ${registration.club.organizer.lastName}`}
+                </p>
+              )}
+              {registration.emergencyContact && (
+                <p className="text-xs text-gray-500">{registration.emergencyContact}</p>
               )}
             </div>
           )}

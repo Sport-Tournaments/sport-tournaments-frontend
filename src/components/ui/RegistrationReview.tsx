@@ -149,11 +149,11 @@ export function RegistrationReviewCard({
                 Players: {registration.numberOfPlayers || registration.team?.players?.length}
               </p>
             )}
-            {registration.club?.organizer && (
+            {(registration.club?.organizer || registration.emergencyContact) && (
               <p className="text-sm text-gray-500 mt-1">
-                Emergency Contact: {registration.club.organizer.firstName} {registration.club.organizer.lastName}
-                {registration.club.organizer.phone && (
-                  <span className="ml-2 text-gray-400">· {registration.club.organizer.phone}</span>
+                Emergency Contact:{registration.club?.organizer ? ` ${registration.club.organizer.firstName} ${registration.club.organizer.lastName}` : ''}
+                {registration.emergencyContact && (
+                  <span className="ml-2 text-gray-400">· {registration.emergencyContact}</span>
                 )}
               </p>
             )}

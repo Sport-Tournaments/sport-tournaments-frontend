@@ -14,6 +14,7 @@ export interface Team {
   ageCategory?: string | null;
   birthyear?: number | null;
   coach?: string | null;
+  coachPhone?: string | null;
   clubId: string;
   logo?: string;
   club?: {
@@ -32,6 +33,7 @@ export interface CreateTeamDto {
   ageCategory?: string;
   birthyear?: number;
   coach?: string;
+  coachPhone?: string;
   playerIds?: string[];
 }
 
@@ -41,6 +43,7 @@ export interface UpdateTeamDto {
   ageCategory?: string;
   birthyear?: number;
   coach?: string;
+  coachPhone?: string;
   playerIds?: string[];
 }
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, Modal, Alert, Loading, Input, Select } from '@/components/ui';
-import { registrationService, clubService, teamService } from '@/services';
+import { registrationService, clubService, teamService, userService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
 import type { Club, Tournament, Registration, Team } from '@/types';
 import { cn } from '@/utils/helpers';
@@ -60,6 +60,20 @@ export function RegistrationWizard({
   const [coachPhone, setCoachPhone] = useState('');
   const [numberOfPlayers, setNumberOfPlayers] = useState<number | undefined>();
   const [emergencyContact, setEmergencyContact] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+
+  // Fetch full user profile (for phone) when wizard opens
+  useEffect(() => {
+    if (isOpen) {
+      userService.getUserProfile().then((res) => {
+        if (res.data?.phone) {
+          setUserPhone(res.data.phone);
+        }
+      }).catch(() => {});
+    } else {
+      setUserPhone('');
+    }
+  }, [isOpen]);
 
   // Fetch clubs on mount
   useEffect(() => {
@@ -77,22 +91,16 @@ export function RegistrationWizard({
   // Auto-fill fields when club is selected
   useEffect(() => {
     if (selectedClub) {
-      // Auto-fill contact phone as emergency contact
-      if (selectedClub.contactPhone) {
+      // Emergency contact = club account owner's phone number (the logged-in user IS the organizer)
+      if (userPhone) {
+        setEmergencyContact(userPhone);
+      } else if (selectedClub.contactPhone) {
         setEmergencyContact(selectedClub.contactPhone);
       } else if (selectedClub.phone) {
         setEmergencyContact(selectedClub.phone);
       }
       
-      // Auto-fill coach name from current user (they are the club owner/organizer)
-      if (user) {
-        const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-        if (userName) {
-          setCoachName(userName);
-        }
-      }
-      
-      // Auto-fill coach phone from contact phone
+      // Auto-fill coach phone from team's coachPhone, then fallback to club/user phone
       if (selectedClub.contactPhone) {
         setCoachPhone(selectedClub.contactPhone);
       } else if (selectedClub.phone) {
@@ -102,7 +110,32 @@ export function RegistrationWizard({
       // Set default number of players (typical youth team size)
       setNumberOfPlayers(18);
     }
-  }, [selectedClub, user]);
+  }, [selectedClub, userPhone]);
+
+  // Auto-fill coach name and player count when team is selected
+  useEffect(() => {
+    if (selectedTeamId && teams.length > 0) {
+      const selectedTeam = teams.find((t) => t.id === selectedTeamId);
+      if (selectedTeam) {
+        // Pre-fill coach name from the team's assigned coach
+        if (selectedTeam.coach) {
+          setCoachName(selectedTeam.coach);
+        } else {
+          setCoachName('');
+        }
+        // Pre-fill coach phone from the team's assigned coach phone
+        if (selectedTeam.coachPhone) {
+          setCoachPhone(selectedTeam.coachPhone);
+        } else {
+          setCoachPhone('');
+        }
+        // Pre-fill player count from team's players array if available
+        if (selectedTeam.players && selectedTeam.players.length > 0) {
+          setNumberOfPlayers(selectedTeam.players.length);
+        }
+      }
+    }
+  }, [selectedTeamId, teams]);
 
   useEffect(() => {
     if (selectedClub) {
@@ -674,5 +707,3 @@ export function RegistrationWizard({
     </Modal>
   );
 }
-
-export default RegistrationWizard;

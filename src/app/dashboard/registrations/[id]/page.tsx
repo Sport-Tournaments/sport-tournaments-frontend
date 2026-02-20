@@ -233,7 +233,11 @@ export default function RegistrationDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Coach Name</p>
-                <p className="font-medium">{registration.coachName || '-'}</p>
+                <p className="font-medium">{registration.coachName || registration.team?.coach || '-'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Coach Phone</p>
+                <p className="font-medium">{registration.coachPhone || registration.team?.coachPhone || '-'}</p>
               </div>
               {registration.club && (
                 <div>
@@ -252,19 +256,30 @@ export default function RegistrationDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Emergency Contact</p>
-                <p className="font-medium">{registration.emergencyContact || '-'}</p>
+                {registration.club?.organizer ? (
+                  <div>
+                    <p className="font-medium">
+                      {registration.club.organizer.firstName} {registration.club.organizer.lastName}
+                    </p>
+                    {registration.emergencyContact && (
+                      <p className="text-sm text-gray-500">
+                        {registration.emergencyContact}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="font-medium">{registration.emergencyContact || '-'}</p>
+                )}
               </div>
               <div>
-                <p className="text-sm text-gray-500">Coach Phone</p>
-                <p className="font-medium">{registration.coachPhone || '-'}</p>
+                <p className="text-sm text-gray-500">Number of Players</p>
+                <p className="font-medium">
+                  {registration.numberOfPlayers || registration.team?.players?.length || '-'}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Registration Date</p>
                 <p className="font-medium">{formatDateTime(registration.createdAt)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Number of Players</p>
-                <p className="font-medium">{registration.numberOfPlayers || '-'}</p>
               </div>
             </div>
             {registration.notes && (

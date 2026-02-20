@@ -286,10 +286,22 @@ export default function TournamentDetailPage() {
                   Team: {registration.team?.name || 'Not specified'}
                 </div>
                 <div className="text-sm text-gray-500">
-                  Club: {registration.club?.name || registration.coachName || '-'}
+                  Club: {registration.club?.name || '-'}
                 </div>
-                {registration.coachPhone && (
-                  <div className="text-sm text-gray-500">{registration.coachPhone}</div>
+                {(registration.coachName || registration.team?.coach) && (
+                  <div className="text-sm text-gray-500">
+                    Coach: {registration.coachName || registration.team?.coach}
+                    {(registration.coachPhone || registration.team?.coachPhone) && (
+                      <span className="ml-1 text-gray-400">
+                        · {registration.coachPhone || registration.team?.coachPhone}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {registration.club?.organizer && (
+                  <div className="text-sm text-gray-400">
+                    Contact: {registration.club.organizer.firstName} {registration.club.organizer.lastName}
+                  </div>
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

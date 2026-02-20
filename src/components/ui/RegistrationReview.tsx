@@ -137,6 +137,24 @@ export function RegistrationReviewCard({
             {registration.coachName && (
               <p className="text-sm text-gray-500 mt-1">
                 Coach: {registration.coachName}
+                {(registration.coachPhone || registration.team?.coachPhone) && (
+                  <span className="ml-2 text-gray-400">
+                    · {registration.coachPhone || registration.team?.coachPhone}
+                  </span>
+                )}
+              </p>
+            )}
+            {(registration.numberOfPlayers || (registration.team?.players?.length ?? 0) > 0) && (
+              <p className="text-sm text-gray-500 mt-1">
+                Players: {registration.numberOfPlayers || registration.team?.players?.length}
+              </p>
+            )}
+            {registration.club?.organizer && (
+              <p className="text-sm text-gray-500 mt-1">
+                Emergency Contact: {registration.club.organizer.firstName} {registration.club.organizer.lastName}
+                {registration.club.organizer.phone && (
+                  <span className="ml-2 text-gray-400">· {registration.club.organizer.phone}</span>
+                )}
               </p>
             )}
             {registration.notes && (

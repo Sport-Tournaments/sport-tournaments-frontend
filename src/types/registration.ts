@@ -37,10 +37,20 @@ export interface Registration {
     country: string;
     city: string;
     logo?: string;
+    organizer?: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string;
+    };
   };
   team?: {
     id: string;
     name: string;
+    coach?: string | null;
+    coachPhone?: string | null;
+    players?: { id: string }[];
   };
   numberOfPlayers?: number;
   coachName?: string;

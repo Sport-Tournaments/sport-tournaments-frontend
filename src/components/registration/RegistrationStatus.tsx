@@ -176,24 +176,47 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
 
         {/* Registration Details */}
         <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-200">
-          {registration.coachName && (
+          {(registration.coachName || registration.team?.coach) && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 {t('registration.status.coach', 'Coach')}
               </p>
               <p className="mt-1 font-medium text-gray-900">
-                {registration.coachName}
+                {registration.coachName || registration.team?.coach}
               </p>
             </div>
           )}
-          {registration.numberOfPlayers && (
+          {(registration.coachPhone || registration.team?.coachPhone) && (
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t('registration.status.coachPhone', 'Coach Phone')}
+              </p>
+              <p className="mt-1 font-medium text-gray-900">
+                {registration.coachPhone || registration.team?.coachPhone}
+              </p>
+            </div>
+          )}
+          {(registration.numberOfPlayers || (registration.team?.players?.length ?? 0) > 0) && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide">
                 {t('registration.status.players', 'Players')}
               </p>
               <p className="mt-1 font-medium text-gray-900">
-                {registration.numberOfPlayers}
+                {registration.numberOfPlayers || registration.team?.players?.length}
               </p>
+            </div>
+          )}
+          {registration.club?.organizer && (
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {t('registration.status.emergencyContact', 'Emergency Contact')}
+              </p>
+              <p className="mt-1 font-medium text-gray-900">
+                {`${registration.club.organizer.firstName} ${registration.club.organizer.lastName}`}
+              </p>
+              {registration.club.organizer.phone && (
+                <p className="text-xs text-gray-500">{registration.club.organizer.phone}</p>
+              )}
             </div>
           )}
           <div>

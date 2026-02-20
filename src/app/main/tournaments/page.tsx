@@ -714,7 +714,7 @@ export default function TournamentsPage() {
                     )}
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-lg line-clamp-1">
+                        <h3 className="font-semibold text-lg">
                           {tournament.name}
                         </h3>
                         {!tournament.bannerImage && (
@@ -729,7 +729,7 @@ export default function TournamentsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+                      <p className="text-gray-600 text-sm mt-2">
                         {tournament.description}
                       </p>
                       <div className="mt-4 space-y-2">

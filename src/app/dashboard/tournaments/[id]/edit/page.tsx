@@ -278,6 +278,7 @@ export default function EditTournamentPage() {
               teamsPerGroup: ag.teamsPerGroup,
               matchPeriodType: (ag as any).matchPeriodType,
               halfDurationMinutes: (ag as any).halfDurationMinutes,
+              notes: (ag as any).notes,
             }))
           : [];
       setAgeGroups(mappedAgeGroups);

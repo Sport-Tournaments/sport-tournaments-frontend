@@ -829,6 +829,7 @@
     "maxTeams": "Maximum Teams",
     "numberOfMatches": "Guaranteed Matches",
     "numberOfMatchesHelp": "Minimum matches each team will play",
+    "numberOfFields": "Number of Fields",
     "registrationFee": "Registration Fee",
     "numberOfGroups": "Number of Groups",
     "teamsPerGroup": "Teams per Group",

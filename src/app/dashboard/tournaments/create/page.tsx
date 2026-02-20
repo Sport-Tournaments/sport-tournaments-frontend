@@ -50,6 +50,7 @@ const tournamentSchema = z.object({
   rules: z.string().optional(),
   isPrivate: z.boolean().default(false),
   invitationCodeExpirationDays: z.coerce.number().min(1).max(365).optional(),
+  numberOfFields: z.coerce.number().int().min(1).max(100).optional(),
 });
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
@@ -235,6 +236,7 @@ export default function CreateTournamentPage() {
         ...(data.whatsappGroupLink?.trim() && {
           whatsappGroupLink: data.whatsappGroupLink.trim(),
         }),
+        ...(data.numberOfFields && { numberOfFields: data.numberOfFields }),
         isPrivate: data.isPrivate,
         // Only include rules if provided (as regulationsData)
         ...(data.rules && { regulationsData: { rules: data.rules } }),
@@ -372,6 +374,24 @@ export default function CreateTournamentPage() {
                 )}
                 error={errors.whatsappGroupLink?.message}
                 {...register("whatsappGroupLink")}
+              />
+
+              <Input
+                type="number"
+                label={t(
+                  "tournament.numberOfFields",
+                  "Number of Fields / Grounds",
+                )}
+                placeholder="e.g. 4"
+                helperText={t(
+                  "tournament.numberOfFieldsHelp",
+                  "Total playing fields available (parallel games, e.g. 1vs2 on field 1, 3vs4 on field 2)",
+                )}
+                min={1}
+                max={100}
+                step={1}
+                error={errors.numberOfFields?.message}
+                {...register("numberOfFields", { valueAsNumber: true })}
               />
 
               <div className="flex flex-col sm:flex-row gap-3">

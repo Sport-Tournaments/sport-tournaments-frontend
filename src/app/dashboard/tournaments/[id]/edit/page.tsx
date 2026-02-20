@@ -66,6 +66,7 @@ const tournamentSchema = z.object({
   contactPhone: z.string().optional(),
   status: z.enum(TOURNAMENT_STATUSES),
   isPrivate: z.boolean().optional(),
+  numberOfFields: z.coerce.number().int().min(1).max(100).optional(),
 });
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
@@ -273,6 +274,7 @@ export default function EditTournamentPage() {
               locationId: ag.locationId,
               locationAddress: ag.locationAddress,
               groupsCount: ag.groupsCount,
+              fieldsCount: ag.fieldsCount,
               teamsPerGroup: ag.teamsPerGroup,
               matchPeriodType: (ag as any).matchPeriodType,
               halfDurationMinutes: (ag as any).halfDurationMinutes,
@@ -305,6 +307,7 @@ export default function EditTournamentPage() {
         contactPhone: data.contactPhone || "",
         status: data.status === "DRAFT" ? "PUBLISHED" : data.status,
         isPrivate: (data as any).isPrivate || false,
+        numberOfFields: (data as any).numberOfFields ?? undefined,
       });
       setSlugTouched(!!data.urlSlug);
     } catch (err: any) {
@@ -358,6 +361,7 @@ export default function EditTournamentPage() {
         }),
         // Include isPrivate field
         isPrivate: data.isPrivate,
+        ...(data.numberOfFields && { numberOfFields: data.numberOfFields }),
         // Only include contactEmail if it's a valid email (not empty string)
         ...(data.contactEmail &&
           data.contactEmail.trim() !== "" && {
@@ -603,6 +607,24 @@ export default function EditTournamentPage() {
                   )}
                 </p>
               )}
+
+              <Input
+                type="number"
+                label={t(
+                  "tournament.numberOfFields",
+                  "Number of Fields / Grounds",
+                )}
+                placeholder="e.g. 4"
+                helperText={t(
+                  "tournament.numberOfFieldsHelp",
+                  "Total playing fields available (parallel games, e.g. 1vs2 on field 1, 3vs4 on field 2)",
+                )}
+                min={1}
+                max={100}
+                step={1}
+                error={errors.numberOfFields?.message}
+                {...register("numberOfFields", { valueAsNumber: true })}
+              />
             </CardContent>
           </Card>
 

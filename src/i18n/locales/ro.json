@@ -971,6 +971,7 @@
     "minTeams": "Număr minim echipe",
     "numberOfMatches": "Meciuri garantate",
     "numberOfMatchesHelp": "Numărul minim de meciuri pe care le va juca fiecare echipă",
+    "numberOfFields": "Număr de terenuri",
     "registeredTeams": "Echipe înregistrate",
     "noTeamsYet": "Nu există echipe înscrise încă",
     "spotsLeft": "Locuri disponibile",

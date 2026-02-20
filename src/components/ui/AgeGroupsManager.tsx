@@ -94,6 +94,7 @@ export interface AgeGroupFormData {
   locationId?: string;
   locationAddress?: string;
   groupsCount?: number;
+  fieldsCount?: number;
   teamsPerGroup?: number;
   matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
   halfDurationMinutes?: number;
@@ -460,6 +461,23 @@ export function AgeGroupsManager({
                           }
                           disabled={disabled}
                           helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
+                        />
+
+                        {/* Number of Fields - issue #189 */}
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.fieldsCount', 'Number of Fields')}
+                          value={ageGroup.fieldsCount ?? ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleUpdateAgeGroup(index, {
+                              fieldsCount: e.target.value ? parseInt(e.target.value) : undefined,
+                            })
+                          }
+                          min={1}
+                          max={50}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.fieldsCountHelp', 'Number of playing fields available (games running simultaneously)')}
                         />
 
                         <Select

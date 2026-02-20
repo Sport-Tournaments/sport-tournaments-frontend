@@ -248,7 +248,7 @@ export default function DashboardTournamentsPage() {
                             </div>
                           )}
                           <div className="min-w-0 flex-1">
-                            <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 hover:text-primary block truncate">
+                            <Link href={`/dashboard/tournaments/${tournament.id}`} className="font-semibold text-gray-900 hover:text-primary block">
                               {tournament.name}
                             </Link>
                             <div className="mt-1">

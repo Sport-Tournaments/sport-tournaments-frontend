@@ -282,6 +282,16 @@ export default function TournamentDetailPage() {
     return `${value} ${t('common.minutes', 'min')}`;
   };
 
+  const formatMatchDuration = (ag: AgeGroup): string => {
+    if (!ag.halfDurationMinutes) return '—';
+    const periods = ag.matchPeriodType === 'TWO_HALVES' ? 2 : 1;
+    const total = periods * ag.halfDurationMinutes;
+    const periodLabel = periods === 2
+      ? t('tournaments.ageGroups.twoHalves', '2 halves')
+      : t('tournaments.ageGroups.oneHalf', '1 half');
+    return `${periodLabel} × ${ag.halfDurationMinutes} min (${total} min ${t('common.total', 'total')})`;
+  };
+
   const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
     ageGroup.teamCount
       ?? ageGroup.maxTeams
@@ -511,8 +521,10 @@ export default function TournamentDetailPage() {
                         {ag.format && (
                           <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
                         )}
-                        <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ag.matchPeriodType)}</span>
-                        <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ag.halfDurationMinutes)}</span>
+                        <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ag)}</span>
+                        {ag.numberOfMatches != null && (
+                          <span>{t('tournament.numberOfMatches', 'Matches')}: {ag.numberOfMatches}</span>
+                        )}
                         {groupMaxTeams > 0 && (
                           <span>
                             {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {groupMaxTeams}
@@ -610,8 +622,10 @@ export default function TournamentDetailPage() {
                   {ageGroup.format && (
                     <span>{t('tournament.format.label')}: {t(`tournament.format.${ageGroup.format}`)}</span>
                   )}
-                  <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ageGroup.matchPeriodType)}</span>
-                  <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ageGroup.halfDurationMinutes)}</span>
+                  <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ageGroup)}</span>
+                  {ageGroup.numberOfMatches != null && (
+                    <span>{t('tournament.numberOfMatches', 'Matches')}: {ageGroup.numberOfMatches}</span>
+                  )}
                   {ageGroup.level && (
                     <span>{t('tournament.level.label')}: {t(`tournament.level.${ageGroup.level}`)}</span>
                   )}

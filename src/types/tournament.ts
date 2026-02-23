@@ -40,7 +40,8 @@ export type BracketType =
   | "SINGLE_ELIMINATION"
   | "DOUBLE_ELIMINATION"
   | "ROUND_ROBIN"
-  | "GROUPS_PLUS_KNOCKOUT";
+  | "GROUPS_PLUS_KNOCKOUT"
+  | "LEAGUE";
 export type RegulationsType = "UPLOADED" | "GENERATED";
 
 export interface VisibilitySettings {
@@ -75,6 +76,7 @@ export interface AgeGroup {
   teamsPerGroup?: number;
   matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
   halfDurationMinutes?: number;
+  numberOfMatches?: number;
   notes?: string;
 }
 
@@ -123,9 +125,11 @@ export interface Tournament {
   isRegistrationClosed?: boolean;
   registrationFee?: number;
   registeredTeams?: number;
+  confirmedTeams?: number;
+  effectiveStartDate?: string;
   bannerImage?: string;
   rules?: string;
-  format?: string;
+  format?: TournamentFormat;
   entryFee?: number;
   prizeMoney?: number;
   contactEmail?: string;
@@ -162,6 +166,23 @@ export interface Tournament {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PlayoffRound {
+  round: number;
+  name: string;
+  bracket?: "winners" | "losers" | "grand_final";
+  matches: Match[];
+}
+
+export interface Match {
+  id: string;
+  homeTeamId?: string;
+  awayTeamId?: string;
+  homeScore?: number;
+  awayScore?: number;
+  scheduledAt?: string;
+  status?: string;
 }
 
 export interface CreateTournamentDto {

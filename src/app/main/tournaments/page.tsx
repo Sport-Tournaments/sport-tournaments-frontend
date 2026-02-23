@@ -72,7 +72,7 @@ export default function TournamentsPage() {
       }
     }
 
-    return tournament.status === "DRAFT" ? "PUBLISHED" : tournament.status;
+    return tournament.status;
   };
 
   const fetchTournaments = useCallback(
@@ -310,6 +310,7 @@ export default function TournamentsPage() {
         "default" | "success" | "warning" | "danger" | "info"
       >
     > = {
+      DRAFT: "warning",
       PUBLISHED: "info",
       ONGOING: "info",
       COMPLETED: "success",
@@ -714,7 +715,7 @@ export default function TournamentsPage() {
                     )}
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-lg">
+                        <h3 className="font-semibold text-lg line-clamp-2" title={tournament.name}>
                           {tournament.name}
                         </h3>
                         {!tournament.bannerImage && (
@@ -729,7 +730,7 @@ export default function TournamentsPage() {
                           </Badge>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm mt-2">
+                      <p className="text-gray-600 text-sm mt-2 line-clamp-3">
                         {tournament.description}
                       </p>
                       <div className="mt-4 space-y-2">

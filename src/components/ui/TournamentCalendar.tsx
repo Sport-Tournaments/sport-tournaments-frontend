@@ -58,7 +58,12 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
     if (hasInitializedFromData.current || tournaments.length === 0) return;
 
     const validStartDates = tournaments
-      .map((tournament) => safeParseDateString(tournament.startDate))
+      .map((tournament) => {
+        const start = tournament.startDate
+          ?? tournament.ageGroups?.map(ag => ag.startDate).filter(Boolean).sort()[0]
+          ?? null;
+        return safeParseDateString(start);
+      })
       .filter((date): date is Date => date !== null)
       .sort((a, b) => a.getTime() - b.getTime());
 
@@ -97,10 +102,21 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
     });
   }, [currentDate]);
 
+  const getEffectiveDates = (tournament: { startDate?: string | null; endDate?: string | null; ageGroups?: { startDate?: string | null; endDate?: string | null }[] }) => {
+    const start = tournament.startDate
+      ?? tournament.ageGroups?.map(ag => ag.startDate).filter(Boolean).sort()[0]
+      ?? null;
+    const end = tournament.endDate
+      ?? tournament.ageGroups?.map(ag => ag.endDate).filter(Boolean).sort().reverse()[0]
+      ?? start;
+    return { start, end };
+  };
+
   const getTournamentsForDate = (date: Date) => {
     return tournaments.filter((tournament) => {
-      const startDate = safeParseDateString(tournament.startDate);
-      const endDate = safeParseDateString(tournament.endDate || tournament.startDate);
+      const { start, end } = getEffectiveDates(tournament);
+      const startDate = safeParseDateString(start);
+      const endDate = safeParseDateString(end || start);
 
       if (!startDate || !endDate) {
         return false;

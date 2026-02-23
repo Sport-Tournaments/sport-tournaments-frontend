@@ -91,22 +91,22 @@ export default function AdminTournamentsPage() {
     }
   };
 
-  const normalizeStatus = (status: TournamentStatus) =>
-    status === 'DRAFT' ? 'PUBLISHED' : status;
+  const normalizeStatus = (status: TournamentStatus) => status;
 
   const getStatusBadge = (status: TournamentStatus) => {
-    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+      DRAFT: 'warning',
       PUBLISHED: 'info',
       ONGOING: 'success',
       COMPLETED: 'success',
       CANCELLED: 'danger',
     };
-    return variants[normalizedStatus] || 'default';
+    return variants[status] || 'default';
   };
 
   const statusOptions = [
     { value: 'all', label: 'All Statuses' },
+    { value: 'DRAFT', label: t('tournament.status.DRAFT') },
     { value: 'PUBLISHED', label: t('tournament.status.PUBLISHED') },
     { value: 'ONGOING', label: t('tournament.status.ONGOING') },
     { value: 'COMPLETED', label: t('tournament.status.COMPLETED') },
@@ -217,7 +217,7 @@ export default function AdminTournamentsPage() {
                             {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
                           </p>
                           <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-500">
-                            <span>{t('tournament.startDate')}: {formatDate(tournament.startDate)}</span>
+                            <span>{t('tournament.startDate')}: {formatDate(tournament.startDate ?? tournament.ageGroups?.map(ag => ag.startDate).filter(Boolean).sort()[0] ?? null)}</span>
                             <span>{tournament.registeredTeams || 0} / {tournament.maxTeams} teams</span>
                             {(tournament as any).organizer && (
                               <span>by {(tournament as any).organizer.firstName} {(tournament as any).organizer.lastName}</span>

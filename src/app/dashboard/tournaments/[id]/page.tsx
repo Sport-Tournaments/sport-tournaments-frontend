@@ -88,18 +88,17 @@ export default function TournamentDetailPage() {
     }
   };
 
-  const normalizeStatus = (status: TournamentStatus) =>
-    status === 'DRAFT' ? 'PUBLISHED' : status;
+  const normalizeStatus = (status: TournamentStatus) => status;
 
   const getStatusBadge = (status: TournamentStatus) => {
-    const normalizedStatus = normalizeStatus(status);
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+      'DRAFT': 'warning',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[normalizedStatus] || 'default';
+    return variants[status] || 'default';
   };
 
   const getRegistrationStatusBadge = (status: RegistrationStatus) => {

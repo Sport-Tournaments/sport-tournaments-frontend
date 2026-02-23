@@ -242,18 +242,17 @@ export default function TournamentDetailPage() {
     setShowRegistrationWizard(true);
   };
 
-  const normalizeStatus = (status: TournamentStatus) =>
-    status === 'DRAFT' ? 'PUBLISHED' : status;
+  const normalizeStatus = (status: TournamentStatus) => status;
 
   const getStatusBadge = (status: TournamentStatus) => {
-    const normalizedStatus = normalizeStatus(status);
     const variants: Partial<Record<TournamentStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'>> = {
+      'DRAFT': 'warning',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',
       'CANCELLED': 'danger',
     };
-    return variants[normalizedStatus] || 'default';
+    return variants[status] || 'default';
   };
 
   const getRegistrationStatusVariant = (status?: Registration['status']) => {
@@ -777,7 +776,7 @@ export default function TournamentDetailPage() {
         </CardHeader>
         <CardContent>
           <p className="text-center text-gray-500 py-8">
-            {normalizeStatus(tournament.status) === 'PUBLISHED'
+            {(tournament.status === 'PUBLISHED' || tournament.status === 'ONGOING')
               ? t('tournament.groupsNotDrawn')
               : t('tournament.noGroups')}
           </p>

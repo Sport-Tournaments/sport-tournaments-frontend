@@ -75,11 +75,12 @@ export default function DashboardTournamentsPage() {
       }
     }
 
-    return tournament.status === 'DRAFT' ? 'PUBLISHED' : tournament.status;
+    return tournament.status;
   };
 
   const getStatusBadge = (status: TournamentStatus) => {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+      'DRAFT': 'warning',
       'PUBLISHED': 'info',
       'ONGOING': 'info',
       'COMPLETED': 'success',

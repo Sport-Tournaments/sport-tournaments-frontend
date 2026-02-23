@@ -91,13 +91,9 @@ export function RegistrationWizard({
   // Auto-fill fields when club is selected
   useEffect(() => {
     if (selectedClub) {
-      // Emergency contact = club account owner's phone number (the logged-in user IS the organizer)
-      if (userPhone) {
-        setEmergencyContact(userPhone);
-      } else if (selectedClub.contactPhone) {
-        setEmergencyContact(selectedClub.contactPhone);
-      } else if (selectedClub.phone) {
-        setEmergencyContact(selectedClub.phone);
+      // Emergency contact = account owner's phone number
+      if (user?.phone) {
+        setEmergencyContact(user.phone);
       }
       
       // Auto-fill coach phone from team's coachPhone, then fallback to club/user phone

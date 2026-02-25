@@ -637,6 +637,31 @@ export default function TournamentDetailPage() {
                   {ageGroup.participationFee !== undefined && ageGroup.participationFee !== null && (
                     <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ageGroup.participationFee}</span>
                   )}
+
+                  {(ageGroup.registrationStartDate || ageGroup.registrationEndDate || ageGroup.startDate || ageGroup.endDate) && (
+                    <div className="col-span-2">
+                      <hr className="border-t border-gray-200 my-2" />
+                    </div>
+                  )}
+
+                  {(ageGroup.registrationStartDate || ageGroup.registrationEndDate || ageGroup.startDate || ageGroup.endDate) && (
+                    <div className="col-span-2">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500">
+                        {ageGroup.registrationStartDate && (
+                          <div>{t('tournament.registrationOpens', 'Registration Opens')}: {formatDate(ageGroup.registrationStartDate)}</div>
+                        )}
+                        {ageGroup.registrationEndDate && (
+                          <div>{t('tournament.registrationCloses', 'Registration Closes')}: {formatDate(ageGroup.registrationEndDate)}</div>
+                        )}
+                        {ageGroup.startDate && (
+                          <div>{t('tournaments.ageGroups.startDate', 'Start Date')}: {formatDate(ageGroup.startDate)}</div>
+                        )}
+                        {ageGroup.endDate && (
+                          <div>{t('tournaments.ageGroups.endDate', 'End Date')}: {formatDate(ageGroup.endDate)}</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {ageGroup.notes && (
                   <div className="mt-2 text-xs text-gray-600 italic">

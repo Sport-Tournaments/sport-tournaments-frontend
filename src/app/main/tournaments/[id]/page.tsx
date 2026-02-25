@@ -282,6 +282,16 @@ export default function TournamentDetailPage() {
     return `${value} ${t('common.minutes', 'min')}`;
   };
 
+  const formatMatchDuration = (ag: AgeGroup): string => {
+    if (!ag.halfDurationMinutes) return '—';
+    const periods = ag.matchPeriodType === 'TWO_HALVES' ? 2 : 1;
+    const total = periods * ag.halfDurationMinutes;
+    const periodLabel = periods === 2
+      ? t('tournaments.ageGroups.twoHalves', '2 halves')
+      : t('tournaments.ageGroups.oneHalf', '1 half');
+    return `${periodLabel} × ${ag.halfDurationMinutes} min (${total} min ${t('common.total', 'total')})`;
+  };
+
   const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
     ageGroup.teamCount
       ?? ageGroup.maxTeams
@@ -511,8 +521,10 @@ export default function TournamentDetailPage() {
                         {ag.format && (
                           <span>{t('tournament.format.label')}: {t(`tournament.format.${ag.format}`)}</span>
                         )}
-                        <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ag.matchPeriodType)}</span>
-                        <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ag.halfDurationMinutes)}</span>
+                        <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ag)}</span>
+                        {ag.numberOfMatches != null && (
+                          <span>{t('tournament.numberOfMatches', 'Matches')}: {ag.numberOfMatches}</span>
+                        )}
                         {groupMaxTeams > 0 && (
                           <span>
                             {t('tournament.teamsRegistered', 'Teams Registered')}: {ageGroupCurrentTeams} / {groupMaxTeams}
@@ -610,8 +622,10 @@ export default function TournamentDetailPage() {
                   {ageGroup.format && (
                     <span>{t('tournament.format.label')}: {t(`tournament.format.${ageGroup.format}`)}</span>
                   )}
-                  <span>{t('tournaments.ageGroups.matchHalves', 'Match format')}: {getMatchHalvesLabel(ageGroup.matchPeriodType)}</span>
-                  <span>{t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}: {getHalfDurationLabel(ageGroup.halfDurationMinutes)}</span>
+                  <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ageGroup)}</span>
+                  {ageGroup.numberOfMatches != null && (
+                    <span>{t('tournament.numberOfMatches', 'Matches')}: {ageGroup.numberOfMatches}</span>
+                  )}
                   {ageGroup.level && (
                     <span>{t('tournament.level.label')}: {t(`tournament.level.${ageGroup.level}`)}</span>
                   )}
@@ -623,6 +637,23 @@ export default function TournamentDetailPage() {
                   {ageGroup.participationFee !== undefined && ageGroup.participationFee !== null && (
                     <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ageGroup.participationFee}</span>
                   )}
+
+                  <div className="col-span-2">
+                    <hr className="border-t border-gray-200 my-2" />
+                  </div>
+
+                  <div className="col-span-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-4 gap-y-2 text-xs text-gray-500">
+                      <div>{t('tournament.registrationOpens', 'Registration Opens')}: {ageGroup.registrationStartDate ? formatDate(ageGroup.registrationStartDate) : '—'}</div>
+                      <div>{t('tournament.registrationCloses', 'Registration Closes')}: {ageGroup.registrationEndDate ? formatDate(ageGroup.registrationEndDate) : '—'}</div>
+                      {ageGroup.startDate && (
+                        <div>{t('tournaments.ageGroups.startDate', 'Start Date')}: {formatDate(ageGroup.startDate)}</div>
+                      )}
+                      {ageGroup.endDate && (
+                        <div>{t('tournaments.ageGroups.endDate', 'End Date')}: {formatDate(ageGroup.endDate)}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 {ageGroup.notes && (
                   <div className="mt-2 text-xs text-gray-600 italic">
@@ -885,13 +916,7 @@ export default function TournamentDetailPage() {
 
               {/* Quick info */}
               <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-gray-600">{t('tournament.tournamentStart', 'Tournament Start')}:</span>
-                  <span className="font-medium text-gray-900">{formatDate(tournament.startDate)}</span>
-                </div>
+
                 <div className="flex items-center gap-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />

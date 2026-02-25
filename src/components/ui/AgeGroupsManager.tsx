@@ -576,25 +576,6 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.participationFeeHelp', 'Leave empty to use tournament default')}
                     />
 
-                    {/* Start Date */}
-                    <Input
-                      type="date"
-                      label={t('tournaments.ageGroups.startDate', 'Start Date')}
-                      value={ageGroup.startDate || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { startDate: e.target.value || undefined })}
-                      disabled={disabled}
-                      helperText={t('tournaments.ageGroups.startDateHelp', 'Leave empty to use tournament dates')}
-                    />
-
-                    {/* End Date */}
-                    <Input
-                      type="date"
-                      label={t('tournaments.ageGroups.endDate', 'End Date')}
-                      value={ageGroup.endDate || ''}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { endDate: e.target.value || undefined })}
-                      disabled={disabled}
-                    />
-
                     {/* Registration Start Date */}
                     <Input
                       type="date"
@@ -613,6 +594,25 @@ export function AgeGroupsManager({
                       onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { registrationEndDate: e.target.value || undefined })}
                       disabled={disabled}
                       helperText={t('tournaments.ageGroups.registrationEndDateHelp', 'Leave empty to use tournament default')}
+                    />
+
+                    {/* Start Date */}
+                    <Input
+                      type="date"
+                      label={t('tournaments.ageGroups.startDate', 'Start Date')}
+                      value={ageGroup.startDate || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { startDate: e.target.value || undefined })}
+                      disabled={disabled}
+                      helperText={t('tournaments.ageGroups.startDateHelp', 'Leave empty to use tournament dates')}
+                    />
+
+                    {/* End Date */}
+                    <Input
+                      type="date"
+                      label={t('tournaments.ageGroups.endDate', 'End Date')}
+                      value={ageGroup.endDate || ''}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleUpdateAgeGroup(index, { endDate: e.target.value || undefined })}
+                      disabled={disabled}
                     />
 
                     {/* Notes */}

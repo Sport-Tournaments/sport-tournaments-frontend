@@ -427,16 +427,16 @@ export default function TournamentDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">{t('tournament.startDate')}</p>
-                <p className="font-medium">{formatDate(ageGroup?.startDate || tournament.startDate)}</p>
+                <p className="font-medium">
+                  {ageGroup?.startDate ? formatDate(ageGroup.startDate) : 'N/A'}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">{t('tournament.registrationDeadline')}</p>
                 <p className="font-medium">
                   {ageGroup?.registrationEndDate
                     ? formatDate(ageGroup.registrationEndDate)
-                    : tournament.registrationDeadline
-                      ? formatDate(tournament.registrationDeadline)
-                      : 'N/A'}
+                    : 'N/A'}
                 </p>
               </div>
               <div>
@@ -701,7 +701,7 @@ export default function TournamentDetailPage() {
               )}
             </div>
             <p className="text-gray-600 mt-1">
-              {tournament.location}{tournament.country ? `, ${tournament.country}` : ''} • {formatDate(tournament.startDate)}
+              {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
             </p>
           </div>
           <div className="flex gap-2">

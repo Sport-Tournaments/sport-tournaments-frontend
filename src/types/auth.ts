@@ -7,6 +7,8 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  bio?: string;
+  city?: string;
   country: string;
   role: UserRole;
   profileImageUrl?: string;
@@ -17,9 +19,12 @@ export interface User {
 }
 
 export interface UpdateUserDto {
+  email?: string;
   firstName?: string;
   lastName?: string;
   phone?: string;
+  bio?: string;
+  city?: string;
   country?: string;
   profileImageUrl?: string;
 }

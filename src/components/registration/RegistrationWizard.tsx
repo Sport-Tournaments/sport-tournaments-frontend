@@ -91,7 +91,7 @@ export function RegistrationWizard({
   // Auto-fill fields when club is selected
   useEffect(() => {
     if (selectedClub) {
-      // Emergency contact = account owner's phone number
+      // FE-05: Emergency contact = account owner's phone number
       if (user?.phone) {
         setEmergencyContact(user.phone);
       }
@@ -219,6 +219,14 @@ export function RegistrationWizard({
   };
 
   const currentStepIndex = STEPS.indexOf(currentStep);
+
+  // FE-12: Detect age category mismatch before submission
+  const selectedAgeGroupObj = tournament.ageGroups?.find(ag => ag.id === selectedAgeGroupId) ?? null;
+  const selectedTeamObj = teams.find(t => t.id === selectedTeamId) ?? null;
+  const hasMismatch = !!(selectedAgeGroupObj && selectedTeamObj && (
+    (selectedAgeGroupObj.birthYear && selectedTeamObj.birthyear && selectedTeamObj.birthyear !== selectedAgeGroupObj.birthYear) ||
+    (selectedAgeGroupObj.ageCategory && selectedTeamObj.ageCategory && selectedTeamObj.ageCategory !== selectedAgeGroupObj.ageCategory)
+  ));
 
   const getStepTitle = (step: WizardStep): string => {
     const titles: Record<WizardStep, string> = {
@@ -475,6 +483,25 @@ export function RegistrationWizard({
                       <h4 className="text-sm font-medium text-gray-900">
                         {t('registration.wizard.additionalInfo', 'Additional Information (Optional)')}
                       </h4>
+                      
+                      {/* FE-12: Age category mismatch warning */}
+                      {hasMismatch && (
+                        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
+                          <div className="flex items-start gap-3">
+                            <svg className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            </svg>
+                            <div>
+                              <p className="font-medium text-amber-800">
+                                {t('registration.ageMismatch.title', 'Categorie de v\u00e2rst\u0103 diferit\u0103')}
+                              </p>
+                              <p className="text-sm text-amber-700 mt-1">
+                                {t('registration.ageMismatch.description', 'Echipa ta nu corespunde exact cu categoria de v\u00e2rst\u0103 a turneului. \u00censcrierea va fi marcat\u0103 pentru revizuire de c\u0103tre organizator.')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Input

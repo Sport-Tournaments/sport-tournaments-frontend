@@ -69,8 +69,8 @@ export default function SettingsPage() {
         lastName: user.lastName || '',
         email: user.email || '',
         phone: user.phone || '',
-        bio: (user as any).bio || '',
-        city: (user as any).city || '',
+        bio: user.bio || '',
+        city: user.city || '',
         country: user.country || '',
         role: normalizedRole,
       });

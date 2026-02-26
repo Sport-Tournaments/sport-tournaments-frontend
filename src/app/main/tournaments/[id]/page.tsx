@@ -393,6 +393,13 @@ export default function TournamentDetailPage() {
     const ageGroupCurrentTeams = ageGroup
       ? (ageGroup.currentTeams ?? scopedRegistrations.length)
       : currentTeamsDisplay;
+    // FE-10: compute confirmed (APPROVED) and pending teams
+    const ageGroupConfirmedTeams = ageGroupId
+      ? scopedRegistrations.filter((r) => r.status === 'APPROVED').length
+      : (tournament.confirmedTeams ?? scopedRegistrations.filter((r) => r.status === 'APPROVED').length);
+    const ageGroupPendingTeams = ageGroupId
+      ? scopedRegistrations.filter((r) => r.status === 'PENDING' || r.status === 'PENDING_PAYMENT').length
+      : Math.max(ageGroupCurrentTeams - ageGroupConfirmedTeams, 0);
     const ageGroupSpotsLeft = ageGroupMaxTeams > 0
       ? Math.max(ageGroupMaxTeams - ageGroupCurrentTeams, 0)
       : null;
@@ -419,9 +426,12 @@ export default function TournamentDetailPage() {
                 </div>
               )}
               <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <span className="text-gray-600">{t('tournament.spotsLeft')}</span>
-                <span className="font-medium">
-                  {ageGroupSpotsLeft ?? t('tournament.unlimited', 'Unlimited')}
+                <span className="text-gray-600">{t('tournament.teamsConfirmed', 'Teams Confirmed')}</span>
+                <span className="font-medium flex items-center gap-2">
+                  {ageGroupConfirmedTeams} / {ageGroupMaxTeams > 0 ? ageGroupMaxTeams : '\u221e'}
+                  {ageGroupPendingTeams > 0 && (
+                    <span className="text-xs text-amber-500">+{ageGroupPendingTeams} {t('tournament.pendingApproval', 'pending')}</span>
+                  )}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
@@ -578,7 +588,7 @@ export default function TournamentDetailPage() {
                       <div className="mt-3 flex items-center justify-between">
                         <span className="text-xs text-gray-500">
                           {groupMaxTeams > 0
-                            ? t('tournament.spotsLeft', 'Spots left') + `: ${groupSpotsLeft}`
+                            ? `${ageGroupCurrentTeams} / ${groupMaxTeams} ${t('common.teams', 'teams')}`
                             : t('tournament.unlimited', 'Unlimited')}
                         </span>
                         <Button

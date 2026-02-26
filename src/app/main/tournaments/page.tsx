@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layout";
@@ -48,6 +48,7 @@ export default function TournamentsPage() {
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [showPastTournaments, setShowPastTournaments] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
 
   const dateOnlyFrom = startDateFromInput
@@ -302,6 +303,25 @@ export default function TournamentsPage() {
     setSortBy("");
     setSortOrder("ASC");
   };
+
+  // FE-01: split active vs completed when no status filter is applied
+  const { activeTournaments, pastTournaments } = useMemo(() => {
+    if (status) {
+      // User has explicitly chosen a filter — don't split
+      return { activeTournaments: tournaments, pastTournaments: [] };
+    }
+    const active: Tournament[] = [];
+    const past: Tournament[] = [];
+    for (const t of tournaments) {
+      if (getEffectiveTournamentStatus(t) === 'COMPLETED') {
+        past.push(t);
+      } else {
+        active.push(t);
+      }
+    }
+    return { activeTournaments: active, pastTournaments: past };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournaments, status]);
 
   const getStatusBadge = (tournamentStatus: TournamentStatus) => {
     const variants: Partial<
@@ -687,7 +707,7 @@ export default function TournamentsPage() {
           /* Tournament grid with infinite scroll */
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {tournaments.map((tournament) => (
+              {activeTournaments.map((tournament) => (
                 <Link
                   key={tournament.id}
                   href={getTournamentPublicPath(tournament)}
@@ -800,8 +820,13 @@ export default function TournamentsPage() {
                               />
                             </svg>
                           </span>
-                          {tournament.registeredTeams || 0} /{" "}
-                          {tournament.maxTeams} {t("common.teams")}
+                          {tournament.confirmedTeams ?? 0} /{"\ "}
+                          {tournament.maxTeams}{" "}{t("common.teams")}
+                          {((tournament.registeredTeams ?? 0) - (tournament.confirmedTeams ?? 0)) > 0 && (
+                            <span className="ml-1 text-xs text-amber-500">
+                              +{(tournament.registeredTeams ?? 0) - (tournament.confirmedTeams ?? 0)} {t("tournament.pendingApproval", "pending")}
+                            </span>
+                          )}
                         </div>
                       </div>
                       {tournament.registrationFee &&
@@ -820,6 +845,88 @@ export default function TournamentsPage() {
                 </Link>
               ))}
             </div>
+
+            {/* FE-01: Past / Completed tournaments collapsible section */}
+            {pastTournaments.length > 0 && (
+              <div className="mt-10">
+                <button
+                  onClick={() => setShowPastTournaments((v) => !v)}
+                  className="flex items-center gap-2 text-gray-500 hover:text-gray-700 font-medium text-sm mb-4 group"
+                >
+                  <svg
+                    className={`w-4 h-4 transition-transform ${showPastTournaments ? "rotate-90" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  {t("tournament.pastTournaments", "Past Tournaments")}
+                  <Badge variant="default" className="ml-1">{pastTournaments.length}</Badge>
+                </button>
+
+                {showPastTournaments && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    {pastTournaments.map((tournament) => (
+                      <Link
+                        key={tournament.id}
+                        href={getTournamentPublicPath(tournament)}
+                        className="opacity-60 grayscale hover:opacity-80 hover:grayscale-0 transition-all"
+                      >
+                        <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                          {tournament.bannerImage && (
+                            <div className="relative h-40 bg-white border-b border-gray-200 rounded-t-lg overflow-hidden">
+                              <img
+                                src={tournament.bannerImage}
+                                alt={tournament.name}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute top-2 right-2">
+                                <Badge variant={getStatusBadge(getEffectiveTournamentStatus(tournament))}>
+                                  {t(`tournament.status.${getEffectiveTournamentStatus(tournament)}`)}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-lg line-clamp-2" title={tournament.name}>
+                                {tournament.name}
+                              </h3>
+                              {!tournament.bannerImage && (
+                                <Badge variant={getStatusBadge(getEffectiveTournamentStatus(tournament))}>
+                                  {t(`tournament.status.${getEffectiveTournamentStatus(tournament)}`)}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 text-sm mt-2 line-clamp-3">{tournament.description}</p>
+                            <div className="mt-4 space-y-2">
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <span className="uefa-icon-chip-sm">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </span>
+                                {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <span className="uefa-icon-chip-sm">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                </span>
+                                <span className="flex-1 truncate">{tournament.location || t("common.online")}</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Infinite scroll sentinel & loading indicator */}
             <div ref={sentinelRef} className="mt-8 flex justify-center py-4">

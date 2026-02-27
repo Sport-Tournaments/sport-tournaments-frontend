@@ -313,7 +313,52 @@ export default function PotManagementPage() {
         {/* Draw Configuration */}
         {selectedAgeGroupId && (
           <>
-            <Card className="mb-6">
+            {/* Format-gating banner */}
+            {selectedGroup?.format === 'ROUND_ROBIN' && (
+              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-amber-800">Pot draw not applicable for Round Robin</h3>
+                    <p className="mt-1 text-sm text-amber-700">
+                      This age group uses the <strong>Round Robin</strong> format where all teams play each other — no group seeding draw is required. The bracket is generated automatically.
+                    </p>
+                    <Link
+                      href={`/dashboard/tournaments/${tournamentId}/bracket?ageGroupId=${selectedAgeGroupId}`}
+                      className="mt-2 inline-flex items-center text-sm font-medium text-amber-800 hover:text-amber-900 underline"
+                    >
+                      Go to Bracket Generation →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Seeding-only formats (SE / DE / LEAGUE) */}
+            {(selectedGroup?.format === 'SINGLE_ELIMINATION' ||
+              selectedGroup?.format === 'DOUBLE_ELIMINATION' ||
+              selectedGroup?.format === 'LEAGUE') && (
+              <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-blue-800">
+                      Seeding Draw — {selectedGroup.format === 'LEAGUE' ? 'League' : selectedGroup.format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}
+                    </h3>
+                    <p className="mt-1 text-sm text-blue-700">
+                      Assign teams to pots to control seeding order. For this format, pots are used for seeding purposes only — the bracket will be generated based on seed positions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Only show pot management for formats that use it */}
+            {selectedGroup?.format !== 'ROUND_ROBIN' && (
+            <><Card className="mb-6">
               <CardHeader>
                 <CardTitle>
                   Draw Configuration — {selectedGroup?.displayLabel || 'Selected Age Group'}
@@ -476,6 +521,8 @@ export default function PotManagementPage() {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </>
         )}
       </div>

@@ -108,6 +108,20 @@ export async function generateBracket(
   );
 }
 
+// Schedule a match (set date/time and optional court number)
+export async function scheduleMatch(
+  tournamentId: string,
+  matchId: string,
+  data: { scheduledAt: string; courtNumber?: number },
+  ageGroupId?: string
+): Promise<ApiResponse<{ match: BracketMatch }>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPatch<ApiResponse<{ match: BracketMatch }>>(
+    `/v1/tournaments/${tournamentId}/matches/${matchId}/schedule${params}`,
+    data
+  );
+}
+
 export const groupService = {
   executeDraw,
   resetDraw,
@@ -119,6 +133,7 @@ export const groupService = {
   setMatchAdvancement,
   updateMatchScore,
   generateBracket,
+  scheduleMatch,
 };
 
 export default groupService;

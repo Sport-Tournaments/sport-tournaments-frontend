@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Alert, Loading } from '@/components/ui';
 import { teamService, clubService, playerService } from '@/services';
 import type { Club, Player } from '@/types';
+import { formatDate } from '@/utils/date';
 
 export default function EditTeamPage() {
   const { t } = useTranslation();
@@ -246,7 +247,7 @@ export default function EditTeamPage() {
                           {player.firstname} {player.lastname}
                         </span>
                         <span className="text-xs text-gray-500">
-                          Born: {new Date(player.dateOfBirth).toLocaleDateString()}
+                          Born: {formatDate(player.dateOfBirth)}
                         </span>
                       </label>
                     ))}

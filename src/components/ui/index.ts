@@ -79,3 +79,12 @@ export type { ViewMode } from './ViewModeToggle';
 
 export { default as MatchManagement } from './MatchManagement';
 export type { MatchManagementProps } from './MatchManagement';
+
+export { default as StandingsTable } from './StandingsTable';
+export type { StandingsTableProps } from './StandingsTable';
+
+export { default as LeagueMatchSchedule } from './LeagueMatchSchedule';
+export type { LeagueMatchScheduleProps } from './LeagueMatchSchedule';
+
+export { default as DoubleEliminationBracket } from './DoubleEliminationBracket';
+export type { DoubleEliminationBracketProps } from './DoubleEliminationBracket';

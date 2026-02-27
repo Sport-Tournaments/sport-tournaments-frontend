@@ -11,26 +11,29 @@ export function getLocale(language: string): Locale {
 }
 
 export function formatDate(
-  date: string | Date,
+  date: string | Date | null | undefined,
   formatStr = 'PPP',
   language = 'en'
 ): string {
+  if (!date) return '—';
   const d = typeof date === 'string' ? parseISO(date) : date;
-  if (!isValid(d)) return 'Invalid date';
+  if (!isValid(d)) return '—';
   return format(d, formatStr, { locale: getLocale(language) });
 }
 
 export function formatDateTime(
-  date: string | Date,
+  date: string | Date | null | undefined,
   language = 'en'
 ): string {
+  if (!date) return '—';
   return formatDate(date, 'PPP p', language);
 }
 
 export function formatShortDate(
-  date: string | Date,
+  date: string | Date | null | undefined,
   language = 'en'
 ): string {
+  if (!date) return '—';
   return formatDate(date, 'PP', language);
 }
 
@@ -51,12 +54,13 @@ export function formatDateRange(
 }
 
 export function formatRelativeTime(
-  date: string | Date,
+  date: string | Date | null | undefined,
   baseDate: Date = new Date(),
   language = 'en'
 ): string {
+  if (!date) return '—';
   const d = typeof date === 'string' ? parseISO(date) : date;
-  if (!isValid(d)) return 'Invalid date';
+  if (!isValid(d)) return '—';
   return formatDistance(d, baseDate, { addSuffix: true, locale: getLocale(language) });
 }
 

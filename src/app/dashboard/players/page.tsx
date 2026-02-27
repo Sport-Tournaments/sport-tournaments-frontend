@@ -7,6 +7,7 @@ import { DashboardLayout } from '@/components/layout';
 import { Card, CardContent, Button, Badge, Loading, Input, Alert, ViewModeToggle, ViewMode } from '@/components/ui';
 import { playerService } from '@/services';
 import type { Player } from '@/types';
+import { formatDate } from '@/utils/date';
 
 export default function PlayersPage() {
   const { t } = useTranslation();
@@ -161,7 +162,7 @@ export default function PlayersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {new Date(player.dateOfBirth).toLocaleDateString()}
+                          {formatDate(player.dateOfBirth)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                           {calculateAge(player.dateOfBirth)}
@@ -224,7 +225,7 @@ export default function PlayersPage() {
                     </div>
                   </div>
                   <div className="text-sm text-gray-600 mb-3">
-                    DOB: {new Date(player.dateOfBirth).toLocaleDateString()}
+                    DOB: {formatDate(player.dateOfBirth)}
                   </div>
                   <div className="flex flex-wrap gap-1 mb-4">
                     {player.teams && player.teams.length > 0 ? (

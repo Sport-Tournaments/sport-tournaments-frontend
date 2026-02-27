@@ -76,6 +76,14 @@ const isGroupFormat = (format?: TournamentFormat): boolean =>
   !format || GROUP_FORMATS.includes(format);
 const isDoubleElimination = (format?: TournamentFormat): boolean =>
   format === 'DOUBLE_ELIMINATION';
+// Formats that require explicit group config (number of groups, teams per group)
+const isGroupedFormat = (format?: TournamentFormat): boolean =>
+  format === 'GROUPS_PLUS_KNOCKOUT';
+// Formats that use round-robin scheduling within groups (show match config)
+const isRoundRobinBased = (format?: TournamentFormat): boolean =>
+  format === 'ROUND_ROBIN' || format === 'LEAGUE' || format === 'GROUPS_PLUS_KNOCKOUT';
+const isLeagueFormat = (format?: TournamentFormat): boolean =>
+  format === 'LEAGUE';
 
 export interface AgeGroupFormData {
   id?: string;
@@ -100,6 +108,8 @@ export interface AgeGroupFormData {
   halfDurationMinutes?: number;
   guaranteedMatches?: number;
   advancementOverride?: number;
+  leagueLegs?: number;
+  qualifyingTeamsPerGroup?: number;
   notes?: string;
 }
 
@@ -221,6 +231,8 @@ export function AgeGroupsManager({
           // Clear group-specific fields when switching to elimination format
           updated.groupsCount = undefined;
           updated.teamsPerGroup = undefined;
+          updated.leagueLegs = undefined;
+          updated.qualifyingTeamsPerGroup = undefined;
           // Set default guaranteed matches for double elimination
           if (isDoubleElimination(newFormat)) {
             updated.guaranteedMatches = updated.guaranteedMatches ?? 2;
@@ -229,12 +241,29 @@ export function AgeGroupsManager({
             updated.guaranteedMatches = undefined;
             updated.advancementOverride = undefined;
           }
+        } else if (isLeagueFormat(newFormat)) {
+          // League: uses round-robin scheduling, no fixed groups
+          updated.groupsCount = undefined;
+          updated.teamsPerGroup = undefined;
+          updated.qualifyingTeamsPerGroup = undefined;
+          updated.guaranteedMatches = undefined;
+          updated.advancementOverride = undefined;
+          updated.leagueLegs = updated.leagueLegs ?? 2;
+        } else if (newFormat === 'ROUND_ROBIN') {
+          // Round robin: all teams play each other, no groups needed
+          updated.groupsCount = undefined;
+          updated.teamsPerGroup = undefined;
+          updated.qualifyingTeamsPerGroup = undefined;
+          updated.leagueLegs = undefined;
+          updated.guaranteedMatches = undefined;
+          updated.advancementOverride = undefined;
         } else if (isGroupFormat(newFormat)) {
-          // Restore group defaults when switching to group format
+          // Groups+KO: restore group defaults
           updated.teamsPerGroup = updated.teamsPerGroup ?? 4;
           updated.groupsCount = updated.teamCount && updated.teamsPerGroup
             ? Math.ceil(updated.teamCount / updated.teamsPerGroup)
             : 1;
+          updated.leagueLegs = undefined;
           // Clear elimination-specific fields
           updated.guaranteedMatches = undefined;
           updated.advancementOverride = undefined;
@@ -441,10 +470,10 @@ export function AgeGroupsManager({
                       helperText={t('tournaments.ageGroups.teamCountHelp', 'Expected number of teams')}
                     />
 
-                    {/* Group Configuration - only shown for group-based formats */}
-                    {isGroupFormat(ageGroup.format) && (
+                    {/* Group Configuration - only shown for GROUPS_PLUS_KNOCKOUT */}
+                    {isGroupedFormat(ageGroup.format) && (
                       <>
-                        {/* Teams Per Group - moved here per issue #73 */}
+                        {/* Teams Per Group */}
                         <Input
                           type="number"
                           label={t('tournaments.ageGroups.teamsPerGroup', 'Teams Per Group')}
@@ -457,7 +486,7 @@ export function AgeGroupsManager({
                           helperText={t('tournaments.ageGroups.teamsPerGroupHelp', 'Usually 4 teams per group')}
                         />
 
-                        {/* Number of Groups - moved here per issue #73 */}
+                        {/* Number of Groups */}
                         <Select
                           label={t('tournaments.ageGroups.groupsCount', 'Number of Groups')}
                           options={GROUPS_COUNT_OPTIONS}
@@ -471,7 +500,48 @@ export function AgeGroupsManager({
                           helperText={t('tournaments.ageGroups.groupsCountHelp', 'Auto-calculated: Total teams ÷ Teams per group')}
                         />
 
-                        {/* Number of Fields - issue #189 */}
+                        {/* Qualifying Teams Per Group - how many advance to KO stage */}
+                        <Input
+                          type="number"
+                          label={t('tournaments.ageGroups.qualifyingTeamsPerGroup', 'Qualifying Teams per Group')}
+                          value={ageGroup.qualifyingTeamsPerGroup ?? ''}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                            handleUpdateAgeGroup(index, {
+                              qualifyingTeamsPerGroup: e.target.value ? parseInt(e.target.value) : undefined,
+                            })
+                          }
+                          min={1}
+                          max={8}
+                          step={1}
+                          disabled={disabled}
+                          helperText={t('tournaments.ageGroups.qualifyingTeamsPerGroupHelp', 'Teams advancing from each group to knockout stage (usually 1 or 2)')}
+                        />
+                      </>
+                    )}
+
+                    {/* League Legs - only for LEAGUE format */}
+                    {isLeagueFormat(ageGroup.format) && (
+                      <Input
+                        type="number"
+                        label={t('tournaments.ageGroups.leagueLegs', 'League Legs')}
+                        value={ageGroup.leagueLegs ?? 2}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                          handleUpdateAgeGroup(index, {
+                            leagueLegs: e.target.value ? parseInt(e.target.value) : undefined,
+                          })
+                        }
+                        min={1}
+                        max={4}
+                        step={1}
+                        disabled={disabled}
+                        helperText={t('tournaments.ageGroups.leagueLegsHelp', '1 = single round-robin, 2 = home & away (double round-robin)')}
+                      />
+                    )}
+
+                    {/* Match format / field config - shown for round-robin based formats */}
+                    {isRoundRobinBased(ageGroup.format) && (
+                      <>
+                        {/* Number of Fields */}
                         <Input
                           type="number"
                           label={t('tournaments.ageGroups.fieldsCount', 'Number of Fields')}

@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { groupService } from '@/services';
+import { formatDateTime } from '@/utils/date';
 import type { BracketMatch, PlayoffRound, MatchesResponse } from '@/types';
+import StandingsTable from './StandingsTable';
+import LeagueMatchSchedule from './LeagueMatchSchedule';
+import DoubleEliminationBracket from './DoubleEliminationBracket';
 
 interface TeamInfo {
   id: string;
@@ -35,6 +39,7 @@ export default function MatchManagement({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
+  const [schedulingMatchId, setSchedulingMatchId] = useState<string | null>(null);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -126,6 +131,38 @@ export default function MatchManagement({
       setError(t('matches.scoreError', 'Failed to update match score.'));
     } finally {
       setSavingMatchId(null);
+    }
+  };
+
+  const handleScheduleMatch = async (
+    matchId: string,
+    scheduledAt: string,
+    courtNumber?: number
+  ) => {
+    try {
+      setSchedulingMatchId(matchId);
+      setError(null);
+      setSuccessMessage(null);
+      await groupService.scheduleMatch(
+        tournamentId,
+        matchId,
+        { scheduledAt, courtNumber },
+        ageGroupId
+      );
+      setSuccessMessage(
+        t('matches.scheduleSuccess', 'Match scheduled successfully!')
+      );
+      await fetchMatches();
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to schedule match:', err);
+      setError(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          t('matches.scheduleError', 'Failed to schedule match.')
+      );
+    } finally {
+      setSchedulingMatchId(null);
     }
   };
 
@@ -306,38 +343,181 @@ export default function MatchManagement({
         </div>
       )}
 
-      {/* Bracket View */}
-      {matchData?.playoffRounds && matchData.playoffRounds.length > 0 ? (
-        <div className="space-y-8">
-          {matchData.playoffRounds.map((round, idx) => (
-            <RoundSection
-              key={`${round.roundNumber}-${round.roundName || idx}`}
-              round={round}
-              getTeamName={getTeamName}
+      {/* Bracket View — format-aware */}
+      {(() => {
+        const bracketType = matchData?.bracketType;
+        // Build a teamNames map for standings/schedule components
+        const teamNamesMap = new Map<string, string>(
+          [...teams.entries()].map(([id, info]) => [id, info.name])
+        );
+
+        // --- DOUBLE ELIMINATION ---
+        if (
+          bracketType === 'DOUBLE_ELIMINATION' &&
+          matchData?.playoffRounds &&
+          matchData.playoffRounds.length > 0
+        ) {
+          return (
+            <DoubleEliminationBracket
+              playoffRounds={matchData.playoffRounds}
+              teamNames={teamNamesMap}
               isOrganizer={isOrganizer}
               onAdvance={handleAdvancement}
               onScoreUpdate={handleScoreUpdate}
+              onSchedule={handleScheduleMatch}
               savingMatchId={savingMatchId}
+              schedulingMatchId={schedulingMatchId}
               t={t}
             />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {matchData?.matches?.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              getTeamName={getTeamName}
-              isOrganizer={isOrganizer}
-              onAdvance={handleAdvancement}
-              onScoreUpdate={handleScoreUpdate}
-              savingMatchId={savingMatchId}
-              t={t}
-            />
-          ))}
-        </div>
-      )}
+          );
+        }
+
+        // --- ROUND ROBIN: standings + flat match list ---
+        if (bracketType === 'ROUND_ROBIN') {
+          const allMatches = matchData?.matches ?? [];
+          return (
+            <div className="space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Standings</h4>
+                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Match Schedule</h4>
+                <LeagueMatchSchedule
+                  matches={allMatches}
+                  teamNames={teamNamesMap}
+                  isOrganizer={isOrganizer}
+                  onScoreUpdate={handleScoreUpdate}
+                  onSchedule={handleScheduleMatch}
+                  savingMatchId={savingMatchId}
+                  schedulingMatchId={schedulingMatchId}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        // --- LEAGUE: standings + schedule ---
+        if (bracketType === 'LEAGUE') {
+          const allMatches = matchData?.matches ?? [];
+          return (
+            <div className="space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">League Standings</h4>
+                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Match Schedule</h4>
+                <LeagueMatchSchedule
+                  matches={allMatches}
+                  teamNames={teamNamesMap}
+                  isOrganizer={isOrganizer}
+                  onScoreUpdate={handleScoreUpdate}
+                  onSchedule={handleScheduleMatch}
+                  savingMatchId={savingMatchId}
+                  schedulingMatchId={schedulingMatchId}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        // --- GROUPS PLUS KNOCKOUT: per-group standings + knockout bracket ---
+        if (bracketType === 'GROUPS_PLUS_KNOCKOUT' || bracketType === 'GROUPS_ONLY') {
+          const allMatches = matchData?.matches ?? [];
+          // Group matches by their group letter (team names encode group via server)
+          // If playoffRounds exist, also render knockout section
+          const playoffRounds = matchData?.playoffRounds ?? [];
+          const knockoutRounds = playoffRounds.filter(
+            (r) => !r.bracket || r.bracket === 'winners'
+          );
+          return (
+            <div className="space-y-6">
+              {/* Group phase standings */}
+              {allMatches.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Group Standings</h4>
+                  <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
+                  <div className="mt-4 border-t border-gray-100 pt-4">
+                    <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Group Matches</h5>
+                    <LeagueMatchSchedule
+                      matches={allMatches}
+                      teamNames={teamNamesMap}
+                      isOrganizer={isOrganizer}
+                      onScoreUpdate={handleScoreUpdate}
+                      onSchedule={handleScheduleMatch}
+                      savingMatchId={savingMatchId}
+                      schedulingMatchId={schedulingMatchId}
+                    />
+                  </div>
+                </div>
+              )}
+              {/* Knockout stage */}
+              {knockoutRounds.length > 0 && (
+                <div className="space-y-8">
+                  <h4 className="text-sm font-semibold text-gray-700">Knockout Stage</h4>
+                  {knockoutRounds.map((round, idx) => (
+                    <RoundSection
+                      key={`${round.roundNumber}-${round.roundName || idx}`}
+                      round={round}
+                      getTeamName={getTeamName}
+                      isOrganizer={isOrganizer}
+                      onAdvance={handleAdvancement}
+                      onScoreUpdate={handleScoreUpdate}
+                      onSchedule={handleScheduleMatch}
+                      savingMatchId={savingMatchId}
+                      schedulingMatchId={schedulingMatchId}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // --- SINGLE_ELIMINATION (default) + any unrecognised type ---
+        if (matchData?.playoffRounds && matchData.playoffRounds.length > 0) {
+          return (
+            <div className="space-y-8">
+              {matchData.playoffRounds.map((round, idx) => (
+                <RoundSection
+                  key={`${round.roundNumber}-${round.roundName || idx}`}
+                  round={round}
+                  getTeamName={getTeamName}
+                  isOrganizer={isOrganizer}
+                  onAdvance={handleAdvancement}
+                  onScoreUpdate={handleScoreUpdate}
+                  onSchedule={handleScheduleMatch}
+                  savingMatchId={savingMatchId}
+                  schedulingMatchId={schedulingMatchId}
+                  t={t}
+                />
+              ))}
+            </div>
+          );
+        }
+
+        // Flat match list fallback
+        return (
+          <div className="space-y-4">
+            {matchData?.matches?.map((match) => (
+              <MatchCard
+                key={match.id}
+                match={match}
+                getTeamName={getTeamName}
+                isOrganizer={isOrganizer}
+                onAdvance={handleAdvancement}
+                onScoreUpdate={handleScoreUpdate}
+                onSchedule={handleScheduleMatch}
+                savingMatchId={savingMatchId}
+                schedulingMatchId={schedulingMatchId}
+                t={t}
+              />
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -349,7 +529,9 @@ function RoundSection({
   isOrganizer,
   onAdvance,
   onScoreUpdate,
+  onSchedule,
   savingMatchId,
+  schedulingMatchId,
   t,
 }: {
   round: PlayoffRound;
@@ -362,7 +544,9 @@ function RoundSection({
     s2: number,
     advancingTeamId?: string
   ) => Promise<void>;
+  onSchedule: (matchId: string, scheduledAt: string, courtNumber?: number) => Promise<void>;
   savingMatchId: string | null;
+  schedulingMatchId: string | null;
   t: any;
 }) {
   return (
@@ -387,7 +571,9 @@ function RoundSection({
             isOrganizer={isOrganizer}
             onAdvance={onAdvance}
             onScoreUpdate={onScoreUpdate}
+            onSchedule={onSchedule}
             savingMatchId={savingMatchId}
+            schedulingMatchId={schedulingMatchId}
             t={t}
           />
         ))}
@@ -403,7 +589,9 @@ function MatchCard({
   isOrganizer,
   onAdvance,
   onScoreUpdate,
+  onSchedule,
   savingMatchId,
+  schedulingMatchId,
   t,
 }: {
   match: BracketMatch;
@@ -416,7 +604,9 @@ function MatchCard({
     s2: number,
     advancingTeamId?: string
   ) => Promise<void>;
+  onSchedule: (matchId: string, scheduledAt: string, courtNumber?: number) => Promise<void>;
   savingMatchId: string | null;
+  schedulingMatchId: string | null;
   t: any;
 }) {
   const [editMode, setEditMode] = useState(false);
@@ -429,8 +619,16 @@ function MatchCard({
   const [selectedWinner, setSelectedWinner] = useState<string>(
     match.manualWinnerId || match.winnerId || ''
   );
+  const [scheduleMode, setScheduleMode] = useState(false);
+  const [scheduledAtInput, setScheduledAtInput] = useState<string>(
+    match.scheduledAt ? match.scheduledAt.slice(0, 16) : ''
+  );
+  const [courtNumberInput, setCourtNumberInput] = useState<string>(
+    match.courtNumber ? String(match.courtNumber) : ''
+  );
 
   const isSaving = savingMatchId === match.id;
+  const isScheduling = schedulingMatchId === match.id;
   const team1Name = match.team1Name || getTeamName(match.team1Id);
   const team2Name = match.team2Name || getTeamName(match.team2Id);
   const isTeam1Winner = match.winnerId === match.team1Id;
@@ -451,6 +649,13 @@ function MatchCard({
       s1 === s2 ? selectedWinner || undefined : undefined
     );
     setEditMode(false);
+  };
+
+  const handleSaveSchedule = async () => {
+    if (!scheduledAtInput) return;
+    const courtNum = courtNumberInput ? parseInt(courtNumberInput) : undefined;
+    await onSchedule(match.id, new Date(scheduledAtInput).toISOString(), courtNum);
+    setScheduleMode(false);
   };
 
   const handleDirectAdvance = async (teamId: string) => {
@@ -662,6 +867,88 @@ function MatchCard({
                 {match.team1Score !== undefined
                   ? t('matches.editScore', 'Edit Score')
                   : t('matches.enterScore', 'Enter Score')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Schedule Info (always visible when set) */}
+        {(match.scheduledAt || match.courtNumber) && !scheduleMode && (
+          <div className="pt-2 border-t border-gray-100">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {match.scheduledAt && (
+                <span>{formatDateTime(match.scheduledAt)}</span>
+              )}
+              {match.courtNumber && (
+                <span className="ml-1 px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-medium">
+                  {t('matches.court', 'Court')} {match.courtNumber}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Schedule Editor (organizer only) */}
+        {isOrganizer && (
+          <div className="pt-2 border-t border-gray-100">
+            {scheduleMode ? (
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">
+                    {t('matches.scheduledAt', 'Date & Time')}
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledAtInput}
+                    onChange={(e) => setScheduledAtInput(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">
+                    {t('matches.courtNumber', 'Court Number')} ({t('common.optional', 'optional')})
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={courtNumberInput}
+                    onChange={(e) => setCourtNumberInput(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="1"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => setScheduleMode(false)}
+                    className="px-3 py-1.5 text-xs text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {t('common.cancel', 'Cancel')}
+                  </button>
+                  <button
+                    onClick={handleSaveSchedule}
+                    disabled={isScheduling || !scheduledAtInput}
+                    className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  >
+                    {isScheduling
+                      ? t('common.saving', 'Saving...')
+                      : t('matches.saveSchedule', 'Save Schedule')}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setScheduleMode(true)}
+                className="w-full px-3 py-2 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors font-medium flex items-center justify-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {match.scheduledAt
+                  ? t('matches.editSchedule', 'Edit Schedule')
+                  : t('matches.setSchedule', 'Schedule Match')}
               </button>
             )}
           </div>

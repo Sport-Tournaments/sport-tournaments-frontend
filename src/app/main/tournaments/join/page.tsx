@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Input, Alert } from '
 import { tournamentService } from '@/services';
 import { useAuthStore } from '@/store';
 import { getTournamentPublicPath } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
 
 interface TournamentInfo {
   id: string;
@@ -167,7 +168,7 @@ export default function JoinTournamentPage() {
                       <div>
                         <p className="text-gray-500">{t('tournament.startDate')}</p>
                         <p className="font-medium text-gray-900">
-                          {new Date(tournament.startDate).toLocaleDateString()}
+                          {formatDate(tournament.startDate)}
                         </p>
                       </div>
                       <div>

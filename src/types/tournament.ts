@@ -168,13 +168,6 @@ export interface Tournament {
   updatedAt: string;
 }
 
-export interface PlayoffRound {
-  round: number;
-  name: string;
-  bracket?: "winners" | "losers" | "grand_final";
-  matches: Match[];
-}
-
 export interface Match {
   id: string;
   homeTeamId?: string;

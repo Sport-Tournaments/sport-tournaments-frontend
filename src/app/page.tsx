@@ -198,12 +198,12 @@ export default function HomePage() {
           <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-blue-100">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register?role=ORGANIZER">
-              <Button variant="secondary" size="lg" className="bg-white text-[#1e3a5f] hover:bg-blue-50 shadow-lg">
+              <Button size="lg" className="!bg-white !text-[#1e3a5f] hover:!bg-blue-50 shadow-lg">
                 {t('home.cta.organizer')}
               </Button>
             </Link>
             <Link href="/auth/register?role=PARTICIPANT">
-              <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white/10">
+              <Button size="lg" className="!bg-transparent border-2 border-white !text-white hover:!bg-white/10">
                 {t('home.cta.participant')}
               </Button>
             </Link>

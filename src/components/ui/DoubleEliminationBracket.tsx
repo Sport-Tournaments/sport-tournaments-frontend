@@ -13,7 +13,7 @@ export interface DoubleEliminationBracketProps {
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t?: (key: string, fallback: string, vars?: any) => string;
+  t?: any;
 }
 
 function resolveTeamName(

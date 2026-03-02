@@ -16,6 +16,7 @@ import {
 } from '@/services/registration.service';
 import type { Registration } from '@/types';
 import { useToast } from '@/hooks';
+import { formatDate } from '@/utils/date';
 
 export interface RegistrationReviewProps {
   registration: Registration;
@@ -163,7 +164,7 @@ export function RegistrationReviewCard({
               </p>
             )}
             <p className="text-xs text-gray-400 mt-2">
-              Registered {new Date(registration.createdAt).toLocaleDateString()}
+              Registered {formatDate(registration.createdAt)}
             </p>
           </div>
 
@@ -215,7 +216,7 @@ export function RegistrationReviewCard({
 
           {registration.status !== 'PENDING' && registration.reviewedAt && (
             <div className="text-right text-sm text-gray-500">
-              <p>Reviewed {new Date(registration.reviewedAt).toLocaleDateString()}</p>
+              <p>Reviewed {formatDate(registration.reviewedAt)}</p>
               {registration.reviewer && (
                 <p>
                   by {registration.reviewer.firstName} {registration.reviewer.lastName}
@@ -454,7 +455,7 @@ export function BulkRegistrationReview({
                 </p>
               </div>
               <p className="text-xs text-gray-400">
-                {new Date(registration.createdAt).toLocaleDateString()}
+                {formatDate(registration.createdAt)}
               </p>
             </div>
           ))}

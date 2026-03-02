@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Alert, Loading, Badge } from '@/components/ui';
 import { registrationService } from '@/services';
 import type { Registration, RegistrationDocument, FitnessStatus } from '@/types';
+import { formatDate } from '@/utils/date';
 
 interface RegistrationStatusProps {
   tournamentId: string;
@@ -244,11 +245,7 @@ export function RegistrationStatus({ tournamentId, onRegisterClick }: Registrati
         {/* Registration Date */}
         <p className="text-sm text-gray-500">
           {t('registration.status.registeredOn', 'Registered on')}{' '}
-          {new Date(registration.createdAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+          {formatDate(registration.createdAt)}
         </p>
 
         {/* Status-specific Messages */}

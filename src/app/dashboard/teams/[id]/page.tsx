@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs } from '@/components/ui';
 import { teamService } from '@/services';
 import type { Team } from '@/types';
+import { formatDate } from '@/utils/date';
 
 export default function TeamDetailPage() {
   const { t } = useTranslation();
@@ -173,7 +174,7 @@ export default function TeamDetailPage() {
                           </Link>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          {new Date(player.dateOfBirth).toLocaleDateString()}
+                          {formatDate(player.dateOfBirth)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <Link href={`/dashboard/players/${player.id}/edit`}>

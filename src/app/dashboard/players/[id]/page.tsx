@@ -8,6 +8,7 @@ import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading } from '@/components/ui';
 import { playerService } from '@/services';
 import type { Player } from '@/types';
+import { formatDate } from '@/utils/date';
 
 export default function PlayerDetailPage() {
   const { t } = useTranslation();
@@ -87,7 +88,7 @@ export default function PlayerDetailPage() {
                 {player.firstname} {player.lastname}
               </h1>
               <p className="text-gray-600 mt-1">
-                Age {calculateAge(player.dateOfBirth)} &middot; Born {new Date(player.dateOfBirth).toLocaleDateString()}
+                Age {calculateAge(player.dateOfBirth)} &middot; Born {formatDate(player.dateOfBirth)}
               </p>
             </div>
           </div>
@@ -130,7 +131,7 @@ export default function PlayerDetailPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Date of Birth</p>
-                <p className="font-medium">{new Date(player.dateOfBirth).toLocaleDateString()}</p>
+                <p className="font-medium">{formatDate(player.dateOfBirth)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Age</p>

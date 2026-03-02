@@ -92,6 +92,7 @@ export interface BracketMatch {
   manualWinnerId?: string;
   isManualOverride?: boolean;
   scheduledAt?: string;
+  courtNumber?: number;
   locationId?: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
   nextMatchId?: string;
@@ -101,6 +102,7 @@ export interface BracketMatch {
 export interface PlayoffRound {
   roundNumber: number;
   roundName: string;
+  bracket?: 'winners' | 'losers' | 'grand_final';
   matches: BracketMatch[];
 }
 

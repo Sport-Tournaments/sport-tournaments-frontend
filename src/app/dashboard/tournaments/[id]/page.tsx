@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement } from '@/components/ui';
-import { tournamentService, registrationService, fileService } from '@/services';
+import { tournamentService, registrationService, fileService, groupService } from '@/services';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
@@ -23,6 +23,7 @@ export default function TournamentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
   const [updatingRegistrations, setUpdatingRegistrations] = useState(false);
+  const [groups, setGroups] = useState<any[]>([]);
   
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -80,6 +81,14 @@ export default function TournamentDetailPage() {
       } catch (statsErr) {
         console.error('Failed to load registration statistics:', statsErr);
         setStatistics(null);
+      }
+
+      // Fetch groups (populated after draw is executed)
+      try {
+        const groupsData = await groupService.getGroups(params.id as string);
+        setGroups(groupsData.data || []);
+      } catch {
+        setGroups([]);
       }
     } catch (err: any) {
       setError('Failed to load tournament');
@@ -594,35 +603,95 @@ export default function TournamentDetailPage() {
       {
         id: 'groups',
         label: t('tournament.groups'),
-        content: (
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Pot-Based Draw System</CardTitle>
-                <CardDescription>
-                  Organize teams into pots based on strength and create balanced groups
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center py-8">
-                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Groups & Draw Management
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
-                </p>
-                <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
-                  <Button variant="primary">
-                    <Users className="w-4 h-4 mr-2" />
-                    Manage Pots & Draw
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        ),
+        content: (() => {
+          // Filter groups by ageGroupId if available: each group's teamDetails carries
+          // a registration.ageGroupId, so filter by checking the first team's ageGroupId.
+          const scopedGroups = ageGroupId
+            ? groups.filter((g) => {
+                const firstTeam = g.teamDetails?.[0];
+                return firstTeam ? firstTeam.ageGroupId === ageGroupId : true;
+              })
+            : groups;
+
+          if (scopedGroups.length > 0) {
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Draw Results</h2>
+                    <p className="text-sm text-gray-500">{scopedGroups.length} group{scopedGroups.length !== 1 ? 's' : ''} — {scopedGroups.reduce((sum, g) => sum + (g.teamDetails?.length ?? g.teams?.length ?? 0), 0)} teams assigned</p>
+                  </div>
+                  <Link href={`/dashboard/tournaments/${tournament.id}/pots${ageGroupId ? `?ageGroupId=${ageGroupId}` : ''}`}>
+                    <Button variant="outline" size="sm">
+                      <Users className="w-4 h-4 mr-2" />
+                      Manage Pots & Draw
+                    </Button>
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {scopedGroups.map((group) => {
+                    const teamDetails: any[] = group.teamDetails || [];
+                    return (
+                      <Card key={group.id} className="overflow-hidden">
+                        <CardHeader className="pb-2 bg-gray-50 border-b">
+                          <CardTitle className="text-base">Group {group.groupLetter}</CardTitle>
+                          <p className="text-xs text-gray-500">{teamDetails.length} team{teamDetails.length !== 1 ? 's' : ''}</p>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <ul className="divide-y divide-gray-100">
+                            {teamDetails.map((reg: any, idx: number) => (
+                              <li key={reg?.id ?? idx} className="flex items-center gap-3 px-4 py-2.5">
+                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold flex items-center justify-center">
+                                  {idx + 1}
+                                </span>
+                                <span className="text-sm font-medium text-gray-900 truncate">
+                                  {reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`}
+                                </span>
+                              </li>
+                            ))}
+                            {teamDetails.length === 0 && (
+                              <li className="px-4 py-3 text-sm text-gray-400 italic">No teams assigned</li>
+                            )}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pot-Based Draw System</CardTitle>
+                  <CardDescription>
+                    Organize teams into pots based on strength and create balanced groups
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center py-8">
+                  <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Groups & Draw Management
+                  </h3>
+                  <p className="text-gray-500 mb-6">
+                    {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
+                  </p>
+                  <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
+                    <Button variant="primary">
+                      <Users className="w-4 h-4 mr-2" />
+                      Manage Pots & Draw
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+          );
+        })()
       },
       {
         id: 'matches',

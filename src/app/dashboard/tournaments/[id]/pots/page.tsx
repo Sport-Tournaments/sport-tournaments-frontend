@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select, Modal } from '@/components/ui';
 import { potDrawService, tournamentService, registrationService } from '@/services';
 import type { Tournament, Registration, AgeGroup } from '@/types';
 import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle } from 'lucide-react';
@@ -46,6 +46,8 @@ export default function PotManagementPage() {
   const [executing, setExecuting] = useState(false);
   const [numberOfGroups, setNumberOfGroups] = useState(4);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showExecuteDrawModal, setShowExecuteDrawModal] = useState(false);
+  const [showClearPotsModal, setShowClearPotsModal] = useState(false);
 
   // Registrations filtered by selected age group
   const registrations = selectedAgeGroupId
@@ -139,17 +141,14 @@ export default function PotManagementPage() {
     }
   };
 
-  const handleExecuteDraw = async () => {
+  const handleExecuteDraw = () => {
     if (!selectedAgeGroupId) return;
+    setShowExecuteDrawModal(true);
+  };
 
-    const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
-    const groupLabel = selectedGroup?.displayLabel || 'this age group';
-
-    if (!window.confirm(
-      `Execute pot-based draw for ${groupLabel} to create ${numberOfGroups} groups? This action cannot be undone.`
-    )) {
-      return;
-    }
+  const confirmExecuteDraw = async () => {
+    if (!selectedAgeGroupId) return;
+    setShowExecuteDrawModal(false);
 
     try {
       setExecuting(true);
@@ -169,13 +168,12 @@ export default function PotManagementPage() {
     }
   };
 
-  const handleClearPots = async () => {
-    const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
-    const groupLabel = selectedGroup?.displayLabel || 'this age group';
+  const handleClearPots = () => {
+    setShowClearPotsModal(true);
+  };
 
-    if (!window.confirm(`Clear all pot assignments for ${groupLabel}? This will remove all team assignments for this age group.`)) {
-      return;
-    }
+  const confirmClearPots = async () => {
+    setShowClearPotsModal(false);
 
     try {
       await potDrawService.clearPotAssignments(tournamentId, selectedAgeGroupId || undefined);
@@ -566,6 +564,72 @@ export default function PotManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Execute Draw Confirmation Modal */}
+      <Modal
+        isOpen={showExecuteDrawModal}
+        onClose={() => setShowExecuteDrawModal(false)}
+        title="Execute Draw"
+        size="sm"
+        icon={<Shuffle className="w-5 h-5" />}
+        iconColor="info"
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowExecuteDrawModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmExecuteDraw}
+              disabled={executing}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {executing ? 'Executing...' : 'Execute Draw'}
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">
+          Execute pot-based draw for{' '}
+          <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>{' '}
+          to create{' '}
+          <span className="font-semibold">{numberOfGroups} {numberOfGroups === 1 ? 'group' : 'groups'}</span>?
+        </p>
+        <p className="text-sm text-red-600 mt-2 font-medium">This action cannot be undone.</p>
+      </Modal>
+
+      {/* Clear Pots Confirmation Modal */}
+      <Modal
+        isOpen={showClearPotsModal}
+        onClose={() => setShowClearPotsModal(false)}
+        title="Clear All Pots"
+        size="sm"
+        icon={
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        }
+        iconColor="warning"
+        footer={
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowClearPotsModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmClearPots}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clear Pots
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-sm text-gray-600">
+          Remove all pot assignments for{' '}
+          <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>?
+        </p>
+        <p className="text-sm text-red-600 mt-2 font-medium">All team assignments will be lost.</p>
+      </Modal>
     </DashboardLayout>
   );
 }

@@ -165,7 +165,9 @@ export default function Sidebar() {
               <li>
                 <ul role="list" className="-mx-2 space-y-1">
                   {filteredNavigation.map((item) => {
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
                     return (
                       <li key={item.href}>
                         <Link

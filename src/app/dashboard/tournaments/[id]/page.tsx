@@ -604,6 +604,31 @@ export default function TournamentDetailPage() {
         id: 'groups',
         label: t('tournament.groups'),
         content: (() => {
+          // Elimination formats don't use groups — show an informational message
+          const format = ageGroup?.format;
+          if (format === 'SINGLE_ELIMINATION' || format === 'DOUBLE_ELIMINATION') {
+            return (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <svg className="w-14 h-14 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <h3 className="text-base font-semibold text-gray-700 mb-2">
+                    Groups not available for this format
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                    This age group uses{' '}
+                    <span className="font-medium text-gray-700">
+                      {format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}
+                    </span>
+                    . Matches are generated automatically in the{' '}
+                    <span className="font-medium text-gray-700">Matches</span> section.
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          }
+
           // Filter groups by ageGroupId if available: each group's teamDetails carries
           // a registration.ageGroupId, so filter by checking the first team's ageGroupId.
           const scopedGroups = ageGroupId

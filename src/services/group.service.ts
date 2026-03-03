@@ -112,7 +112,7 @@ export async function generateBracket(
 export async function scheduleMatch(
   tournamentId: string,
   matchId: string,
-  data: { scheduledAt: string; courtNumber?: number },
+  data: { scheduledAt: string; courtNumber?: number; fieldName?: string },
   ageGroupId?: string
 ): Promise<ApiResponse<{ match: BracketMatch }>> {
   const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';

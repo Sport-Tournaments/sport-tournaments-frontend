@@ -93,16 +93,18 @@ export interface BracketMatch {
   isManualOverride?: boolean;
   scheduledAt?: string;
   courtNumber?: number;
+  fieldName?: string;
   locationId?: string;
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
   nextMatchId?: string;
   loserNextMatchId?: string;
+  groupLetter?: string; // set for group-phase matches in GROUPS_PLUS_KNOCKOUT / GROUPS_ONLY
 }
 
 export interface PlayoffRound {
   roundNumber: number;
   roundName: string;
-  bracket?: 'winners' | 'losers' | 'grand_final';
+  bracket?: 'winners' | 'losers' | 'grand_final' | 'third_place';
   matches: BracketMatch[];
 }
 

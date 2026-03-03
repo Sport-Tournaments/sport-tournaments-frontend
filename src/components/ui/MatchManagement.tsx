@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { groupService } from '@/services';
 import { formatDateTime } from '@/utils/date';
-import type { BracketMatch, PlayoffRound, MatchesResponse } from '@/types';
+import type { BracketMatch, PlayoffRound, MatchesResponse, Group } from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
 import DoubleEliminationBracket from './DoubleEliminationBracket';
@@ -40,6 +40,7 @@ export default function MatchManagement({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
   const [schedulingMatchId, setSchedulingMatchId] = useState<string | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -70,6 +71,19 @@ export default function MatchManagement({
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+
+  // Fetch group assignments for GROUPS_PLUS_KNOCKOUT / GROUPS_ONLY tournaments
+  useEffect(() => {
+    const bt = matchData?.bracketType;
+    if (bt === 'GROUPS_PLUS_KNOCKOUT' || bt === 'GROUPS_ONLY') {
+      groupService.getGroups(tournamentId)
+        .then((res) => {
+          const data = (res as any)?.data ?? res ?? [];
+          setGroups(Array.isArray(data) ? data : []);
+        })
+        .catch(() => setGroups([]));
+    }
+  }, [tournamentId, matchData?.bracketType]);
 
   const getTeamName = (teamId?: string): string => {
     if (!teamId) return t('matches.tbd', 'TBD');
@@ -137,7 +151,7 @@ export default function MatchManagement({
   const handleScheduleMatch = async (
     matchId: string,
     scheduledAt: string,
-    courtNumber?: number
+    fieldName?: string
   ) => {
     try {
       setSchedulingMatchId(matchId);
@@ -146,7 +160,7 @@ export default function MatchManagement({
       await groupService.scheduleMatch(
         tournamentId,
         matchId,
-        { scheduledAt, courtNumber },
+        { scheduledAt, fieldName },
         ageGroupId
       );
       setSuccessMessage(
@@ -261,7 +275,7 @@ export default function MatchManagement({
           <button
             onClick={handleGenerateBracket}
             disabled={generating}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
@@ -425,51 +439,117 @@ export default function MatchManagement({
         // --- GROUPS PLUS KNOCKOUT: per-group standings + knockout bracket ---
         if (bracketType === 'GROUPS_PLUS_KNOCKOUT' || bracketType === 'GROUPS_ONLY') {
           const allMatches = matchData?.matches ?? [];
-          // Group matches by their group letter (team names encode group via server)
-          // If playoffRounds exist, also render knockout section
           const playoffRounds = matchData?.playoffRounds ?? [];
-          const knockoutRounds = playoffRounds.filter(
-            (r) => !r.bracket || r.bracket === 'winners'
+
+          // Build per-group match sections when group assignments are available
+          const sortedGroups = [...groups].sort((a, b) =>
+            a.groupLetter.localeCompare(b.groupLetter)
           );
-          return (
-            <div className="space-y-6">
-              {/* Group phase standings */}
-              {allMatches.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Group Standings</h4>
-                  <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
-                  <div className="mt-4 border-t border-gray-100 pt-4">
-                    <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Group Matches</h5>
-                    <LeagueMatchSchedule
-                      matches={allMatches}
-                      teamNames={teamNamesMap}
-                      isOrganizer={isOrganizer}
-                      onScoreUpdate={handleScoreUpdate}
-                      onSchedule={handleScheduleMatch}
-                      savingMatchId={savingMatchId}
-                      schedulingMatchId={schedulingMatchId}
+
+          const groupPhaseSection = sortedGroups.length > 0 ? (
+            sortedGroups.map((group) => {
+              const groupMatches = allMatches.filter(
+                (m) => m.groupLetter === group.groupLetter
+              );
+              // Build a team-names map scoped to this group only
+              // group.teams is string[] of registration IDs at runtime
+              const groupTeamIds = new Set<string>(
+                Array.isArray(group.teams)
+                  ? group.teams.map((t: any) => (typeof t === 'string' ? t : t?.registrationId ?? t?.id ?? ''))
+                  : []
+              );
+              const groupTeamNames = new Map<string, string>();
+              for (const [id, name] of teamNamesMap.entries()) {
+                if (groupTeamIds.has(id)) {
+                  groupTeamNames.set(id, name);
+                }
+              }
+              // Also include any teams found in matches for this group (fallback)
+              for (const m of groupMatches) {
+                if (m.team1Id && !groupTeamNames.has(m.team1Id)) {
+                  groupTeamNames.set(m.team1Id, teamNamesMap.get(m.team1Id) || m.team1Name || m.team1Id.slice(0, 8));
+                }
+                if (m.team2Id && !groupTeamNames.has(m.team2Id)) {
+                  groupTeamNames.set(m.team2Id, teamNamesMap.get(m.team2Id) || m.team2Name || m.team2Id.slice(0, 8));
+                }
+              }
+              return (
+                <div key={group.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                  {/* Group header */}
+                  <div className="px-4 py-3 border-b border-gray-100" style={{ background: '#f0f7ff' }}>
+                    <h4 className="text-sm font-bold" style={{ color: '#1e3a5f' }}>
+                      Group {group.groupLetter}
+                    </h4>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    {/* Standings table for this group */}
+                    <StandingsTable
+                      matches={groupMatches}
+                      teamNames={groupTeamNames}
+                      highlightTopN={2}
                     />
+                    {/* Matches for this group */}
+                    {groupMatches.length > 0 && (
+                      <div className="border-t border-gray-100 pt-4">
+                        <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                          Matches
+                        </h5>
+                        <LeagueMatchSchedule
+                          matches={groupMatches}
+                          teamNames={teamNamesMap}
+                          isOrganizer={isOrganizer}
+                          onScoreUpdate={handleScoreUpdate}
+                          onSchedule={handleScheduleMatch}
+                          savingMatchId={savingMatchId}
+                          schedulingMatchId={schedulingMatchId}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-              {/* Knockout stage */}
-              {knockoutRounds.length > 0 && (
-                <div className="space-y-8">
-                  <h4 className="text-sm font-semibold text-gray-700">Knockout Stage</h4>
-                  {knockoutRounds.map((round, idx) => (
-                    <RoundSection
-                      key={`${round.roundNumber}-${round.roundName || idx}`}
-                      round={round}
-                      getTeamName={getTeamName}
-                      isOrganizer={isOrganizer}
-                      onAdvance={handleAdvancement}
-                      onScoreUpdate={handleScoreUpdate}
-                      onSchedule={handleScheduleMatch}
-                      savingMatchId={savingMatchId}
-                      schedulingMatchId={schedulingMatchId}
-                      t={t}
-                    />
-                  ))}
+              );
+            })
+          ) : (
+            // Fallback: combined view when group assignments not yet available
+            allMatches.length > 0 && (
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Group Standings</h4>
+                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Group Matches</h5>
+                  <LeagueMatchSchedule
+                    matches={allMatches}
+                    teamNames={teamNamesMap}
+                    isOrganizer={isOrganizer}
+                    onScoreUpdate={handleScoreUpdate}
+                    onSchedule={handleScheduleMatch}
+                    savingMatchId={savingMatchId}
+                    schedulingMatchId={schedulingMatchId}
+                  />
+                </div>
+              </div>
+            )
+          );
+
+          return (
+            <div className="space-y-6">
+              {/* Group phase — one card per group */}
+              {groupPhaseSection}
+              {/* Knockout stage — bracket chart */}
+              {playoffRounds.length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Knockout Stage</h4>
+                  <DoubleEliminationBracket
+                    playoffRounds={playoffRounds}
+                    teamNames={teamNamesMap}
+                    isOrganizer={isOrganizer}
+                    onAdvance={handleAdvancement}
+                    onScoreUpdate={handleScoreUpdate}
+                    onSchedule={handleScheduleMatch}
+                    savingMatchId={savingMatchId}
+                    schedulingMatchId={schedulingMatchId}
+                    t={t}
+                  />
                 </div>
               )}
             </div>
@@ -479,22 +559,17 @@ export default function MatchManagement({
         // --- SINGLE_ELIMINATION (default) + any unrecognised type ---
         if (matchData?.playoffRounds && matchData.playoffRounds.length > 0) {
           return (
-            <div className="space-y-8">
-              {matchData.playoffRounds.map((round, idx) => (
-                <RoundSection
-                  key={`${round.roundNumber}-${round.roundName || idx}`}
-                  round={round}
-                  getTeamName={getTeamName}
-                  isOrganizer={isOrganizer}
-                  onAdvance={handleAdvancement}
-                  onScoreUpdate={handleScoreUpdate}
-                  onSchedule={handleScheduleMatch}
-                  savingMatchId={savingMatchId}
-                  schedulingMatchId={schedulingMatchId}
-                  t={t}
-                />
-              ))}
-            </div>
+            <DoubleEliminationBracket
+              playoffRounds={matchData.playoffRounds}
+              teamNames={teamNamesMap}
+              isOrganizer={isOrganizer}
+              onAdvance={handleAdvancement}
+              onScoreUpdate={handleScoreUpdate}
+              onSchedule={handleScheduleMatch}
+              savingMatchId={savingMatchId}
+              schedulingMatchId={schedulingMatchId}
+              t={t}
+            />
           );
         }
 
@@ -544,7 +619,7 @@ function RoundSection({
     s2: number,
     advancingTeamId?: string
   ) => Promise<void>;
-  onSchedule: (matchId: string, scheduledAt: string, courtNumber?: number) => Promise<void>;
+  onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
   schedulingMatchId: string | null;
   t: any;
@@ -604,7 +679,7 @@ function MatchCard({
     s2: number,
     advancingTeamId?: string
   ) => Promise<void>;
-  onSchedule: (matchId: string, scheduledAt: string, courtNumber?: number) => Promise<void>;
+  onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
   schedulingMatchId: string | null;
   t: any;
@@ -623,8 +698,8 @@ function MatchCard({
   const [scheduledAtInput, setScheduledAtInput] = useState<string>(
     match.scheduledAt ? match.scheduledAt.slice(0, 16) : ''
   );
-  const [courtNumberInput, setCourtNumberInput] = useState<string>(
-    match.courtNumber ? String(match.courtNumber) : ''
+  const [fieldNameInput, setFieldNameInput] = useState<string>(
+    match.fieldName ?? ''
   );
 
   const isSaving = savingMatchId === match.id;
@@ -653,8 +728,7 @@ function MatchCard({
 
   const handleSaveSchedule = async () => {
     if (!scheduledAtInput) return;
-    const courtNum = courtNumberInput ? parseInt(courtNumberInput) : undefined;
-    await onSchedule(match.id, new Date(scheduledAtInput).toISOString(), courtNum);
+    await onSchedule(match.id, new Date(scheduledAtInput).toISOString(), fieldNameInput || undefined);
     setScheduleMode(false);
   };
 
@@ -818,7 +892,7 @@ function MatchCard({
                           onClick={() => setSelectedWinner(match.team1Id || '')}
                           className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                             selectedWinner === match.team1Id
-                              ? 'bg-indigo-600 text-white'
+                              ? 'bg-[#1e3a5f] text-white'
                               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -828,7 +902,7 @@ function MatchCard({
                           onClick={() => setSelectedWinner(match.team2Id || '')}
                           className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                             selectedWinner === match.team2Id
-                              ? 'bg-indigo-600 text-white'
+                              ? 'bg-[#1e3a5f] text-white'
                               : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                           }`}
                         >
@@ -848,7 +922,7 @@ function MatchCard({
                   <button
                     onClick={handleSaveScore}
                     disabled={isSaving}
-                    className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    className="px-4 py-1.5 bg-[#1e3a5f] text-white rounded-lg text-xs font-medium hover:bg-[#152a45] transition-colors disabled:opacity-50"
                   >
                     {isSaving
                       ? t('common.saving', 'Saving...')
@@ -859,7 +933,7 @@ function MatchCard({
             ) : (
               <button
                 onClick={() => setEditMode(true)}
-                className="w-full px-3 py-2 text-xs text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors font-medium flex items-center justify-center gap-1"
+                className="w-full px-3 py-2 text-xs text-[#1e3a5f] hover:text-[#152a45] hover:bg-[#dbeafe] rounded-lg transition-colors font-medium flex items-center justify-center gap-1"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -873,7 +947,7 @@ function MatchCard({
         )}
 
         {/* Schedule Info (always visible when set) */}
-        {(match.scheduledAt || match.courtNumber) && !scheduleMode && (
+        {(match.scheduledAt || match.fieldName) && !scheduleMode && (
           <div className="pt-2 border-t border-gray-100">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -882,9 +956,9 @@ function MatchCard({
               {match.scheduledAt && (
                 <span>{formatDateTime(match.scheduledAt)}</span>
               )}
-              {match.courtNumber && (
-                <span className="ml-1 px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-medium">
-                  {t('matches.court', 'Court')} {match.courtNumber}
+              {match.fieldName && (
+                <span className="ml-1 px-1.5 py-0.5 bg-[#e0f7ff] text-[#0090c7] rounded text-xs font-medium">
+                  {match.fieldName}
                 </span>
               )}
             </div>
@@ -909,15 +983,14 @@ function MatchCard({
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">
-                    {t('matches.courtNumber', 'Court Number')} ({t('common.optional', 'optional')})
+                    {t('matches.fieldName', 'Football Field')} ({t('common.optional', 'optional')})
                   </label>
                   <input
-                    type="number"
-                    min="1"
-                    value={courtNumberInput}
-                    onChange={(e) => setCourtNumberInput(e.target.value)}
+                    type="text"
+                    value={fieldNameInput}
+                    onChange={(e) => setFieldNameInput(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="1"
+                    placeholder="e.g. Pitch 1"
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -930,7 +1003,7 @@ function MatchCard({
                   <button
                     onClick={handleSaveSchedule}
                     disabled={isScheduling || !scheduledAtInput}
-                    className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    className="px-4 py-1.5 bg-[#1e3a5f] text-white rounded-lg text-xs font-medium hover:bg-[#152a45] transition-colors disabled:opacity-50"
                   >
                     {isScheduling
                       ? t('common.saving', 'Saving...')
@@ -941,7 +1014,7 @@ function MatchCard({
             ) : (
               <button
                 onClick={() => setScheduleMode(true)}
-                className="w-full px-3 py-2 text-xs text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-lg transition-colors font-medium flex items-center justify-center gap-1"
+                className="w-full px-3 py-2 text-xs text-[#0090c7] hover:text-[#1e3a5f] hover:bg-[#e0f7ff] rounded-lg transition-colors font-medium flex items-center justify-center gap-1"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -988,7 +1061,7 @@ function TeamRow({
             ? 'bg-amber-50 border border-amber-200'
             : 'bg-green-50 border border-green-200'
           : 'bg-gray-50 border border-transparent'
-      } ${canAdvance ? 'cursor-pointer hover:bg-indigo-50 hover:border-indigo-200' : ''}`}
+      } ${canAdvance ? 'cursor-pointer hover:bg-[#dbeafe] hover:border-blue-200' : ''}`}
       onClick={canAdvance ? onAdvance : undefined}
       title={
         canAdvance

@@ -59,6 +59,21 @@ function computeStandings(
     return rows.get(id)!;
   };
 
+  // Pre-seed all known teams from teamNames so teams with no matches yet still appear
+  if (teamNames) {
+    if (teamNames instanceof Map) {
+      for (const id of teamNames.keys()) ensure(id);
+    } else {
+      for (const id of Object.keys(teamNames)) ensure(id);
+    }
+  }
+
+  // Also ensure all teams that appear in any match (even pending ones) are present
+  for (const match of matches) {
+    if (match.team1Id) ensure(match.team1Id);
+    if (match.team2Id) ensure(match.team2Id);
+  }
+
   for (const match of matches) {
     const t1 = match.team1Id;
     const t2 = match.team2Id;

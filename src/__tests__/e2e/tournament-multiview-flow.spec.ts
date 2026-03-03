@@ -432,7 +432,7 @@ test.describe('Tournament Multi-View Flow', () => {
 
 // Helper Functions
 
-async function loginAsTestUser(page: Page, user: typeof TEST_USER) {
+async function loginAsTestUser(page: Page, user: { email: string; password: string }) {
   await page.goto('/auth/login');
   await page.waitForLoadState('networkidle');
   

@@ -4,7 +4,7 @@ import { test, expect, Page } from '@playwright/test';
 // These tests are for geolocation filter and location autocomplete features
 // which are NOT being implemented (excluded from Phase 0)
 
-test.describe.skip('Geolocation Filter - Tournament Listing', () => {
+const TEST_LOCATION = {
   latitude: 44.4268,
   longitude: 26.1025,
 };

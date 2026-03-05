@@ -5,6 +5,8 @@ export interface Group {
   groupLetter: string;
   groupOrder?: number;
   teams: GroupTeam[];
+  /** Manual tiebreak order: teamIds ordered by rank (set by organizer) */
+  tieBreakOrder?: string[] | null;
 }
 
 export interface GroupTeam {
@@ -113,6 +115,7 @@ export interface MatchesResponse {
   bracketType?: string;
   playoffRounds?: PlayoffRound[];
   teams: { id: string; name: string; clubName?: string }[];
+  advancingTeamsPerGroup?: number;
 }
 
 export interface UpdateMatchAdvancementDto {

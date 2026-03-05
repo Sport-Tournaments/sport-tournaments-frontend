@@ -48,16 +48,31 @@ export default function MatchManagement({
       setError(null);
       const response = await groupService.getMatches(tournamentId, ageGroupId);
       const data = response?.data || response;
-      setMatchData(data as MatchesResponse);
+      const matchesData = data as MatchesResponse;
+      setMatchData(matchesData);
 
       // Build teams map
       const teamMap = new Map<string, TeamInfo>();
-      if ((data as MatchesResponse)?.teams) {
-        (data as MatchesResponse).teams.forEach((team) => {
+      if (matchesData?.teams) {
+        matchesData.teams.forEach((team) => {
           teamMap.set(team.id, team);
         });
       }
       setTeams(teamMap);
+
+      // Fetch groups in parallel when bracket type requires them — keeps both
+      // data sets ready before loading is cleared, preventing a flash of the
+      // combined standings table before per-group tables appear.
+      const bt = matchesData?.bracketType;
+      if (bt === 'GROUPS_PLUS_KNOCKOUT' || bt === 'GROUPS_ONLY') {
+        try {
+          const groupsRes = await groupService.getGroups(tournamentId);
+          const groupsData = (groupsRes as any)?.data ?? groupsRes ?? [];
+          setGroups(Array.isArray(groupsData) ? groupsData : []);
+        } catch {
+          setGroups([]);
+        }
+      }
     } catch (err: any) {
       console.error('Failed to load matches:', err);
       setError(
@@ -71,19 +86,6 @@ export default function MatchManagement({
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
-
-  // Fetch group assignments for GROUPS_PLUS_KNOCKOUT / GROUPS_ONLY tournaments
-  useEffect(() => {
-    const bt = matchData?.bracketType;
-    if (bt === 'GROUPS_PLUS_KNOCKOUT' || bt === 'GROUPS_ONLY') {
-      groupService.getGroups(tournamentId)
-        .then((res) => {
-          const data = (res as any)?.data ?? res ?? [];
-          setGroups(Array.isArray(data) ? data : []);
-        })
-        .catch(() => setGroups([]));
-    }
-  }, [tournamentId, matchData?.bracketType]);
 
   const getTeamName = (teamId?: string): string => {
     if (!teamId) return t('matches.tbd', 'TBD');
@@ -177,6 +179,30 @@ export default function MatchManagement({
       );
     } finally {
       setSchedulingMatchId(null);
+    }
+  };
+
+  const handleTiebreakerSet = async (groupId: string, order: string[]) => {
+    try {
+      setError(null);
+      await groupService.setGroupTiebreak(tournamentId, groupId, order, ageGroupId);
+      // Re-fetch groups (tieBreakOrder updated) and matches (bracket may have been re-seeded)
+      await Promise.all([
+        groupService.getGroups(tournamentId).then((res) => {
+          const data = (res as any)?.data ?? res ?? [];
+          setGroups(Array.isArray(data) ? data : []);
+        }),
+        fetchMatches(),
+      ]);
+      setSuccessMessage(t('matches.tiebreakSaved', 'Tiebreak order saved!'));
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to save tiebreak:', err);
+      setError(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          t('matches.tiebreakError', 'Failed to save tiebreak order.')
+      );
     }
   };
 
@@ -486,7 +512,10 @@ export default function MatchManagement({
                     <StandingsTable
                       matches={groupMatches}
                       teamNames={groupTeamNames}
-                      highlightTopN={2}
+                      highlightTopN={matchData?.advancingTeamsPerGroup ?? 2}
+                      canEdit={isOrganizer}
+                      tiebreakOrder={group.tieBreakOrder ?? undefined}
+                      onTiebreakerSet={(order) => handleTiebreakerSet(group.id, order)}
                     />
                     {/* Matches for this group */}
                     {groupMatches.length > 0 && (

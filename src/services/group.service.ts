@@ -122,6 +122,20 @@ export async function scheduleMatch(
   );
 }
 
+// Set manual tiebreak order for a group (organizer only)
+export async function setGroupTiebreak(
+  tournamentId: string,
+  groupId: string,
+  order: string[],
+  ageGroupId?: string
+): Promise<ApiResponse<{ success: boolean; bracketUpdated: boolean }>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPatch<ApiResponse<{ success: boolean; bracketUpdated: boolean }>>(
+    `/v1/tournaments/${tournamentId}/groups/${groupId}/tiebreak${params}`,
+    { order }
+  );
+}
+
 export const groupService = {
   executeDraw,
   resetDraw,
@@ -134,6 +148,7 @@ export const groupService = {
   updateMatchScore,
   generateBracket,
   scheduleMatch,
+  setGroupTiebreak,
 };
 
 export default groupService;

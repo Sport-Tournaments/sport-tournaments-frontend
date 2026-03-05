@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { BracketMatch } from '@/types';
 
 interface StandingRow {
@@ -24,6 +25,12 @@ export interface StandingsTableProps {
   groupLabel?: string;
   /** Highlight the top N rows (promotion spots) */
   highlightTopN?: number;
+  /** If true, show tiebreak controls when a tie is detected and all matches are done */
+  canEdit?: boolean;
+  /** Current persisted tiebreak order (teamIds in rank order, 1st first) */
+  tiebreakOrder?: string[];
+  /** Called with the new ordered teamIds when organizer resolves a tie */
+  onTiebreakerSet?: (order: string[]) => void;
 }
 
 function resolveTeamName(
@@ -125,13 +132,86 @@ function computeStandings(
   });
 }
 
+/** Returns groups of consecutive rows that are exactly equal on pts/GD/GF */
+function findTiedGroups(rows: StandingRow[]): StandingRow[][] {
+  const groups: StandingRow[][] = [];
+  let i = 0;
+  while (i < rows.length) {
+    const cur = rows[i];
+    let j = i + 1;
+    while (
+      j < rows.length &&
+      rows[j].points === cur.points &&
+      rows[j].goalDifference === cur.goalDifference &&
+      rows[j].goalsFor === cur.goalsFor
+    ) {
+      j++;
+    }
+    if (j - i > 1) groups.push(rows.slice(i, j));
+    i = j;
+  }
+  return groups;
+}
+
 export default function StandingsTable({
   matches,
   teamNames,
   groupLabel,
   highlightTopN,
+  canEdit = false,
+  tiebreakOrder,
+  onTiebreakerSet,
 }: StandingsTableProps) {
+  const [saving, setSaving] = useState(false);
+
   const rows = computeStandings(matches, teamNames);
+
+  // Only show tiebreak UI when all matches in the group have been played
+  const allMatchesDone =
+    matches.length > 0 &&
+    matches.every(
+      (m) => m.status === 'COMPLETED' || (m.team1Score != null && m.team2Score != null)
+    );
+
+  // Find tied groups that overlap with advancing spots (or affect seeding within them)
+  const tiedGroups = allMatchesDone ? findTiedGroups(rows) : [];
+  // Only care about ties that touch the highlightTopN boundary or are within advancing spots
+  const relevantTiedGroups =
+    highlightTopN != null
+      ? tiedGroups.filter((g) => {
+          const startIdx = rows.indexOf(g[0]);
+          const endIdx = rows.indexOf(g[g.length - 1]);
+          // Tie overlaps the boundary or is fully within advancing spots
+          return startIdx < highlightTopN;
+        })
+      : tiedGroups;
+
+  const hasTie = canEdit && relevantTiedGroups.length > 0;
+
+  const handlePickWinner = async (tiedTeamIds: string[], pickedFirst: string) => {
+    if (!onTiebreakerSet) return;
+    // Build full order: put pickedFirst at the top, then the rest in their current order
+    const rest = tiedTeamIds.filter((id) => id !== pickedFirst);
+    // Compose the full tiebreak array: for all rows, place tied ones in new order
+    const fullOrder: string[] = [];
+    for (const row of rows) {
+      if (tiedTeamIds.includes(row.teamId)) {
+        if (row.teamId === pickedFirst && !fullOrder.includes(pickedFirst)) {
+          fullOrder.push(pickedFirst);
+          rest.forEach((id) => fullOrder.push(id));
+        }
+        // skip — already pushed via the block above
+      } else {
+        fullOrder.push(row.teamId);
+      }
+    }
+    setSaving(true);
+    try {
+      await onTiebreakerSet(fullOrder);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (rows.length === 0) {
     return (
@@ -142,7 +222,7 @@ export default function StandingsTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto space-y-3">
       {groupLabel && (
         <h4 className="text-sm font-semibold text-gray-700 mb-2 px-1">
           {groupLabel}
@@ -167,6 +247,15 @@ export default function StandingsTable({
           {rows.map((row, idx) => {
             const rank = idx + 1;
             const isPromoted = highlightTopN != null && rank <= highlightTopN;
+            // Is this row part of a relevant tie?
+            const isTied = relevantTiedGroups.some((g) =>
+              g.some((r) => r.teamId === row.teamId)
+            );
+            // Is this team picked first in the current tiebreakOrder?
+            const isTiebreakWinner =
+              tiebreakOrder && tiebreakOrder.length > 0
+                ? tiebreakOrder[0] === row.teamId
+                : false;
             return (
               <tr
                 key={row.teamId}
@@ -176,8 +265,13 @@ export default function StandingsTable({
                     : 'bg-white hover:bg-gray-50'
                 }
               >
-                <td className="px-3 py-2 text-center text-gray-400 font-medium">
+                <td className="px-3 py-2 text-center text-gray-400 font-medium relative">
                   {rank}
+                  {isTied && !isTiebreakWinner && (
+                    <span className="absolute top-1 right-0.5 text-amber-400 text-xs" title="Tie">
+                      ⚠
+                    </span>
+                  )}
                 </td>
                 <td className="px-3 py-2 font-medium text-gray-900 flex items-center gap-2">
                   {isPromoted && (
@@ -187,6 +281,9 @@ export default function StandingsTable({
                     />
                   )}
                   {row.teamName}
+                  {isTiebreakWinner && (
+                    <span className="text-xs text-amber-600 font-normal">(tiebreak winner)</span>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-center text-gray-600">{row.played}</td>
                 <td className="px-3 py-2 text-center text-gray-600">{row.won}</td>
@@ -213,12 +310,55 @@ export default function StandingsTable({
           })}
         </tbody>
       </table>
+
       {highlightTopN != null && rows.length > highlightTopN && (
         <p className="text-xs text-gray-400 mt-1 px-1">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />
           Top {highlightTopN} advance
         </p>
       )}
+
+      {/* Tiebreak picker — shown to organizer when teams are perfectly tied */}
+      {hasTie &&
+        relevantTiedGroups.map((tiedGroup, gi) => {
+          const tiedIds = tiedGroup.map((r) => r.teamId);
+          const startRank = rows.indexOf(tiedGroup[0]) + 1;
+          return (
+            <div
+              key={gi}
+              className="rounded-lg border border-amber-300 bg-amber-50 p-3"
+            >
+              <p className="text-xs font-semibold text-amber-800 mb-2">
+                ⚠ Teams tied at position {startRank}
+                {tiedGroup.length > 1 ? `–${startRank + tiedGroup.length - 1}` : ''} — select who finishes 1st:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {tiedGroup.map((row) => {
+                  const isCurrentWinner =
+                    tiebreakOrder && tiebreakOrder[0] === row.teamId;
+                  return (
+                    <button
+                      key={row.teamId}
+                      disabled={saving}
+                      onClick={() => handlePickWinner(tiedIds, row.teamId)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
+                        isCurrentWinner
+                          ? 'bg-[#1e3a5f] text-white ring-2 ring-[#1e3a5f]'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-amber-400'
+                      }`}
+                    >
+                      {row.teamName}
+                      {isCurrentWinner && ' ✓'}
+                    </button>
+                  );
+                })}
+              </div>
+              {saving && (
+                <p className="text-xs text-amber-600 mt-2">Saving tiebreak…</p>
+              )}
+            </div>
+          );
+        })}
     </div>
   );
 }

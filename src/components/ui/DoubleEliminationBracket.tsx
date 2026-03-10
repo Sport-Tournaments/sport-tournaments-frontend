@@ -14,6 +14,10 @@ import '@xyflow/react/dist/style.css';
 import type { BracketMatch, PlayoffRound } from '@/types';
 import { formatDateTime } from '@/utils/date';
 
+function formatFieldDisplay(fieldName: string): string {
+  return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
+}
+
 /* ─── Layout constants ───────────────────────────────────────────────────── */
 
 const CARD_W   = 200;   // px – match-card width
@@ -103,8 +107,10 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const ROW_H        = featured ? FEATURED_ROW_H : (CARD_H - 2) / 2;
   const effectiveCardH = featured ? FEATURED_CARD_H : CARD_H;
 
-  const existingDate = match.scheduledAt ? match.scheduledAt.slice(0, 10) : '';
-  const existingHH   = match.scheduledAt ? match.scheduledAt.slice(11, 13) : '08';
+  const _todayDate = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
+  const _todayHH   = String(new Date().getHours()).padStart(2, '0');
+  const existingDate = match.scheduledAt ? match.scheduledAt.slice(0, 10) : _todayDate;
+  const existingHH   = match.scheduledAt ? match.scheduledAt.slice(11, 13) : _todayHH;
   const existingMM   = match.scheduledAt ? match.scheduledAt.slice(14, 16) : '00';
 
   const [scoreModal,   setScoreModal]   = useState({ open: false, score1: '', score2: '' });
@@ -148,6 +154,22 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
             </svg>
           )}
           {cardLabel}
+        </div>
+      )}
+
+      {/* ── Date / field meta (above the card) ── */}
+      {(match.scheduledAt || match.fieldName) && (
+        <div
+          className="nopan nodrag flex items-center gap-1 mb-1"
+          onPointerDown={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          {match.scheduledAt && (
+            <span className="text-[10px] text-gray-400 truncate flex-1 leading-none">{formatDateTime(match.scheduledAt)}</span>
+          )}
+          {match.fieldName && (
+            <span className="text-[10px] px-1.5 py-0.5 bg-[#e0f7ff] text-[#0090c7] rounded font-medium flex-shrink-0 leading-none">{formatFieldDisplay(match.fieldName)}</span>
+          )}
         </div>
       )}
 
@@ -214,17 +236,6 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
           onPointerDown={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
         >
-          {/* Date / field meta */}
-          {(match.scheduledAt || match.fieldName) && (
-            <div className="flex items-center gap-1">
-              {match.scheduledAt && (
-                <span className="text-[10px] text-gray-400 truncate flex-1 leading-none">{formatDateTime(match.scheduledAt)}</span>
-              )}
-              {match.fieldName && (
-                <span className="text-[10px] px-1.5 py-0.5 bg-[#e0f7ff] text-[#0090c7] rounded font-medium flex-shrink-0 leading-none">{match.fieldName}</span>
-              )}
-            </div>
-          )}
           {/* Buttons row */}
           <div className="flex items-center gap-1.5">
             {onScoreUpdate && (

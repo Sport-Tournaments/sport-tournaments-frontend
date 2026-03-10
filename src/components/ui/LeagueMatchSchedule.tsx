@@ -98,6 +98,11 @@ function GridIcon({ cols, active }: { cols: number; active: boolean }) {
   );
 }
 
+/** When a field value is purely numeric, prefix it with "Pitch ". */
+function formatFieldDisplay(fieldName: string): string {
+  return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
+}
+
 const STATUS_CONFIG: Record<
   BracketMatch['status'],
   { label: string; cls: string }
@@ -123,8 +128,8 @@ export default function LeagueMatchSchedule({
   // Responsive default: 1 col on mobile, 4 cols on desktop; updates on resize
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)');
-    const onChange = (e: MediaQueryListEvent) => setCols(e.matches ? 4 : 1);
-    setCols(mq.matches ? 4 : 1);
+    const onChange = (e: MediaQueryListEvent) => setCols(e.matches ? 2 : 1);
+    setCols(mq.matches ? 2 : 1);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
@@ -144,13 +149,25 @@ export default function LeagueMatchSchedule({
 
   function openDetailsModal(match: BracketMatch, t1: string, t2: string) {
     let date = '';
-    let hh = '12';
+    let hh = '08';
     let mm = '00';
     if (match.scheduledAt) {
       const d = new Date(match.scheduledAt);
-      date = d.toISOString().split('T')[0];
+      const y = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      date = `${y}-${mo}-${day}`;
       hh = String(d.getHours()).padStart(2, '0');
       mm = String(d.getMinutes()).padStart(2, '0');
+    } else {
+      // Pre-fill today's local date and current hour
+      const now = new Date();
+      const y = now.getFullYear();
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      date = `${y}-${mo}-${day}`;
+      hh = String(now.getHours()).padStart(2, '0');
+      mm = '00';
     }
     setDetailsModal({
       match,
@@ -199,9 +216,7 @@ export default function LeagueMatchSchedule({
               key={c}
               onClick={() => setCols(c)}
               title={`${c} column${c > 1 ? 's' : ''}`}
-              className={`items-center justify-center w-8 h-7 rounded transition-colors ${
-                c <= 2 ? 'flex md:hidden' : 'hidden md:flex'
-              } ${
+              className={`flex items-center justify-center w-8 h-7 rounded transition-colors ${
                 cols === c
                   ? 'bg-[#1e3a5f] text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-800 hover:bg-white'
@@ -261,7 +276,7 @@ export default function LeagueMatchSchedule({
                             )}
                             {match.fieldName && (
                               <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium">
-                                {match.fieldName}
+                                {formatFieldDisplay(match.fieldName)}
                               </span>
                             )}
                           </div>
@@ -293,16 +308,11 @@ export default function LeagueMatchSchedule({
                   // ── Card layout (2 / 3 / 4 columns) ──
                   return (
                     <div key={match.id} className="bg-white border border-gray-200 rounded-lg p-3 flex flex-col gap-2 hover:shadow-sm transition-shadow">
-                      {/* Header: status + field */}
-                      <div className="flex items-center justify-between gap-1">
+                      {/* Header: status only */}
+                      <div className="flex items-center gap-1">
                         <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${status.cls}`}>
                           {status.label}
                         </span>
-                        {match.fieldName && (
-                          <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium truncate max-w-[60%]">
-                            {match.fieldName}
-                          </span>
-                        )}
                       </div>
                       {/* Teams + score */}
                       <div className="flex items-center gap-1 min-w-0">
@@ -318,9 +328,18 @@ export default function LeagueMatchSchedule({
                         </div>
                         <span className="font-medium text-gray-900 text-xs truncate flex-1">{t2}</span>
                       </div>
-                      {/* Date */}
-                      {match.scheduledAt && (
-                        <div className="text-xs text-gray-400 truncate">{formatDateTime(match.scheduledAt)}</div>
+                      {/* Date + Field on same row */}
+                      {(match.scheduledAt || match.fieldName) && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {match.scheduledAt && (
+                            <span className="text-xs text-gray-400 truncate">{formatDateTime(match.scheduledAt)}</span>
+                          )}
+                          {match.fieldName && (
+                            <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium flex-shrink-0">
+                              {formatFieldDisplay(match.fieldName)}
+                            </span>
+                          )}
+                        </div>
                       )}
                       {/* Organizer actions */}
                       {isOrganizer && onScoreUpdate && match.status !== 'COMPLETED' && (

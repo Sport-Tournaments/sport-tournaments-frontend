@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
@@ -16,6 +16,7 @@ export default function TournamentDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatisticsByAgeGroup | null>(null);
@@ -721,17 +722,51 @@ export default function TournamentDetailPage() {
       {
         id: 'matches',
         label: t('tournament.matches'),
-        content: (
-          <Card>
-            <CardContent className="p-4 sm:p-6">
-              <MatchManagement
-                tournamentId={tournament.id}
-                isOrganizer={true}
-                ageGroupId={ageGroupId}
-              />
-            </CardContent>
-          </Card>
-        ),
+        content: (() => {
+          // Formats that require groups to be drawn before matches can be generated
+          const format = ageGroup?.format;
+          const needsGroups = format === 'GROUPS_PLUS_KNOCKOUT' || format === 'LEAGUE';
+          const scopedGroups = ageGroupId
+            ? groups.filter((g) => {
+                const firstTeam = g.teamDetails?.[0];
+                return firstTeam ? firstTeam.ageGroupId === ageGroupId : true;
+              })
+            : groups;
+          const groupsNotGenerated = needsGroups && scopedGroups.length === 0;
+
+          return (
+            <Card>
+              <CardContent className="p-4 sm:p-6">
+                {groupsNotGenerated && (
+                  <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <p className="text-sm font-semibold text-amber-800">Groups have not been generated yet</p>
+                        <p className="text-sm text-amber-700 mt-0.5">
+                          You must run the pot draw to create groups before matches can be generated for this format.
+                        </p>
+                      </div>
+                    </div>
+                    <Link href={`/dashboard/tournaments/${tournament.id}/pots${ageGroupId ? `?ageGroupId=${ageGroupId}` : ''}`} className="shrink-0">
+                      <Button variant="primary" size="sm">
+                        <Users className="w-4 h-4 mr-2" />
+                        Go to Pot Draw
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                <MatchManagement
+                  tournamentId={tournament.id}
+                  isOrganizer={true}
+                  ageGroupId={ageGroupId}
+                />
+              </CardContent>
+            </Card>
+          );
+        })(),
       },
     ];
   };
@@ -763,7 +798,7 @@ export default function TournamentDetailPage() {
         content: (
           <Tabs
             tabs={buildTabsForAgeGroup(ageGroup)}
-            defaultTab="overview"
+            defaultTab={searchParams.get('tab') ?? 'overview'}
             variant="pills-gray"
           />
         ),
@@ -845,7 +880,15 @@ export default function TournamentDetailPage() {
         )}
 
         {/* Tabs */}
-        <Tabs tabs={ageGroupTabs} defaultTab={ageGroupTabs[0]?.id} />
+        <Tabs
+          tabs={ageGroupTabs}
+          defaultTab={
+            // When no age groups, tabs ARE the inner (overview/groups/matches) tabs — respect ?tab= param
+            (!tournament.ageGroups || tournament.ageGroups.length === 0)
+              ? (searchParams.get('tab') ?? ageGroupTabs[0]?.id)
+              : ageGroupTabs[0]?.id
+          }
+        />
       </div>
 
       {/* Rejection Modal */}

@@ -23,6 +23,7 @@ export interface MatchManagementProps {
   tournamentId: string;
   isOrganizer?: boolean;
   ageGroupId?: string;
+  isRegistrationOpen?: boolean;
 }
 
 type MatchWithTeamNames = BracketMatch & {
@@ -34,6 +35,7 @@ export default function MatchManagement({
   tournamentId,
   isOrganizer = false,
   ageGroupId,
+  isRegistrationOpen = false,
 }: MatchManagementProps) {
   const { t } = useTranslation();
   const [matchData, setMatchData] = useState<MatchesResponse | null>(null);
@@ -308,35 +310,47 @@ export default function MatchManagement({
           )}
         </p>
         {isOrganizer && (
-          <button
-            onClick={handleGenerateBracket}
-            disabled={generating}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {generating ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {t('matches.generating', 'Generating...')}
-              </>
-            ) : (
-              <>
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
+          <>
+            {isRegistrationOpen && (
+              <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
+                <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {t('matches.generateBracket', 'Generate Bracket')}
-              </>
+                <span className="text-amber-800">
+                  {t('matches.registrationStillOpen', 'Registration is still open. Stop registration before generating the bracket.')}
+                </span>
+              </div>
             )}
-          </button>
+            <button
+              onClick={handleGenerateBracket}
+              disabled={generating || isRegistrationOpen}
+              className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {generating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {t('matches.generating', 'Generating...')}
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  {t('matches.generateBracket', 'Generate Bracket')}
+                </>
+              )}
+            </button>
+          </>
         )}
         {error && (
           <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">

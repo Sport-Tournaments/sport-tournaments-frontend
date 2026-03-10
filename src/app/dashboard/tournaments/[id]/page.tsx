@@ -762,6 +762,7 @@ export default function TournamentDetailPage() {
                   tournamentId={tournament.id}
                   isOrganizer={true}
                   ageGroupId={ageGroupId}
+                  isRegistrationOpen={!tournament.isRegistrationClosed}
                 />
               </CardContent>
             </Card>

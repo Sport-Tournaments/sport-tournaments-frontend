@@ -44,6 +44,7 @@ export default function PotManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [executing, setExecuting] = useState(false);
+  const [stoppingRegistration, setStoppingRegistration] = useState(false);
   const [numberOfGroups, setNumberOfGroups] = useState(4);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExecuteDrawModal, setShowExecuteDrawModal] = useState(false);
@@ -187,6 +188,19 @@ export default function PotManagementPage() {
     }
   };
 
+  const handleStopRegistration = async () => {
+    if (!tournament) return;
+    setStoppingRegistration(true);
+    try {
+      await tournamentService.updateTournament(tournament.id, { isRegistrationClosed: true } as any);
+      setTournament((prev) => prev ? { ...prev, isRegistrationClosed: true } : prev);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to stop registration');
+    } finally {
+      setStoppingRegistration(false);
+    }
+  };
+
   const handleClearPots = () => {
     setShowClearPotsModal(true);
   };
@@ -289,6 +303,32 @@ export default function PotManagementPage() {
           </Alert>
         )}
 
+        {/* Registration must be closed before managing pots */}
+        {tournament && !tournament.isRegistrationClosed && (
+          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-amber-800">Registration is still open</p>
+                <p className="text-sm text-amber-700 mt-0.5">
+                  You must stop registration before managing pots and executing the draw.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleStopRegistration}
+              isLoading={stoppingRegistration}
+              className="shrink-0"
+            >
+              Stop Registration
+            </Button>
+          </div>
+        )}
+
         {/* Age Group Tabs */}
         {ageGroups.length > 0 && (
           <div className="mb-6">
@@ -303,13 +343,13 @@ export default function PotManagementPage() {
                       onClick={() => setSelectedAgeGroupId(ag.id || null)}
                       className={`whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm transition-colors ${
                         isSelected
-                          ? 'border-blue-500 text-blue-600'
+                          ? 'border-[#1e3a5f] text-[#1e3a5f]'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
                       {ag.displayLabel || `Year ${ag.birthYear}`}
                       <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                        isSelected ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                        isSelected ? 'bg-[#dbeafe] text-[#1e3a5f]' : 'bg-gray-100 text-gray-600'
                       }`}>
                         {agRegs.length}
                       </span>
@@ -405,7 +445,7 @@ export default function PotManagementPage() {
                     <p className="text-sm text-gray-600">Pot Structure</p>
                     {numFullPots > 0 ? (
                       <div>
-                        <p className="text-2xl font-bold text-blue-600">
+                        <p className="text-2xl font-bold text-[#1e3a5f]">
                           {numFullPots} pots &times; {teamsPerPot} teams
                         </p>
                         {remainder > 0 && (
@@ -613,7 +653,7 @@ export default function PotManagementPage() {
               <Button
                 onClick={() => {
                   setShowSuccessModal(false);
-                  router.push(`/dashboard/tournaments/${tournamentId}`);
+                  router.push(`/dashboard/tournaments/${tournamentId}?tab=groups`);
                 }}
                 className="w-full"
               >

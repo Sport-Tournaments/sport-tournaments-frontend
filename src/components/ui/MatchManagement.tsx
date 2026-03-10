@@ -41,10 +41,15 @@ export default function MatchManagement({
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
   const [schedulingMatchId, setSchedulingMatchId] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchMatches = useCallback(async () => {
+  const fetchMatches = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (silent) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
       const response = await groupService.getMatches(tournamentId, ageGroupId);
       const data = response?.data || response;
@@ -80,6 +85,7 @@ export default function MatchManagement({
       );
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [tournamentId, ageGroupId, t]);
 
@@ -110,7 +116,7 @@ export default function MatchManagement({
           'Team advancement updated successfully!'
         )
       );
-      await fetchMatches();
+      await fetchMatches(true);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       console.error('Failed to set advancement:', err);
@@ -140,7 +146,7 @@ export default function MatchManagement({
       setSuccessMessage(
         t('matches.scoreUpdated', 'Match score updated successfully!')
       );
-      await fetchMatches();
+      await fetchMatches(true);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       console.error('Failed to update score:', err);
@@ -168,7 +174,7 @@ export default function MatchManagement({
       setSuccessMessage(
         t('matches.scheduleSuccess', 'Match scheduled successfully!')
       );
-      await fetchMatches();
+      await fetchMatches(true);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       console.error('Failed to schedule match:', err);
@@ -192,7 +198,7 @@ export default function MatchManagement({
           const data = (res as any)?.data ?? res ?? [];
           setGroups(Array.isArray(data) ? data : []);
         }),
-        fetchMatches(),
+        fetchMatches(true),
       ]);
       setSuccessMessage(t('matches.tiebreakSaved', 'Tiebreak order saved!'));
       setTimeout(() => setSuccessMessage(null), 3000);
@@ -217,7 +223,7 @@ export default function MatchManagement({
           'Bracket generated successfully!'
         )
       );
-      await fetchMatches();
+      await fetchMatches(true);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
       console.error('Failed to generate bracket:', err);
@@ -342,8 +348,17 @@ export default function MatchManagement({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             {t('matches.title', 'Match Management')}
+            {refreshing && (
+              <span className="inline-flex items-center gap-1 text-xs font-normal text-gray-400">
+                <svg className="animate-spin h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                {t('common.updating', 'Updating...')}
+              </span>
+            )}
           </h3>
           <p className="text-sm text-gray-500">
             {matchData?.bracketType

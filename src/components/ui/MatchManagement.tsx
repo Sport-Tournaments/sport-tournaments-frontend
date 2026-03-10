@@ -4,6 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { groupService } from '@/services';
 import { formatDateTime } from '@/utils/date';
+
+function formatFieldDisplay(fieldName: string): string {
+  return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
+}
 import type { BracketMatch, PlayoffRound, MatchesResponse, Group } from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
@@ -739,9 +743,11 @@ function MatchCard({
     match.manualWinnerId || match.winnerId || ''
   );
   const [scheduleMode, setScheduleMode] = useState(false);
-  const [scheduledAtInput, setScheduledAtInput] = useState<string>(
-    match.scheduledAt ? match.scheduledAt.slice(0, 16) : ''
-  );
+  const [scheduledAtInput, setScheduledAtInput] = useState<string>(() => {
+    if (match.scheduledAt) return match.scheduledAt.slice(0, 16);
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:00`;
+  });
   const [fieldNameInput, setFieldNameInput] = useState<string>(
     match.fieldName ?? ''
   );
@@ -1002,7 +1008,7 @@ function MatchCard({
               )}
               {match.fieldName && (
                 <span className="ml-1 px-1.5 py-0.5 bg-[#e0f7ff] text-[#0090c7] rounded text-xs font-medium">
-                  {match.fieldName}
+                  {formatFieldDisplay(match.fieldName)}
                 </span>
               )}
             </div>

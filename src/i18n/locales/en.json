@@ -1565,7 +1565,7 @@
     "matchesPlural": "matches",
     "matchLabel": "Match",
     "manualOverride": "Manual",
-    "manualOverrideHint": "Click a team name to manually advance them",
+    "manualOverrideHint": "When scores are tied, click a team name to manually advance them",
     "clickToAdvance": "Click to advance this team",
     "advancementSuccess": "Team advancement updated successfully!",
     "advancementError": "Failed to update advancement.",

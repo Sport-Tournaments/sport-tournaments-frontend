@@ -48,8 +48,10 @@ export interface DoubleEliminationBracketProps {
   playoffRounds: PlayoffRound[];
   teamNames?: Map<string, string> | Record<string, string>;
   isOrganizer?: boolean;
+  /** Whether matches use two-legged ties (DE only). Defaults to false = single-score modal. */
+  twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, t1: number, t2: number) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
@@ -73,8 +75,9 @@ interface MatchNodeData extends Record<string, unknown> {
   match: BracketMatch;
   teamNames?: Map<string, string> | Record<string, string>;
   isOrganizer?: boolean;
+  twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, t1: number, t2: number) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
@@ -93,6 +96,7 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
     match, teamNames, isOrganizer,
     onAdvance, onScoreUpdate, onSchedule,
     savingMatchId, schedulingMatchId,
+    twoLegged,
   } = data;
 
   const { cardLabel, featured } = data;
@@ -102,6 +106,15 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const isT1Win     = isCompleted && match.winnerId === match.team1Id;
   const isT2Win     = isCompleted && match.winnerId === match.team2Id;
   const hasScore    = match.team1Score != null && match.team2Score != null;
+  const hasBothTeams = !!match.team1Id && !!match.team2Id;
+  // Two-legged tie support
+  const hasLeg1 = match.leg1Team1Score != null && match.leg1Team2Score != null;
+  const hasLeg2 = match.leg2Team1Score != null && match.leg2Team2Score != null;
+  const hasAnyLeg = match.leg1Team1Score != null || match.leg2Team1Score != null;
+  const hasBothLegs = hasLeg1 && hasLeg2;
+  // isTied: for two-legged ties require both legs; for single matches hasScore suffices
+  const isTied      = hasScore && match.team1Score === match.team2Score && (!hasAnyLeg || hasBothLegs);
+  const canAdvanceManually = false; // click-to-advance disabled; scores are the only way to advance
   const isSaving    = savingMatchId === match.id;
   const isScheduling = schedulingMatchId === match.id;
   const ROW_H        = featured ? FEATURED_ROW_H : (CARD_H - 2) / 2;
@@ -113,11 +126,32 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const existingHH   = match.scheduledAt ? match.scheduledAt.slice(11, 13) : _todayHH;
   const existingMM   = match.scheduledAt ? match.scheduledAt.slice(14, 16) : '00';
 
-  const [scoreModal,   setScoreModal]   = useState({ open: false, score1: '', score2: '' });
+  const [scoreModal,   setScoreModal]   = useState({ open: false, leg1t1: '', leg1t2: '', leg2t1: '', leg2t2: '' });
   const [detailsModal, setDetailsModal] = useState({ open: false, date: existingDate, hh: existingHH, mm: existingMM, fieldName: match.fieldName ?? '' });
 
   const handleScoreSave = () => {
-    if (onScoreUpdate) onScoreUpdate(match.id, Number(scoreModal.score1), Number(scoreModal.score2));
+    if (twoLegged) {
+      // Two-legged: blank leg section → null (clears the leg from storage)
+      const leg1Empty = scoreModal.leg1t1 === '' && scoreModal.leg1t2 === '';
+      const leg2Empty = scoreModal.leg2t1 === '' && scoreModal.leg2t2 === '';
+      if (onScoreUpdate) onScoreUpdate(
+        match.id,
+        leg1Empty ? null : Number(scoreModal.leg1t1 || 0),
+        leg1Empty ? null : Number(scoreModal.leg1t2 || 0),
+        leg2Empty ? null : Number(scoreModal.leg2t1 || 0),
+        leg2Empty ? null : Number(scoreModal.leg2t2 || 0),
+      );
+    } else {
+      // Single-match: use leg1t1/leg1t2 as direct team scores; pass null for legs
+      const empty = scoreModal.leg1t1 === '' && scoreModal.leg1t2 === '';
+      if (onScoreUpdate) onScoreUpdate(
+        match.id,
+        empty ? null : Number(scoreModal.leg1t1 || 0),
+        empty ? null : Number(scoreModal.leg1t2 || 0),
+        null,
+        null,
+      );
+    }
     setScoreModal(s => ({ ...s, open: false }));
   };
   const handleDetailsSave = () => {
@@ -187,12 +221,12 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
         {/* Team 1 */}
         <div
           style={{ height: ROW_H }}
-          onClick={() => { if (isOrganizer && match.team1Id && !isCompleted && onAdvance) onAdvance(match.id, match.team1Id!); }}
+          onClick={() => { if (canAdvanceManually && match.team1Id) onAdvance!(match.id, match.team1Id!); }}
           className={`flex items-center gap-1.5 px-2.5 transition-colors ${
             isT1Win
               ? 'bg-[#1e3a5f] text-white font-semibold cursor-default'
-              : match.team1Id && isOrganizer && !isCompleted
-              ? 'bg-white text-gray-700 hover:bg-[#dbeafe] cursor-pointer'
+              : canAdvanceManually
+              ? 'bg-white text-gray-700 hover:bg-amber-50 hover:border-amber-200 cursor-pointer'
               : 'bg-white text-gray-400 cursor-default'
           }`}
         >
@@ -202,7 +236,17 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
             </svg>
           )}
           <span className="flex-1 text-[11px] font-medium truncate leading-none">{t1Name}</span>
-          {hasScore && <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT1Win ? 'text-white' : 'text-gray-800'}`}>{match.team1Score}</span>}
+          {(twoLegged && hasAnyLeg) ? (
+            <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT1Win ? 'text-white' : 'text-gray-800'}`}>
+              {match.leg1Team1Score ?? '—'}
+              <span className={`mx-0.5 font-normal text-xs ${isT1Win ? 'text-white/60' : 'text-gray-400'}`}>/</span>
+              {hasLeg2 ? match.leg2Team1Score : '—'}
+            </span>
+          ) : hasScore && (
+            <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT1Win ? 'text-white' : 'text-gray-800'}`}>
+              {match.team1Score}
+            </span>
+          )}
         </div>
 
         <div className="border-t border-gray-200" />
@@ -210,12 +254,12 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
         {/* Team 2 */}
         <div
           style={{ height: ROW_H }}
-          onClick={() => { if (isOrganizer && match.team2Id && !isCompleted && onAdvance) onAdvance(match.id, match.team2Id!); }}
+          onClick={() => { if (canAdvanceManually && match.team2Id) onAdvance!(match.id, match.team2Id!); }}
           className={`flex items-center gap-1.5 px-2.5 transition-colors ${
             isT2Win
               ? 'bg-[#1e3a5f] text-white font-semibold cursor-default'
-              : match.team2Id && isOrganizer && !isCompleted
-              ? 'bg-white text-gray-700 hover:bg-[#dbeafe] cursor-pointer'
+              : canAdvanceManually
+              ? 'bg-white text-gray-700 hover:bg-amber-50 hover:border-amber-200 cursor-pointer'
               : 'bg-white text-gray-400 cursor-default'
           }`}
         >
@@ -225,12 +269,24 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
             </svg>
           )}
           <span className="flex-1 text-[11px] font-medium truncate leading-none">{t2Name}</span>
-          {hasScore && <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT2Win ? 'text-white' : 'text-gray-800'}`}>{match.team2Score}</span>}
+          {(twoLegged && hasAnyLeg) ? (
+            <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT2Win ? 'text-white' : 'text-gray-800'}`}>
+              {match.leg1Team2Score ?? '—'}
+              <span className={`mx-0.5 font-normal text-xs ${isT2Win ? 'text-white/60' : 'text-gray-400'}`}>/</span>
+              {hasLeg2 ? match.leg2Team2Score : '—'}
+            </span>
+          ) : hasScore && (
+            <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT2Win ? 'text-white' : 'text-gray-800'}`}>
+              {match.team2Score}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* ── Action bar (organizer only, pending/in-progress) ── */}
-      {isOrganizer && !isCompleted && (
+      {/* ── Action bar (organizer only) ── */}
+      {/* Score button: always shown for organizer when both teams are placed (allows editing even after completion) */}
+      {/* Details button: always shown for organizer on non-completed matches */}
+      {isOrganizer && (hasBothTeams || !isCompleted) && (
         <div
           className="nopan nodrag flex flex-col gap-1 mt-1.5"
           onPointerDown={e => e.stopPropagation()}
@@ -238,19 +294,30 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
         >
           {/* Buttons row */}
           <div className="flex items-center gap-1.5">
-            {onScoreUpdate && (
+            {/* Score button: only when both teams placed; visible even on COMPLETED to allow edits */}
+            {onScoreUpdate && hasBothTeams && (
               <button
                 disabled={isSaving}
                 onPointerDown={e => e.stopPropagation()}
                 onMouseDown={e => e.stopPropagation()}
-                onClick={e => { e.stopPropagation(); setScoreModal({ open: true, score1: String(match.team1Score ?? 0), score2: String(match.team2Score ?? 0) }); }}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#dbeafe] text-[#1e3a5f] hover:bg-blue-100 disabled:opacity-50 transition-colors border border-blue-200"
+                onClick={e => { e.stopPropagation(); setScoreModal({ open: true,
+                  leg1t1: String(twoLegged ? (match.leg1Team1Score ?? '') : (match.team1Score ?? '')),
+                  leg1t2: String(twoLegged ? (match.leg1Team2Score ?? '') : (match.team2Score ?? '')),
+                  leg2t1: String(match.leg2Team1Score ?? ''),
+                  leg2t2: String(match.leg2Team2Score ?? ''),
+                }); }}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors ${
+                  isCompleted
+                    ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 border border-gray-300'
+                    : 'bg-[#dbeafe] text-[#1e3a5f] hover:bg-blue-100 border border-blue-200'
+                }`}
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                {isSaving ? '…' : 'Score'}
+                {isSaving ? '…' : isCompleted ? 'Edit Score' : 'Score'}
               </button>
             )}
-            {onSchedule && (
+            {/* Details button: only on non-completed matches */}
+            {onSchedule && !isCompleted && (
               <button
                 disabled={isScheduling}
                 onPointerDown={e => e.stopPropagation()}
@@ -270,22 +337,65 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
       {scoreModal.open && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
-            <h3 className="text-base font-semibold text-gray-900 mb-4">Enter Score</h3>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">{t1Name}</label>
-                <input type="number" min="0" value={scoreModal.score1}
-                  onChange={e => setScoreModal(s => ({ ...s, score1: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+            <h3 className="text-base font-semibold text-gray-900 mb-4">{isCompleted ? (twoLegged ? 'Edit Match Scores' : 'Edit Score') : (twoLegged ? 'Enter Match Scores' : 'Enter Score')}</h3>
+            {twoLegged ? (
+              <div className="space-y-4 mb-5">
+                {/* Leg 1 — at team1 home */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Leg 1 — at <span className="text-[#1e3a5f]">{t1Name}</span></p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t1Name}</label>
+                      <input type="number" min="0" value={scoreModal.leg1t1}
+                        onChange={e => setScoreModal(s => ({ ...s, leg1t1: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                    <span className="text-gray-400 font-medium mt-5">-</span>
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t2Name}</label>
+                      <input type="number" min="0" value={scoreModal.leg1t2}
+                        onChange={e => setScoreModal(s => ({ ...s, leg1t2: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                  </div>
+                </div>
+                {/* Leg 2 — at team2 home */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-600 mb-2">Leg 2 — at <span className="text-[#1e3a5f]">{t2Name}</span></p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t2Name}</label>
+                      <input type="number" min="0" value={scoreModal.leg2t2}
+                        onChange={e => setScoreModal(s => ({ ...s, leg2t2: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                    <span className="text-gray-400 font-medium mt-5">-</span>
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t1Name}</label>
+                      <input type="number" min="0" value={scoreModal.leg2t1}
+                        onChange={e => setScoreModal(s => ({ ...s, leg2t1: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className="text-gray-400 font-medium mt-5">-</span>
-              <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">{t2Name}</label>
-                <input type="number" min="0" value={scoreModal.score2}
-                  onChange={e => setScoreModal(s => ({ ...s, score2: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+            ) : (
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">{t1Name}</label>
+                  <input type="number" min="0" value={scoreModal.leg1t1}
+                    onChange={e => setScoreModal(s => ({ ...s, leg1t1: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                </div>
+                <span className="text-gray-400 font-medium mt-5">-</span>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-500 mb-1">{t2Name}</label>
+                  <input type="number" min="0" value={scoreModal.leg1t2}
+                    onChange={e => setScoreModal(s => ({ ...s, leg1t2: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex justify-end gap-2">
               <button onClick={() => setScoreModal(s => ({ ...s, open: false }))} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
               <button onClick={handleScoreSave} disabled={isSaving}
@@ -359,8 +469,9 @@ interface BracketSectionProps {
   edgeColor: string;
   teamNames?: Map<string, string> | Record<string, string>;
   isOrganizer?: boolean;
+  twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, t1: number, t2: number) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
@@ -368,15 +479,15 @@ interface BracketSectionProps {
 
 function BracketSection({
   rounds, label, accentColor, edgeColor,
-  teamNames, isOrganizer, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
+  teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
 }: BracketSectionProps) {
   const sorted = useMemo(() => [...rounds].sort((a, b) => a.roundNumber - b.roundNumber), [rounds]);
   const numRounds = sorted.length;
   const totalW = 2 * PAD + numRounds * CARD_W + Math.max(0, numRounds - 1) * H_GAP;
 
   const sharedData = useMemo(() => ({
-    teamNames, isOrganizer, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
-  }), [teamNames, isOrganizer, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId]);
+    teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
+  }), [teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId]);
 
   // Build nodes; the slot index (used for vertical spacing) increments only when
   // match count decreases — consecutive same-count rounds (e.g. WR Final → GF →
@@ -528,7 +639,7 @@ function BracketSection({
 /* ─── Main export ────────────────────────────────────────────────────────── */
 
 export default function DoubleEliminationBracket({
-  playoffRounds, teamNames, isOrganizer, onAdvance, onScoreUpdate, onSchedule,
+  playoffRounds, teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule,
   savingMatchId, schedulingMatchId,
 }: DoubleEliminationBracketProps) {
   const winnersRounds    = playoffRounds.filter(r => r.bracket === 'winners');
@@ -536,7 +647,7 @@ export default function DoubleEliminationBracket({
   const grandFinalRounds = playoffRounds.filter(r => r.bracket === 'grand_final');
   const untaggedRounds   = playoffRounds.filter(r => !r.bracket);
 
-  const sharedProps = { teamNames, isOrganizer, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId };
+  const sharedProps = { teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId };
 
   // Build the single combined round list:
   //   [WR rounds…] + [1st/2nd Place] + [3rd/4th Place]

@@ -1765,7 +1765,7 @@
     "matchesPlural": "meciuri",
     "matchLabel": "Meciul",
     "manualOverride": "Manual",
-    "manualOverrideHint": "Apasă pe numele echipei pentru a o avansa manual",
+    "manualOverrideHint": "Când scorurile sunt egale, apasă pe numele echipei pentru a o avansa manual",
     "clickToAdvance": "Apasă pentru a avansa această echipă",
     "advancementSuccess": "Avansarea echipei a fost actualizată cu succes!",
     "advancementError": "Eroare la actualizarea avansării.",

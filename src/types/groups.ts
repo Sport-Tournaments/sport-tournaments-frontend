@@ -89,6 +89,11 @@ export interface BracketMatch {
   team2Name?: string;
   team1Score?: number;
   team2Score?: number;
+  // Two-legged tie fields (leg 1 = at team1 home, leg 2 = at team2 home)
+  leg1Team1Score?: number | null;
+  leg1Team2Score?: number | null;
+  leg2Team1Score?: number | null;
+  leg2Team2Score?: number | null;
   winnerId?: string;
   loserId?: string;
   manualWinnerId?: string;
@@ -125,6 +130,10 @@ export interface UpdateMatchAdvancementDto {
 export interface UpdateMatchScoreDto {
   team1Score?: number;
   team2Score?: number;
+  leg1Team1Score?: number | null;
+  leg1Team2Score?: number | null;
+  leg2Team1Score?: number | null;
+  leg2Team2Score?: number | null;
   advancingTeamId?: string;
   status?: string;
 }

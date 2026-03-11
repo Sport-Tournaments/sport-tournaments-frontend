@@ -136,6 +136,46 @@ export default function MatchManagement({
 
   const handleScoreUpdate = async (
     matchId: string,
+    leg1Team1Score: number | null,
+    leg1Team2Score: number | null,
+    leg2Team1Score: number | null,
+    leg2Team2Score: number | null,
+    advancingTeamId?: string
+  ) => {
+    try {
+      setSavingMatchId(matchId);
+      setError(null);
+      setSuccessMessage(null);
+      // When leg2 scores are both null it's a single-match context (SE/non-two-legged):
+      // send team1Score/team2Score directly instead of leg fields.
+      const isSingleMatch = leg2Team1Score === null && leg2Team2Score === null;
+      await groupService.updateMatchScore(tournamentId, matchId, isSingleMatch ? {
+        team1Score: leg1Team1Score ?? undefined,
+        team2Score: leg1Team2Score ?? undefined,
+        advancingTeamId,
+      } : {
+        leg1Team1Score,
+        leg1Team2Score,
+        leg2Team1Score,
+        leg2Team2Score,
+        advancingTeamId,
+      }, ageGroupId);
+      setSuccessMessage(
+        t('matches.scoreUpdated', 'Match score updated successfully!')
+      );
+      await fetchMatches(true);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to update score:', err);
+      setError(t('matches.scoreError', 'Failed to update match score.'));
+    } finally {
+      setSavingMatchId(null);
+    }
+  };
+
+  // Single-match score update (group stage / league — no legs, direct team1Score/team2Score)
+  const handleSingleMatchScoreUpdate = async (
+    matchId: string,
     team1Score: number,
     team2Score: number,
     advancingTeamId?: string
@@ -376,16 +416,6 @@ export default function MatchManagement({
               : ''}
           </p>
         </div>
-        {isOrganizer && (
-          <div className="flex items-center gap-2">
-            <span className="flex items-center text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-              <svg className="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
-              </svg>
-              {t('matches.manualOverrideHint', 'Click a team name to manually advance them')}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Messages */}
@@ -425,6 +455,7 @@ export default function MatchManagement({
               playoffRounds={matchData.playoffRounds}
               teamNames={teamNamesMap}
               isOrganizer={isOrganizer}
+              twoLegged={true}
               onAdvance={handleAdvancement}
               onScoreUpdate={handleScoreUpdate}
               onSchedule={handleScheduleMatch}
@@ -450,7 +481,7 @@ export default function MatchManagement({
                   matches={allMatches}
                   teamNames={teamNamesMap}
                   isOrganizer={isOrganizer}
-                  onScoreUpdate={handleScoreUpdate}
+                  onScoreUpdate={handleSingleMatchScoreUpdate}
                   onSchedule={handleScheduleMatch}
                   savingMatchId={savingMatchId}
                   schedulingMatchId={schedulingMatchId}
@@ -475,7 +506,7 @@ export default function MatchManagement({
                   matches={allMatches}
                   teamNames={teamNamesMap}
                   isOrganizer={isOrganizer}
-                  onScoreUpdate={handleScoreUpdate}
+                  onScoreUpdate={handleSingleMatchScoreUpdate}
                   onSchedule={handleScheduleMatch}
                   savingMatchId={savingMatchId}
                   schedulingMatchId={schedulingMatchId}
@@ -550,7 +581,7 @@ export default function MatchManagement({
                           matches={groupMatches}
                           teamNames={teamNamesMap}
                           isOrganizer={isOrganizer}
-                          onScoreUpdate={handleScoreUpdate}
+                          onScoreUpdate={handleSingleMatchScoreUpdate}
                           onSchedule={handleScheduleMatch}
                           savingMatchId={savingMatchId}
                           schedulingMatchId={schedulingMatchId}
@@ -573,7 +604,7 @@ export default function MatchManagement({
                     matches={allMatches}
                     teamNames={teamNamesMap}
                     isOrganizer={isOrganizer}
-                    onScoreUpdate={handleScoreUpdate}
+                    onScoreUpdate={handleSingleMatchScoreUpdate}
                     onSchedule={handleScheduleMatch}
                     savingMatchId={savingMatchId}
                     schedulingMatchId={schedulingMatchId}
@@ -595,6 +626,7 @@ export default function MatchManagement({
                     playoffRounds={playoffRounds}
                     teamNames={teamNamesMap}
                     isOrganizer={isOrganizer}
+                    twoLegged={false}
                     onAdvance={handleAdvancement}
                     onScoreUpdate={handleScoreUpdate}
                     onSchedule={handleScheduleMatch}
@@ -615,6 +647,7 @@ export default function MatchManagement({
               playoffRounds={matchData.playoffRounds}
               teamNames={teamNamesMap}
               isOrganizer={isOrganizer}
+              twoLegged={false}
               onAdvance={handleAdvancement}
               onScoreUpdate={handleScoreUpdate}
               onSchedule={handleScheduleMatch}
@@ -635,7 +668,7 @@ export default function MatchManagement({
                 getTeamName={getTeamName}
                 isOrganizer={isOrganizer}
                 onAdvance={handleAdvancement}
-                onScoreUpdate={handleScoreUpdate}
+                onScoreUpdate={handleSingleMatchScoreUpdate}
                 onSchedule={handleScheduleMatch}
                 savingMatchId={savingMatchId}
                 schedulingMatchId={schedulingMatchId}
@@ -762,11 +795,12 @@ function MatchCard({
   const team2Name = match.team2Name || getTeamName(match.team2Id);
   const isTeam1Winner = match.winnerId === match.team1Id;
   const isTeam2Winner = match.winnerId === match.team2Id;
+  const hasBothTeams = !!match.team1Id && !!match.team2Id;
+  // Consider tied both during and after a completed match with equal scores
   const isTied =
     match.team1Score !== undefined &&
     match.team2Score !== undefined &&
-    match.team1Score === match.team2Score &&
-    match.status === 'COMPLETED';
+    match.team1Score === match.team2Score;
 
   const handleSaveScore = async () => {
     const s1 = parseInt(score1) || 0;
@@ -847,7 +881,7 @@ function MatchCard({
           isWinner={isTeam1Winner}
           isManualOverride={match.isManualOverride}
           canAdvance={
-            isOrganizer && !!match.team1Id && !!match.team2Id && !isSaving
+            isOrganizer && hasBothTeams && !isSaving && isTied && match.status !== 'COMPLETED'
           }
           onAdvance={() =>
             match.team1Id && handleDirectAdvance(match.team1Id)
@@ -871,7 +905,7 @@ function MatchCard({
           isWinner={isTeam2Winner}
           isManualOverride={match.isManualOverride}
           canAdvance={
-            isOrganizer && !!match.team1Id && !!match.team2Id && !isSaving
+            isOrganizer && hasBothTeams && !isSaving && isTied && match.status !== 'COMPLETED'
           }
           onAdvance={() =>
             match.team2Id && handleDirectAdvance(match.team2Id)
@@ -880,8 +914,8 @@ function MatchCard({
           t={t}
         />
 
-        {/* Tied indication */}
-        {isTied && !match.isManualOverride && isOrganizer && (
+        {/* Tied indication: show when scores are tied and match not complete */}
+        {isTied && !match.isManualOverride && isOrganizer && match.status !== 'COMPLETED' && (
           <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-200">
             <p className="text-xs text-amber-700 font-medium flex items-center">
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -895,8 +929,8 @@ function MatchCard({
           </div>
         )}
 
-        {/* Score Edit (organizer only) */}
-        {isOrganizer && match.team1Id && match.team2Id && (
+        {/* Score Edit (organizer only, only when both teams placed) */}
+        {isOrganizer && hasBothTeams && (
           <div className="pt-2 border-t border-gray-100">
             {editMode ? (
               <div className="space-y-3">

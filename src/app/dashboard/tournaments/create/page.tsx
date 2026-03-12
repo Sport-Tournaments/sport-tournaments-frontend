@@ -26,7 +26,7 @@ import type { AgeGroupFormData } from "@/components/ui";
 import { tournamentService, fileService } from "@/services";
 import { getCurrentLocation } from "@/services/location.service";
 import type { LocationSuggestion } from "@/types";
-import { slugify, getTournamentPublicPath } from "@/utils/helpers";
+import { slugify, getTournamentPublicPath, getApiErrorMessage } from "@/utils/helpers";
 import { formatDateForInput } from "@/utils/date";
 
 const tournamentSchema = z.object({
@@ -50,10 +50,16 @@ const tournamentSchema = z.object({
   rules: z.string().optional(),
   isPrivate: z.boolean().default(false),
   invitationCodeExpirationDays: z.coerce.number().min(1).max(365).optional(),
-  numberOfFields: z.coerce.number().int().min(1).max(100).optional(),
+  numberOfFields: z
+    .preprocess(
+      (val) => (val === "" || val === null || (typeof val === "number" && isNaN(val)) ? undefined : val),
+      z.coerce.number().int().min(1).max(100).optional()
+    ),
 });
 
 type TournamentFormData = z.infer<typeof tournamentSchema>;
+
+const DRAFT_KEY = "tournament-create-draft";
 
 const normalizeDateForPayload = (value?: string) => {
   if (!value) return undefined;
@@ -89,6 +95,8 @@ export default function CreateTournamentPage() {
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [regulationsFile, setRegulationsFile] = useState<File | null>(null);
   const [ageGroups, setAgeGroups] = useState<AgeGroupFormData[]>([]);
+  const [draftBanner, setDraftBanner] = useState<{ timestamp: string } | null>(null);
+  const [isDraftRestored, setIsDraftRestored] = useState(false);
 
   const {
     register,
@@ -96,6 +104,7 @@ export default function CreateTournamentPage() {
     control,
     watch,
     setValue,
+    reset,
     formState: { errors, isDirty },
   } = useForm<TournamentFormData>({
     resolver: zodResolver(tournamentSchema),
@@ -107,19 +116,91 @@ export default function CreateTournamentPage() {
 
   const isPrivate = watch("isPrivate");
   const watchedName = watch("name");
+  const watchedValues = watch(); // subscribe to all fields for draft auto-save
+  const formSnapshot = JSON.stringify(watchedValues);
+  const ageGroupsSnapshot = JSON.stringify(ageGroups);
+
   const hasUnsavedAgeGroups = useMemo(() => {
     return initialAgeGroupsRef.current !== JSON.stringify(ageGroups);
   }, [ageGroups]);
   const hasUnsavedFiles = useMemo(() => {
     return !!bannerFile || !!regulationsFile;
   }, [bannerFile, regulationsFile]);
-  const hasUnsavedChanges = isDirty || hasUnsavedAgeGroups || hasUnsavedFiles;
+  const hasUnsavedChanges = isDirty || hasUnsavedAgeGroups || hasUnsavedFiles || isDraftRestored;
 
   useEffect(() => {
     if (slugTouched) return;
     const generatedSlug = watchedName ? slugify(watchedName) : "";
     setValue("urlSlug", generatedSlug, { shouldDirty: !!generatedSlug });
   }, [watchedName, slugTouched, setValue]);
+
+  // Auto-save draft to localStorage (debounced 1.5 s)
+  useEffect(() => {
+    if (!isDirty && ageGroups.length === 0 && !isDraftRestored) return;
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          DRAFT_KEY,
+          JSON.stringify({
+            form: watchedValues,
+            ageGroups,
+            timestamp: new Date().toISOString(),
+          }),
+        );
+      } catch {
+        // quota exceeded or SSR — ignore
+      }
+    }, 1500);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formSnapshot, ageGroupsSnapshot, isDraftRestored]);
+
+  // Check for a saved draft on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(DRAFT_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as {
+        form?: TournamentFormData;
+        ageGroups?: AgeGroupFormData[];
+        timestamp?: string;
+      };
+      if (parsed?.form || parsed?.ageGroups?.length) {
+        setDraftBanner({ timestamp: parsed.timestamp ?? "" });
+      }
+    } catch {
+      // corrupt storage — ignore
+    }
+  }, []);
+
+  const handleRestoreDraft = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(DRAFT_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as {
+        form?: TournamentFormData;
+        ageGroups?: AgeGroupFormData[];
+      };
+      if (parsed.form) {
+        reset({ isPrivate: false, invitationCodeExpirationDays: 30, ...parsed.form });
+        setSlugTouched(true);
+      }
+      if (parsed.ageGroups) {
+        setAgeGroups(parsed.ageGroups);
+      }
+      setIsDraftRestored(true);
+    } catch {
+      // ignore
+    }
+    setDraftBanner(null);
+  }, [reset]);
+
+  const handleDiscardDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch { /* ignore */ }
+    setDraftBanner(null);
+  }, []);
 
   const getLeaveMessage = useCallback(
     () =>
@@ -218,9 +299,31 @@ export default function CreateTournamentPage() {
         return;
       }
 
-      // Transform frontend field names to backend DTO field names
+      // Transform frontend field names to backend DTO field names.
+      // Explicitly pick only the fields accepted by CreateAgeGroupDto to avoid
+      // 400 "property X should not exist" errors from forbidNonWhitelisted=true.
       const normalizedAgeGroups = ageGroups.map((ag) => ({
-        ...ag,
+        birthYear: ag.birthYear,
+        displayLabel: ag.displayLabel || undefined,
+        // Strip empty strings for enum fields so the backend @IsEnum validator
+        // does not receive "" which fails validation with a 400 error.
+        ageCategory: ag.ageCategory || undefined,
+        level: ag.level || undefined,
+        format: ag.format || undefined,
+        gameSystem: ag.gameSystem || undefined,
+        matchPeriodType: ag.matchPeriodType || undefined,
+        // Strip null / 0 for numeric fields to avoid NOT-NULL DB constraint
+        // violations and to let the backend apply its own defaults.
+        teamCount: ag.teamCount ?? undefined,
+        guaranteedMatches: ag.guaranteedMatches ?? undefined,
+        participationFee: ag.participationFee ?? undefined,
+        groupsCount: ag.groupsCount ?? undefined,
+        fieldsCount: ag.fieldsCount ?? undefined,
+        teamsPerGroup: ag.teamsPerGroup ?? undefined,
+        halfDurationMinutes: ag.halfDurationMinutes ?? undefined,
+        locationId: ag.locationId || undefined,
+        locationAddress: ag.locationAddress || undefined,
+        notes: ag.notes || undefined,
         startDate: normalizeDateForPayload(ag.startDate),
         endDate: normalizeDateForPayload(ag.endDate),
         registrationStartDate: normalizeDateForPayload(ag.registrationStartDate),
@@ -268,14 +371,17 @@ export default function CreateTournamentPage() {
       }
 
       // Redirect to tournament preview page
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       if (response.data) {
         router.push(getTournamentPublicPath(response.data));
       } else if (tournamentId) {
         router.push(`/main/tournaments/${tournamentId}`);
       }
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to create tournament";
+      const errorMessage = getApiErrorMessage(
+        err,
+        "Failed to create tournament"
+      );
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -322,6 +428,39 @@ export default function CreateTournamentPage() {
             {t("tournament.createDesc")}
           </p>
         </div>
+
+        {/* Draft restore banner */}
+        {draftBanner && (
+          <div className="mb-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <svg className="h-5 w-5 flex-shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="flex-1">
+              {t("tournament.draft.found", "You have an unsaved draft")}
+              {draftBanner.timestamp && (
+                <> {t("tournament.draft.from", "from")}{" "}
+                  <time>{new Date(draftBanner.timestamp).toLocaleString()}</time>
+                </>
+              )}
+              {". "}
+              {t("tournament.draft.restore", "Would you like to continue where you left off?")}
+            </span>
+            <button
+              type="button"
+              onClick={handleRestoreDraft}
+              className="rounded-md bg-amber-600 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
+            >
+              {t("tournament.draft.restoreBtn", "Restore")}
+            </button>
+            <button
+              type="button"
+              onClick={handleDiscardDraft}
+              className="rounded-md border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-100 transition-colors"
+            >
+              {t("tournament.draft.discardBtn", "Discard")}
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pb-24">
           {/* Basic Info */}
@@ -400,6 +539,8 @@ export default function CreateTournamentPage() {
                     label={t("tournament.location")}
                     placeholder="Search for city or venue..."
                     displayMode="address"
+                    value={watch("location") || ""}
+                    onChange={(val) => setValue("location", val, { shouldValidate: true })}
                     onSelect={handleLocationSelect}
                     error={errors.location?.message}
                     required
@@ -660,7 +801,6 @@ export default function CreateTournamentPage() {
         isOpen={!!error}
         onClose={() => setError(null)}
         title={t("common.error", "Error")}
-        description={error || ""}
         size="sm"
         footer={
           <Button

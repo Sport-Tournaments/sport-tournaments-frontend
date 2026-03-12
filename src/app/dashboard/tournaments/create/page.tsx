@@ -182,7 +182,7 @@ export default function CreateTournamentPage() {
         ageGroups?: AgeGroupFormData[];
       };
       if (parsed.form) {
-        reset({ isPrivate: false, invitationCodeExpirationDays: 30, ...parsed.form });
+        reset({ ...{ isPrivate: false, invitationCodeExpirationDays: 30 }, ...parsed.form });
         setSlugTouched(true);
       }
       if (parsed.ageGroups) {

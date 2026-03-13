@@ -1,4 +1,5 @@
-import { test, expect, Page, APIRequestContext } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page, APIRequestContext } from './fixtures';
 
 test.describe('Issue #92 - Homepage card auth + tournament flow', () => {
   test.setTimeout(60000);

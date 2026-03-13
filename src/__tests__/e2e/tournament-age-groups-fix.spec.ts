@@ -8,7 +8,7 @@
  * 4. Tournament edit page works without duplicate errors
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const TEST_CREDENTIALS = {
   email: 'organizer19@example.com',

@@ -7,21 +7,20 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-[var(--uefa-blue)] to-[var(--uefa-blue-light)] px-4 py-12 text-white">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Privacy Policy</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-white/80">
             Last updated: January 14, 2026
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg p-8 space-y-8">
+        <div className="space-y-8 rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
           {/* Data Controller */}
-          <section className="bg-indigo-50 p-6 rounded-lg">
+          <section className="rounded-lg bg-[#dbeafe] p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Data Controller</h2>
             <div className="text-gray-700 space-y-1">
               <p><strong>SPORT INTELLIGENCE TECHNOLOGY S.R.L.</strong></p>

@@ -41,9 +41,32 @@ pnpm test:e2e
 # Run E2E tests with UI
 pnpm test:e2e:ui
 
+# Record E2E flow with Playwright codegen
+pnpm test:e2e:codegen
+
 # Run all tests
 pnpm test:all
 ```
+
+## Record Flow Tests With Playwright Codegen
+
+Use Playwright's recorder to generate a flow spec directly from browser actions.
+
+```bash
+# Start recorder and save generated test to the E2E folder
+pnpm test:e2e:codegen
+
+# Optional: record against another running environment
+pnpm exec playwright codegen https://your-env-url --output src/__tests__/e2e/codegen-generated-flow.spec.ts
+```
+
+Recommended workflow:
+
+1. Record a realistic user journey (login, browse, create, submit).
+2. Save to `src/__tests__/e2e/codegen-generated-flow.spec.ts`.
+3. Replace brittle selectors with role-based selectors (`getByRole`, `getByLabel`, `getByPlaceholder`).
+4. Add assertions for URL changes, success messages, and key page elements.
+5. Run the spec with `pnpm test:e2e -- codegen-generated-flow.spec.ts`.
 
 ## Project Structure
 

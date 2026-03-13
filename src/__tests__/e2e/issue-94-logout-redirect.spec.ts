@@ -1,4 +1,5 @@
-import { test, expect, Page, APIRequestContext } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page, APIRequestContext } from './fixtures';
 
 test.describe('Issue #94 - Logout redirect to homepage', () => {
   test.setTimeout(60000);

@@ -21,6 +21,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
+    "test:e2e:codegen": "playwright codegen http://localhost:3000 --output src/__tests__/e2e/codegen-generated-flow.spec.ts",
     "test:all": "vitest run && playwright test",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\""
   },

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import path from 'path';
 
 const API_BASE_URL = 'http://localhost:3001/api/v1';

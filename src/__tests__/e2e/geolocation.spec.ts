@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from './fixtures';
 
 // ⚠️ SKIPPING ALL TESTS - Feature excluded (Backend issues #15, #16)
 // These tests are for geolocation filter and location autocomplete features

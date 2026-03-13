@@ -61,12 +61,11 @@ const plans = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-[var(--uefa-blue)] to-[var(--uefa-blue-light)] px-4 py-12 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Simple, Transparent Pricing</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-white/80">
             Choose the perfect plan for your needs
           </p>
         </div>
@@ -80,12 +79,12 @@ export default function PricingPage() {
               key={index}
               className={`rounded-lg overflow-hidden transition-transform hover:scale-105 ${
                 plan.highlighted
-                  ? 'ring-2 ring-indigo-600 shadow-2xl'
-                  : 'border border-gray-200'
+                  ? 'ring-2 ring-[var(--uefa-blue-light)] shadow-2xl'
+                  : 'border border-slate-200'
               } bg-white`}
             >
               {plan.highlighted && (
-                <div className="bg-indigo-600 text-white text-center py-2 font-semibold">
+                <div className="bg-[var(--uefa-blue-light)] py-2 text-center font-semibold text-white">
                   Most Popular
                 </div>
               )}
@@ -107,7 +106,7 @@ export default function PricingPage() {
                 <button
                   className={`w-full py-3 rounded-md font-semibold transition-colors mb-8 ${
                     plan.highlighted
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-500'
+                      ? 'bg-[var(--uefa-blue-light)] text-white hover:bg-[var(--uefa-blue-hover)]'
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
@@ -178,7 +177,7 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="bg-indigo-50 rounded-lg p-8 text-center">
+        <div className="rounded-lg bg-[#dbeafe] p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Ready to Start?
           </h2>
@@ -187,7 +186,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/auth/register"
-            className="inline-block px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
+            className="inline-block rounded-md bg-[var(--uefa-blue-light)] px-8 py-3 font-semibold text-white transition-colors hover:bg-[var(--uefa-blue-hover)]"
           >
             Create Free Account
           </Link>

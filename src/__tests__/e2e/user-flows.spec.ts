@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from './fixtures';
 
 // Test credentials from seed data
 const TEST_USERS = {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Authentication E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,6 +9,8 @@ test.describe('Authentication E2E Tests', () => {
   test('should display login page correctly', async ({ page }) => {
     await page.goto('/auth/login');
 
+    const authCard = page.locator('main').first();
+
     // Check page title/heading (uses 'Welcome back!' as title)
     await expect(page.locator('h1, h2').first()).toContainText(/welcome|login|sign in/i);
 
@@ -18,8 +20,8 @@ test.describe('Authentication E2E Tests', () => {
     await expect(page.locator('button[type="submit"]')).toBeVisible();
 
     // Check links exist
-    await expect(page.locator('a[href*="register"]')).toBeVisible();
-    await expect(page.locator('a[href*="forgot-password"]')).toBeVisible();
+    await expect(authCard.locator('a[href*="register"]').last()).toBeVisible();
+    await expect(authCard.locator('a[href*="forgot-password"]')).toBeVisible();
   });
 
   test('should show validation errors for empty form', async ({ page }) => {
@@ -52,14 +54,14 @@ test.describe('Authentication E2E Tests', () => {
   test('should navigate to register page', async ({ page }) => {
     await page.goto('/auth/login');
 
-    await page.click('a[href*="register"]');
+    await page.locator('main').first().locator('a[href*="register"]').last().click();
     await expect(page).toHaveURL(/register/);
   });
 
   test('should navigate to forgot password page', async ({ page }) => {
     await page.goto('/auth/login');
 
-    await page.click('a[href*="forgot-password"]');
+    await page.locator('main').first().locator('a[href*="forgot-password"]').click();
     await expect(page).toHaveURL(/forgot-password/);
   });
 

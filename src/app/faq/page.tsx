@@ -145,12 +145,11 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-gray-50 ">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-[var(--uefa-blue)] to-[var(--uefa-blue-light)] px-4 py-12 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-white/80">
             Find answers to common questions about tournamente.com
           </p>
         </div>
@@ -168,15 +167,15 @@ export default function FAQPage() {
                 {category.faqs.map((faq, faqIndex) => (
                   <details
                     key={faqIndex}
-                    className="bg-white  rounded-lg overflow-hidden group"
+                    className="group overflow-hidden rounded-lg border border-slate-200 bg-white"
                   >
-                    <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50  transition-colors">
+                    <summary className="flex cursor-pointer items-center justify-between p-6 transition-colors hover:bg-gray-50">
                       <h3 className="font-semibold text-gray-900  text-lg">
                         {faq.question}
                       </h3>
                       <span className="ml-4 group-open:rotate-180 transition-transform flex-shrink-0">
                         <svg
-                          className="w-5 h-5 text-indigo-600 "
+                          className="h-5 w-5 text-[var(--uefa-blue-light)]"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -190,7 +189,7 @@ export default function FAQPage() {
                         </svg>
                       </span>
                     </summary>
-                    <div className="px-6 pb-6 border-t border-gray-200 ">
+                    <div className="border-t border-slate-200 px-6 pb-6">
                       <p className="text-gray-600  leading-relaxed">
                         {faq.answer}
                       </p>
@@ -203,7 +202,7 @@ export default function FAQPage() {
         </div>
 
         {/* Still Have Questions */}
-        <div className="mt-12 bg-indigo-50 /20 rounded-lg p-8 text-center">
+        <div className="mt-12 rounded-lg bg-[#dbeafe] p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900  mb-4">
             Still have questions?
           </h2>
@@ -213,13 +212,13 @@ export default function FAQPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
-              className="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
+              className="rounded-md bg-[var(--uefa-blue-light)] px-8 py-3 font-semibold text-white transition-colors hover:bg-[var(--uefa-blue-hover)]"
             >
               Contact Support
             </Link>
             <Link
               href="/help"
-              className="px-8 py-3 border-2 border-indigo-600 text-indigo-600   rounded-md hover:bg-indigo-50 /20 transition-colors font-semibold"
+              className="rounded-md border-2 border-[var(--uefa-blue-light)] px-8 py-3 font-semibold text-[var(--uefa-blue)] transition-colors hover:bg-white"
             >
               Visit Help Center
             </Link>

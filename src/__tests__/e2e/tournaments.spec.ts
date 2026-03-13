@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Tournament Pages E2E Tests', () => {
   test('should display tournaments listing page', async ({ page }) => {

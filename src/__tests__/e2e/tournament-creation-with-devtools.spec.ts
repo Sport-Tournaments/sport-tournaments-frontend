@@ -6,7 +6,7 @@
  * Uses Playwright with Chrome DevTools MCP for advanced debugging
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Tournament Creation - Age Groups Only', () => {
   test.beforeEach(async ({ page }) => {

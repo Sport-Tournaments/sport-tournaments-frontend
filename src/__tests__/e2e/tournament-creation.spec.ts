@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Tournament Creation E2E Tests', () => {
   // Setup: Login before tests

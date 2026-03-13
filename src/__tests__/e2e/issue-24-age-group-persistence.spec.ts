@@ -7,7 +7,7 @@
  * Related to Issue #10: Each tournament team category (age) has specific details
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010';
 const FRONTEND_URL = 'http://localhost:3000';

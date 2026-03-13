@@ -22,12 +22,11 @@ export default function ContactPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-[var(--uefa-blue)] to-[var(--uefa-blue-light)] px-4 py-12 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('pages.contact.title')}</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-white/80">
             {t('pages.contact.subtitle')}
           </p>
         </div>
@@ -35,7 +34,7 @@ export default function ContactPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Contact Form */}
-        <div className="bg-white rounded-lg p-8">
+        <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             {t('pages.contact.sendMessage')}
           </h2>
@@ -47,7 +46,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 placeholder={t('pages.contact.fullName')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--uefa-blue-light)]"
               />
             </div>
             <div>
@@ -57,7 +56,7 @@ export default function ContactPage() {
               <input
                 type="email"
                 placeholder={t('pages.contact.email')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--uefa-blue-light)]"
               />
             </div>
             <div>
@@ -67,7 +66,7 @@ export default function ContactPage() {
               <input
                 type="text"
                 placeholder={t('pages.contact.subject')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--uefa-blue-light)]"
               />
             </div>
             <div>
@@ -77,12 +76,12 @@ export default function ContactPage() {
               <textarea
                 rows={5}
                 placeholder={t('pages.contact.message')}
-                className="w-full px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--uefa-blue-light)]"
               />
             </div>
             <button
               type="submit"
-              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
+              className="w-full rounded-md bg-[var(--uefa-blue-light)] px-6 py-3 font-semibold text-white transition-colors hover:bg-[var(--uefa-blue-hover)]"
             >
               {t('pages.contact.sendButton')}
             </button>
@@ -90,7 +89,7 @@ export default function ContactPage() {
         </div>
 
         {/* Response Time Info */}
-        <div className="bg-indigo-50 /20 rounded-lg p-8 text-center">
+        <div className="rounded-lg bg-[#dbeafe] p-8 text-center">
           <h3 className="text-xl font-bold text-gray-900  mb-2">
             {t('pages.contact.responseTime')}
           </h3>

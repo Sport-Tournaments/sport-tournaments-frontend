@@ -74,12 +74,11 @@ const features = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-12 px-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-gradient-to-r from-[var(--uefa-blue)] to-[var(--uefa-blue-light)] px-4 py-12 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">How It Works</h1>
-          <p className="text-xl text-indigo-100">
+          <p className="text-xl text-white/80">
             Follow these simple steps to organize and manage your football tournaments
           </p>
         </div>
@@ -95,11 +94,11 @@ export default function HowItWorksPage() {
             {steps.map((step) => (
               <div
                 key={step.number}
-                className="bg-gray-50 rounded-lg p-6 text-center hover:shadow-lg transition-shadow"
+                className="rounded-lg border border-slate-200 bg-white p-6 text-center transition-shadow hover:shadow-lg"
               >
                 <div className="text-5xl mb-4">{step.icon}</div>
                 <div className="flex items-center justify-center mb-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold">
+                  <div className="w-10 h-10 rounded-full bg-[var(--uefa-blue-light)] text-white flex items-center justify-center font-bold">
                     {step.number}
                   </div>
                 </div>
@@ -121,7 +120,7 @@ export default function HowItWorksPage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg border border-gray-200 p-6"
+                className="rounded-lg border border-slate-200 bg-white p-6"
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {feature.title}
@@ -133,7 +132,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="bg-indigo-50 rounded-lg p-8 text-center">
+        <section className="rounded-lg bg-[#dbeafe] p-8 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Ready to Get Started?
           </h2>
@@ -143,13 +142,13 @@ export default function HowItWorksPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/auth/register"
-              className="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 transition-colors font-semibold"
+              className="rounded-md bg-[var(--uefa-blue-light)] px-8 py-3 font-semibold text-white transition-colors hover:bg-[var(--uefa-blue-hover)]"
             >
               Sign Up Now
             </Link>
             <Link
               href="/main/tournaments"
-              className="px-8 py-3 border border-indigo-600 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors font-semibold"
+              className="rounded-md border border-[var(--uefa-blue-light)] px-8 py-3 font-semibold text-[var(--uefa-blue)] transition-colors hover:bg-white"
             >
               Browse Tournaments
             </Link>

@@ -659,18 +659,18 @@ export default function TournamentDetailPage() {
                     const teamDetails: any[] = group.teamDetails || [];
                     return (
                       <Card key={group.id} className="overflow-hidden">
-                        <CardHeader className="pb-2 bg-gray-50 border-b">
+                        <CardHeader className="py-2 px-3 bg-gray-50 border-b">
                           <CardTitle className="text-base">Group {group.groupLetter}</CardTitle>
                           <p className="text-xs text-gray-500">{teamDetails.length} team{teamDetails.length !== 1 ? 's' : ''}</p>
                         </CardHeader>
                         <CardContent className="p-0">
-                          <ul className="divide-y divide-gray-100">
+                          <ul className="divide-y divide-gray-100 w-full">
                             {teamDetails.map((reg: any, idx: number) => (
-                              <li key={reg?.id ?? idx} className="flex items-center gap-3 px-4 py-2.5">
+                              <li key={reg?.id ?? idx} className="flex items-center gap-2 py-1.5 w-full">
                                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold flex items-center justify-center">
                                   {idx + 1}
                                 </span>
-                                <span className="text-sm font-medium text-gray-900 truncate">
+                                <span className="text-sm font-medium text-gray-900 truncate flex-1 min-w-0">
                                   {reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`}
                                 </span>
                               </li>

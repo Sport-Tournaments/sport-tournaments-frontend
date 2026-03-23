@@ -1,10 +1,18 @@
 // Group & Draw types
+export interface GroupTeamDetail {
+  teamName: string;
+  logo?: string;
+  club?: { id: string; name: string; country: string; logo?: string };
+}
+
 export interface Group {
   id: string;
   tournamentId: string;
+  ageGroupId?: string;
   groupLetter: string;
   groupOrder?: number;
-  teams: GroupTeam[];
+  teams: string[];
+  teamDetails?: Record<string, GroupTeamDetail>;
   /** Manual tiebreak order: teamIds ordered by rank (set by organizer) */
   tieBreakOrder?: string[] | null;
 }

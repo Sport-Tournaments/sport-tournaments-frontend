@@ -276,6 +276,7 @@ export default function EditTournamentPage() {
               groupsCount: ag.groupsCount,
               fieldsCount: ag.fieldsCount,
               teamsPerGroup: ag.teamsPerGroup,
+              qualifyingTeamsPerGroup: (ag as any).qualifyingTeamsPerGroup,
               matchPeriodType: (ag as any).matchPeriodType,
               halfDurationMinutes: (ag as any).halfDurationMinutes,
               notes: (ag as any).notes,

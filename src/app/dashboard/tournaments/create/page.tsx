@@ -320,6 +320,7 @@ export default function CreateTournamentPage() {
         groupsCount: ag.groupsCount ?? undefined,
         fieldsCount: ag.fieldsCount ?? undefined,
         teamsPerGroup: ag.teamsPerGroup ?? undefined,
+        qualifyingTeamsPerGroup: ag.qualifyingTeamsPerGroup ?? undefined,
         halfDurationMinutes: ag.halfDurationMinutes ?? undefined,
         locationId: ag.locationId || undefined,
         locationAddress: ag.locationAddress || undefined,

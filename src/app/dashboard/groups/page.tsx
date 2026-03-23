@@ -27,9 +27,9 @@ export default function GroupsPage() {
 
   useEffect(() => {
     if (selectedTournament) {
-      fetchGroups(selectedTournament);
+      fetchGroups(selectedTournament, selectedAgeGroup ?? undefined);
     }
-  }, [selectedTournament]);
+  }, [selectedTournament, selectedAgeGroup]);
 
   const fetchTournaments = async () => {
     setLoading(true);
@@ -116,10 +116,10 @@ export default function GroupsPage() {
     }
   };
 
-  const fetchGroups = async (tournamentId: string) => {
+  const fetchGroups = async (tournamentId: string, ageGroupId?: string) => {
     setLoadingGroups(true);
     try {
-      const response = await groupService.getGroups(tournamentId);
+      const response = await groupService.getGroups(tournamentId, ageGroupId);
       const resData = response.data as any;
       
       let groupData: Group[] = [];
@@ -149,7 +149,7 @@ export default function GroupsPage() {
       const numberOfGroups = ageGroup?.groupsCount || 4;
       
       await groupService.executeDraw(selectedTournament, { numberOfGroups });
-      fetchGroups(selectedTournament);
+      fetchGroups(selectedTournament, selectedAgeGroup ?? undefined);
     } catch (error) {
       console.error('Failed to execute draw:', error);
     }

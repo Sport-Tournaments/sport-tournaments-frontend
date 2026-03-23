@@ -74,10 +74,13 @@ export interface AgeGroup {
   groupsCount?: number;
   fieldsCount?: number;
   teamsPerGroup?: number;
+  qualifyingTeamsPerGroup?: number;
   matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
   halfDurationMinutes?: number;
   numberOfMatches?: number;
   notes?: string;
+  drawCompleted?: boolean;
+  drawSeed?: string;
 }
 
 export interface TournamentLocation {

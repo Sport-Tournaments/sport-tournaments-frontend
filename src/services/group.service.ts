@@ -29,8 +29,9 @@ export async function resetDraw(tournamentId: string): Promise<ApiResponse<void>
 }
 
 // Get all groups and team assignments
-export async function getGroups(tournamentId: string): Promise<ApiResponse<Group[]>> {
-  return apiGet<ApiResponse<Group[]>>(`/v1/tournaments/${tournamentId}/groups`);
+export async function getGroups(tournamentId: string, ageGroupId?: string): Promise<ApiResponse<Group[]>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiGet<ApiResponse<Group[]>>(`/v1/tournaments/${tournamentId}/groups${params}`);
 }
 
 // Create a new group

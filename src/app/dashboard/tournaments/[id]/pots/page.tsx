@@ -233,7 +233,9 @@ export default function PotManagementPage() {
 
   const canExecuteDraw = () => {
     const totalAssigned = getTotalAssigned();
+    const isDrawAlreadyDone = selectedGroup?.drawCompleted === true;
     return (
+      !isDrawAlreadyDone &&
       totalAssigned === registrations.length &&
       totalAssigned > 0 &&
       selectedAgeGroupId != null
@@ -353,6 +355,11 @@ export default function PotManagementPage() {
                       }`}>
                         {agRegs.length}
                       </span>
+                      {ag.drawCompleted && (
+                        <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          ✓ Draw Done
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -370,6 +377,29 @@ export default function PotManagementPage() {
         {/* Draw Configuration */}
         {selectedAgeGroupId && (
           <>
+            {/* Draw already completed banner */}
+            {selectedGroup?.drawCompleted && (
+              <div className="mb-6 rounded-xl border border-green-300 bg-green-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-start gap-3 flex-1">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">Draw already completed for {selectedGroup?.displayLabel}</p>
+                    <p className="text-sm text-green-700 mt-0.5">
+                      The pot draw has been executed. Groups have been created. You can now generate the bracket.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/dashboard/tournaments/${tournamentId}?tab=groups&ageGroupId=${selectedAgeGroupId}`)}
+                  className="shrink-0 border-green-400 text-green-700 hover:bg-green-100"
+                >
+                  View Groups →
+                </Button>
+              </div>
+            )}
+
             {/* Format-gating banner */}
             {selectedGroup?.format === 'ROUND_ROBIN' && (
               <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -498,6 +528,9 @@ export default function PotManagementPage() {
                       <div className="text-sm text-yellow-800">
                         <p className="font-semibold mb-1">Cannot execute draw:</p>
                         <ul className="list-disc list-inside space-y-1">
+                          {selectedGroup?.drawCompleted && (
+                            <li>Draw has already been completed for this age group</li>
+                          )}
                           {getTotalAssigned() !== registrations.length && (
                             <li>All teams must be assigned to pots</li>
                           )}
@@ -648,17 +681,30 @@ export default function PotManagementPage() {
                 Draw Completed Successfully!
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                Groups have been created for {selectedGroup?.displayLabel || 'this age group'}.
+                Groups have been created for{' '}
+                <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>.
+                You can now manage groups and generate the bracket.
               </p>
-              <Button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  router.push(`/dashboard/tournaments/${tournamentId}?tab=groups`);
-                }}
-                className="w-full"
-              >
-                OK
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    router.push(
+                      `/dashboard/tournaments/${tournamentId}?tab=groups&ageGroupId=${selectedAgeGroupId}`,
+                    );
+                  }}
+                  className="w-full bg-[#1e3a5f] hover:bg-[#16304f]"
+                >
+                  View Groups &amp; Generate Bracket →
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSuccessModal(false)}
+                  className="w-full"
+                >
+                  Stay on Pots Page
+                </Button>
+              </div>
             </div>
           </div>
         </div>

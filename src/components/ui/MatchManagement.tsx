@@ -77,7 +77,7 @@ export default function MatchManagement({
       const bt = matchesData?.bracketType;
       if (bt === 'GROUPS_PLUS_KNOCKOUT' || bt === 'GROUPS_ONLY') {
         try {
-          const groupsRes = await groupService.getGroups(tournamentId);
+          const groupsRes = await groupService.getGroups(tournamentId, ageGroupId);
           const groupsData = (groupsRes as any)?.data ?? groupsRes ?? [];
           setGroups(Array.isArray(groupsData) ? groupsData : []);
         } catch {
@@ -240,7 +240,7 @@ export default function MatchManagement({
       await groupService.setGroupTiebreak(tournamentId, groupId, order, ageGroupId);
       // Re-fetch groups (tieBreakOrder updated) and matches (bracket may have been re-seeded)
       await Promise.all([
-        groupService.getGroups(tournamentId).then((res) => {
+        groupService.getGroups(tournamentId, ageGroupId).then((res) => {
           const data = (res as any)?.data ?? res ?? [];
           setGroups(Array.isArray(data) ? data : []);
         }),

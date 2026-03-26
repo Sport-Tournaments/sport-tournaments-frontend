@@ -24,6 +24,7 @@ export interface MatchManagementProps {
   isOrganizer?: boolean;
   ageGroupId?: string;
   isRegistrationOpen?: boolean;
+  drawCompleted?: boolean;
 }
 
 type MatchWithTeamNames = BracketMatch & {

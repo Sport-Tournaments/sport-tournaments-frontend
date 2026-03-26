@@ -413,7 +413,7 @@ export default function PotManagementPage() {
                       This age group uses the <strong>Round Robin</strong> format where all teams play each other — no group seeding draw is required. The bracket is generated automatically.
                     </p>
                     <Link
-                      href={`/dashboard/tournaments/${tournamentId}/bracket?ageGroupId=${selectedAgeGroupId}`}
+                      href={`/dashboard/tournaments/${tournamentId}?tab=matches&ageGroupId=${selectedAgeGroupId}`}
                       className="mt-2 inline-flex items-center text-sm font-medium text-amber-800 hover:text-amber-900 underline"
                     >
                       Go to Bracket Generation →

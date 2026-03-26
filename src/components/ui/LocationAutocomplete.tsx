@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/utils/helpers';
 import { useDebounce } from '@/hooks';
 import { searchLocations } from '@/services/location.service';
@@ -42,6 +43,7 @@ export default function LocationAutocomplete({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -119,6 +121,25 @@ export default function LocationAutocomplete({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Update dropdown position when shown or on scroll/resize
+  useEffect(() => {
+    if (!showSuggestions) return;
+
+    function updatePosition() {
+      if (inputRef.current) {
+        setDropdownRect(inputRef.current.getBoundingClientRect());
+      }
+    }
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [showSuggestions]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,37 +269,50 @@ export default function LocationAutocomplete({
         )}
       </div>
 
-      {/* Suggestions dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-          {suggestions.map((suggestion, index) => {
-            const cityLine = suggestion.region
-              ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
-              : `${suggestion.city}, ${suggestion.country}`;
-            const displayText = displayMode === 'address'
-              ? suggestion.formattedAddress
-              : cityLine;
-            
-            return (
-              <li
-                key={suggestion.placeId || `${suggestion.latitude}-${suggestion.longitude}-${index}`}
-                className={cn(
-                  'px-4 py-2 cursor-pointer text-sm',
-                  index === selectedIndex
-                    ? 'bg-indigo-50 text-indigo-900'
-                    : 'hover:bg-primary/5 text-gray-900'
-                )}
-                onClick={() => handleSelect(suggestion)}
-              >
-                <div className="font-medium">{displayText}</div>
-                {displayMode === 'address' && suggestion.city && (
-                  <div className="text-xs text-gray-500 mt-0.5">{cityLine}</div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {/* Suggestions dropdown — rendered in a portal to escape overflow:hidden in parent cards */}
+      {showSuggestions && suggestions.length > 0 && dropdownRect &&
+        createPortal(
+          <ul
+            style={{
+              position: 'fixed',
+              top: dropdownRect.bottom + 4,
+              left: dropdownRect.left,
+              width: dropdownRect.width,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
+          >
+            {suggestions.map((suggestion, index) => {
+              const cityLine = suggestion.region
+                ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
+                : `${suggestion.city}, ${suggestion.country}`;
+              const displayText = displayMode === 'address'
+                ? suggestion.formattedAddress
+                : cityLine;
+              
+              return (
+                <li
+                  key={suggestion.placeId || `${suggestion.latitude}-${suggestion.longitude}-${index}`}
+                  className={cn(
+                    'px-4 py-2 cursor-pointer text-sm',
+                    index === selectedIndex
+                      ? 'bg-indigo-50 text-indigo-900'
+                      : 'hover:bg-primary/5 text-gray-900'
+                  )}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleSelect(suggestion)}
+                >
+                  <div className="font-medium">{displayText}</div>
+                  {displayMode === 'address' && suggestion.city && (
+                    <div className="text-xs text-gray-500 mt-0.5">{cityLine}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>,
+          document.body
+        )
+      }
 
       {/* Helper text or error */}
       {(error || helperText) && (

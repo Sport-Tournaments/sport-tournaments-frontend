@@ -175,7 +175,7 @@ export default function GroupsPage() {
   const selectedTournamentData = tournaments.find(t => t.id === selectedTournament);
   const ageGroupOptions = (selectedTournamentData?.ageGroups || []).map(ag => ({
     value: ag.id || '',
-    label: `${ag.displayLabel || ag.ageCategory || 'Category'} (Birth Year: ${ag.birthYear})`,
+    label: `${ag.displayLabel || 'Category'} (Birth Year: ${ag.birthYear})`,
   }));
 
   const handleTournamentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

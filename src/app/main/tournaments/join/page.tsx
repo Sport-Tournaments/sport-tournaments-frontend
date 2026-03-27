@@ -17,7 +17,6 @@ interface TournamentInfo {
   startDate: string;
   endDate: string;
   location: string;
-  ageCategory: string;
   maxTeams: number;
   registeredTeams: number;
 }
@@ -63,7 +62,6 @@ export default function JoinTournamentPage() {
           startDate: t.startDate,
           endDate: t.endDate,
           location: t.location,
-          ageCategory: t.ageCategory,
           maxTeams: t.maxTeams,
           registeredTeams: t.registeredTeams || 0,
         });
@@ -160,10 +158,6 @@ export default function JoinTournamentPage() {
                       <div>
                         <p className="text-gray-500">{t('tournament.location')}</p>
                         <p className="font-medium text-gray-900">{tournament.location}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">{t('tournament.ageCategory.label')}</p>
-                        <p className="font-medium text-gray-900">{tournament.ageCategory}</p>
                       </div>
                       <div>
                         <p className="text-gray-500">{t('tournament.startDate')}</p>

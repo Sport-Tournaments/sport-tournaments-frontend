@@ -32,7 +32,6 @@ export default function TournamentsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
   const [geoFilters, setGeoFilters] = useState<GeolocationFilters>({});
-  const [ageCategory, setAgeCategory] = useState<string>("");
   const [level, setLevel] = useState<string>("");
   const [country, setCountry] = useState("");
   const [gameSystem, setGameSystem] = useState("");
@@ -84,7 +83,6 @@ export default function TournamentsPage() {
       };
       if (debouncedSearch) params.search = debouncedSearch;
       if (status && status !== "COMPLETED") params.status = status;
-      if (ageCategory) params.ageCategory = ageCategory;
       if (level) params.level = level;
       if (country) params.country = country;
       if (gameSystem) params.gameSystem = gameSystem;
@@ -155,7 +153,6 @@ export default function TournamentsPage() {
       debouncedSearch,
       status,
       geoFilters,
-      ageCategory,
       level,
       country,
       gameSystem,
@@ -186,7 +183,6 @@ export default function TournamentsPage() {
       debouncedSearch,
       status,
       geoFilters,
-      ageCategory,
       level,
       country,
       gameSystem,
@@ -221,31 +217,6 @@ export default function TournamentsPage() {
       value: "CANCELLED" as TournamentStatus,
       label: t("tournament.status.cancelled"),
     },
-  ];
-
-  const ageCategoryOptions = [
-    { value: "", label: t("common.all") },
-    { value: "U5", label: t("tournament.ageCategory.U5") },
-    { value: "U6", label: t("tournament.ageCategory.U6") },
-    { value: "U7", label: t("tournament.ageCategory.U7") },
-    { value: "U8", label: t("tournament.ageCategory.U8") },
-    { value: "U9", label: t("tournament.ageCategory.U9") },
-    { value: "U10", label: t("tournament.ageCategory.U10") },
-    { value: "U11", label: t("tournament.ageCategory.U11") },
-    { value: "U12", label: t("tournament.ageCategory.U12") },
-    { value: "U13", label: t("tournament.ageCategory.U13") },
-    { value: "U14", label: t("tournament.ageCategory.U14") },
-    { value: "U15", label: t("tournament.ageCategory.U15") },
-    { value: "U16", label: t("tournament.ageCategory.U16") },
-    { value: "U17", label: t("tournament.ageCategory.U17") },
-    { value: "U18", label: t("tournament.ageCategory.U18") },
-    { value: "U19", label: t("tournament.ageCategory.U19") },
-    { value: "U20", label: t("tournament.ageCategory.U20") },
-    { value: "U21", label: t("tournament.ageCategory.U21") },
-    { value: "U22", label: t("tournament.ageCategory.U22") },
-    { value: "U23", label: t("tournament.ageCategory.U23") },
-    { value: "SENIOR", label: t("tournament.ageCategory.SENIOR") },
-    { value: "VETERANS", label: t("tournament.ageCategory.VETERANS") },
   ];
 
   const levelOptions = [
@@ -288,7 +259,6 @@ export default function TournamentsPage() {
   ];
 
   const clearAdvancedFilters = () => {
-    setAgeCategory("");
     setLevel("");
     setCountry("");
     setGameSystem("");
@@ -611,13 +581,6 @@ export default function TournamentsPage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <Select
-              containerClassName="w-full sm:w-48"
-              options={ageCategoryOptions}
-              value={ageCategory}
-              onChange={(e) => setAgeCategory(e.target.value)}
-              label={t("tournament.ageCategory.label")}
-            />
             <Input
               containerClassName="w-full sm:w-48"
               label={t("common.country")}

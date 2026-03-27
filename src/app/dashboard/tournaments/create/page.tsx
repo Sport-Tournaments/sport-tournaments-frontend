@@ -307,7 +307,6 @@ export default function CreateTournamentPage() {
         displayLabel: ag.displayLabel || undefined,
         // Strip empty strings for enum fields so the backend @IsEnum validator
         // does not receive "" which fails validation with a 400 error.
-        ageCategory: ag.ageCategory || undefined,
         level: ag.level || undefined,
         format: ag.format || undefined,
         gameSystem: ag.gameSystem || undefined,

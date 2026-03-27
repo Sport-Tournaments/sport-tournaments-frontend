@@ -434,14 +434,6 @@ export default function TournamentDetailPage() {
                   )}
                 </span>
               </div>
-              <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                <span className="text-gray-600">{t('tournament.ageCategory.label')}</span>
-                <span className="font-medium">
-                  {ageGroup?.ageCategory
-                    ? t(`tournament.ageCategory.${ageGroup.ageCategory}`)
-                    : tournament.ageCategory || 'Open'}
-                </span>
-              </div>
               {tournament.numberOfMatches && (
                 <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                   <span className="text-gray-600">{t('tournament.numberOfMatches')}</span>
@@ -522,9 +514,6 @@ export default function TournamentDetailPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                         <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ag.birthYear}</span>
-                        {ag.ageCategory && (
-                          <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ag.ageCategory}`)}</span>
-                        )}
                         {ag.level && (
                           <span>{t('tournament.level.label')}: {t(`tournament.level.${ag.level}`)}</span>
                         )}
@@ -626,9 +615,6 @@ export default function TournamentDetailPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
                   <span>{t('tournaments.ageGroups.birthYear', 'Birth Year')}: {ageGroup.birthYear}</span>
-                  {ageGroup.ageCategory && (
-                    <span>{t('tournament.ageCategory.label')}: {t(`tournament.ageCategory.${ageGroup.ageCategory}`)}</span>
-                  )}
                   {ageGroup.format && (
                     <span>{t('tournament.format.label')}: {t(`tournament.format.${ageGroup.format}`)}</span>
                   )}

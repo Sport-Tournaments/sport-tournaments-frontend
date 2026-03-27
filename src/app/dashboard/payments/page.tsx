@@ -128,9 +128,6 @@ export default function PaymentsPage() {
                       <div className="text-sm text-gray-500 space-y-1">
                         <p>Club: {registration.club?.name || 'N/A'}</p>
                         <p>Team: {registration.team?.name || 'Not specified'}</p>
-                        {(registration as any).ageGroup?.ageCategory && (
-                          <p>Category: {(registration as any).ageGroup.ageCategory}</p>
-                        )}
                         <p>Registered: {formatDateTime(registration.createdAt)}</p>
                       </div>
                     </div>

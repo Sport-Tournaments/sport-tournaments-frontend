@@ -8,7 +8,7 @@ import Select from './Select';
 import LocationAutocomplete from './LocationAutocomplete';
 import Modal from './Modal';
 import { cn } from '@/utils/helpers';
-import type { AgeCategory, TournamentFormat, TournamentLevel } from '@/types';
+import type { TournamentFormat, TournamentLevel } from '@/types';
 
 // Game systems for football based on player count (field players + goalkeeper)
 const GAME_SYSTEMS = [
@@ -20,29 +20,6 @@ const GAME_SYSTEMS = [
   { value: '10+1', label: '10+1 (11-a-side)' },
 ];
 
-const AGE_CATEGORY_OPTIONS = [
-  'U5',
-  'U6',
-  'U7',
-  'U8',
-  'U9',
-  'U10',
-  'U11',
-  'U12',
-  'U13',
-  'U14',
-  'U15',
-  'U16',
-  'U17',
-  'U18',
-  'U19',
-  'U20',
-  'U21',
-  'U22',
-  'U23',
-  'SENIOR',
-  'VETERANS',
-] as const;
 const TOURNAMENT_LEVELS = ['I', 'II', 'III'] as const;
 const TOURNAMENT_FORMATS = ['SINGLE_ELIMINATION', 'DOUBLE_ELIMINATION', 'ROUND_ROBIN', 'GROUPS_PLUS_KNOCKOUT', 'LEAGUE'] as const;
 const GROUPS_COUNT_OPTIONS = Array.from({ length: 16 }, (_, i) => {
@@ -89,7 +66,6 @@ export interface AgeGroupFormData {
   id?: string;
   birthYear: number;
   displayLabel?: string;
-  ageCategory?: AgeCategory;
   level?: TournamentLevel;
   format?: TournamentFormat;
   gameSystem?: string;
@@ -124,7 +100,6 @@ interface AgeGroupsManagerProps {
 }
 
 const defaultAgeGroup: Omit<AgeGroupFormData, 'birthYear'> = {
-  ageCategory: undefined,
   format: 'GROUPS_PLUS_KNOCKOUT',
   gameSystem: '7+1',
   teamCount: 16,
@@ -144,10 +119,6 @@ export function AgeGroupsManager({
   className,
 }: AgeGroupsManagerProps) {
   const { t } = useTranslation();
-  const ageCategoryOptions = AGE_CATEGORY_OPTIONS.map((cat) => ({
-    value: cat,
-    label: t(`tournament.ageCategory.${cat}`),
-  }));
   const levelOptions = [
     { value: '', label: t('common.none') },
     ...TOURNAMENT_LEVELS.map((level) => ({
@@ -167,12 +138,6 @@ export function AgeGroupsManager({
     return `U${age}`;
   };
 
-  const getAutoAgeCategory = (birthYear: number): AgeCategory | undefined => {
-    const age = currentYear - birthYear;
-    const category = `U${age}` as AgeCategory;
-    return AGE_CATEGORY_OPTIONS.includes(category) ? category : undefined;
-  };
-
   const handleAddAgeGroup = useCallback(() => {
     // Find the next birth year not already used
     const usedYears = new Set(ageGroups.map((ag) => ag.birthYear));
@@ -183,7 +148,6 @@ export function AgeGroupsManager({
       ...defaultAgeGroup,
       birthYear,
       displayLabel: getAutoDisplayLabel(birthYear),
-      ageCategory: getAutoAgeCategory(birthYear),
       ...(tournamentStartDate ? { startDate: tournamentStartDate } : {}),
       ...(tournamentEndDate ? { endDate: tournamentEndDate } : {}),
     };
@@ -220,7 +184,6 @@ export function AgeGroupsManager({
 
       if (updates.birthYear && updates.birthYear !== ag.birthYear) {
         updated.displayLabel = getAutoDisplayLabel(updates.birthYear);
-        updated.ageCategory = getAutoAgeCategory(updates.birthYear);
       }
       
       // Auto-calculate groupsCount when teamCount or teamsPerGroup changes
@@ -420,15 +383,6 @@ export function AgeGroupsManager({
                         'tournaments.ageGroups.displayLabelHelp',
                         'Auto-filled from birth year and fully editable (e.g., "U12 Elite")'
                       )}
-                    />
-
-                    {/* Age Category */}
-                    <Select
-                      label={t('tournament.ageCategory.label')}
-                      options={ageCategoryOptions}
-                      value={ageGroup.ageCategory || ''}
-                      onChange={(e: ChangeEvent<HTMLSelectElement>) => handleUpdateAgeGroup(index, { ageCategory: (e.target.value || undefined) as AgeCategory | undefined })}
-                      disabled={disabled}
                     />
 
                     {/* Tournament Level */}

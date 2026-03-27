@@ -257,7 +257,6 @@ export default function EditTournamentPage() {
               id: ag.id,
               birthYear: ag.birthYear,
               displayLabel: ag.displayLabel,
-              ageCategory: (ag as any).ageCategory,
               level: (ag as any).level,
               format: (ag as any).format,
               gameSystem: ag.gameSystem,

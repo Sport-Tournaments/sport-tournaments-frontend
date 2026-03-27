@@ -229,13 +229,6 @@ export default function TournamentDetailPage() {
       if (byBirthYear?.id) return byBirthYear.id;
     }
 
-    if (team.ageCategory) {
-      const byCategory = tournament.ageGroups.find(
-        (ageGroup) => ageGroup.ageCategory === team.ageCategory,
-      );
-      if (byCategory?.id) return byCategory.id;
-    }
-
     return undefined;
   };
 
@@ -255,7 +248,6 @@ export default function TournamentDetailPage() {
 
   const getAgeGroupLabel = (ageGroup: AgeGroup) => {
     if (ageGroup.displayLabel) return ageGroup.displayLabel;
-    if (ageGroup.ageCategory) return t(`tournament.ageCategory.${ageGroup.ageCategory}`);
     if (ageGroup.birthYear) return `${t('tournament.birthYear', 'Birth Year')} ${ageGroup.birthYear}`;
     return t('tournament.ageCategory.label', 'Age Category');
   };
@@ -459,16 +451,6 @@ export default function TournamentDetailPage() {
               <div>
                 <p className="text-sm text-gray-500">{t('common.city')}, {t('common.country')}</p>
                 <p className="font-medium">{tournament.location}, {tournament.country || ''}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">{t('tournament.ageCategory.label')}</p>
-                <p className="font-medium">
-                  {ageGroup?.ageCategory
-                    ? t(`tournament.ageCategory.${ageGroup.ageCategory}`)
-                    : tournament.ageCategory
-                      ? t(`tournament.ageCategory.${tournament.ageCategory}`)
-                      : '—'}
-                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">{t('tournament.level.label')}</p>

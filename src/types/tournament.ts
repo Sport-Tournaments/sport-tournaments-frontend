@@ -5,28 +5,6 @@ export type TournamentStatus =
   | "ONGOING"
   | "COMPLETED"
   | "CANCELLED";
-export type AgeCategory =
-  | "U5"
-  | "U6"
-  | "U7"
-  | "U8"
-  | "U9"
-  | "U10"
-  | "U11"
-  | "U12"
-  | "U13"
-  | "U14"
-  | "U15"
-  | "U16"
-  | "U17"
-  | "U18"
-  | "U19"
-  | "U20"
-  | "U21"
-  | "U22"
-  | "U23"
-  | "SENIOR"
-  | "VETERANS";
 export type TournamentFormat =
   | "SINGLE_ELIMINATION"
   | "DOUBLE_ELIMINATION"
@@ -55,7 +33,6 @@ export interface AgeGroup {
   id?: string;
   birthYear: number;
   displayLabel?: string;
-  ageCategory?: AgeCategory;
   level?: TournamentLevel;
   format?: TournamentFormat;
   gameSystem?: string;
@@ -112,7 +89,6 @@ export interface Tournament {
   location: string;
   latitude?: number;
   longitude?: number;
-  ageCategory: AgeCategory;
   level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;
@@ -189,7 +165,6 @@ export interface CreateTournamentDto {
   location: string;
   latitude?: number;
   longitude?: number;
-  ageCategory?: AgeCategory; // Made optional - configuration moved to ageGroups
   level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;
@@ -236,7 +211,6 @@ export interface TournamentFilters {
   pageSize?: number;
   limit?: number;
   status?: TournamentStatus;
-  ageCategory?: AgeCategory;
   level?: TournamentLevel;
   country?: string;
   startDateFrom?: string;
@@ -260,7 +234,6 @@ export interface TournamentFilters {
 export interface TournamentStatistics {
   total: number;
   byStatus: Record<TournamentStatus, number>;
-  byAgeCategory: Record<AgeCategory, number>;
   byCountry: Record<string, number>;
   upcoming: number;
   ongoing: number;

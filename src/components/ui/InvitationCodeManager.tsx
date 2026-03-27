@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { cn } from '@/utils/helpers';
+import { formatDate } from '@/utils/date';
 import Button from './Button';
 import { 
   getInvitationCode, 
@@ -175,9 +176,7 @@ export default function InvitationCodeManager({
               )}
             >
               {isExpired ? 'Expired' : 'Expires'} on{' '}
-              {new Date(expiresAt).toLocaleDateString('en-US', {
-                dateStyle: 'medium',
-              })}
+              {formatDate(expiresAt)}
             </p>
           )}
 

@@ -12,7 +12,7 @@ export function getLocale(language: string): Locale {
 
 export function formatDate(
   date: string | Date | null | undefined,
-  formatStr = 'PPP',
+  formatStr = 'dd.MM.yyyy',
   language = 'en'
 ): string {
   if (!date) return '—';
@@ -26,7 +26,7 @@ export function formatDateTime(
   language = 'en'
 ): string {
   if (!date) return '—';
-  return formatDate(date, 'PPP p', language);
+  return formatDate(date, 'dd.MM.yyyy HH:mm', language);
 }
 
 export function formatShortDate(
@@ -34,7 +34,7 @@ export function formatShortDate(
   language = 'en'
 ): string {
   if (!date) return '—';
-  return formatDate(date, 'PP', language);
+  return formatDate(date, 'dd.MM.yyyy', language);
 }
 
 export function formatDateRange(
@@ -47,8 +47,8 @@ export function formatDateRange(
   
   if (!isValid(start) || !isValid(end)) return 'Invalid date range';
   
-  const startFormatted = format(start, 'MMM d', { locale: getLocale(language) });
-  const endFormatted = format(end, 'MMM d, yyyy', { locale: getLocale(language) });
+  const startFormatted = format(start, 'dd.MM', { locale: getLocale(language) });
+  const endFormatted = format(end, 'dd.MM.yyyy', { locale: getLocale(language) });
   
   return `${startFormatted} - ${endFormatted}`;
 }

@@ -154,9 +154,9 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
     if (view === 'week') {
       const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-      return `${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d, yyyy')}`;
+      return `${format(weekStart, 'dd.MM')} - ${format(weekEnd, 'dd.MM.yyyy')}`;
     }
-    return format(currentDate, 'EEEE, MMMM d, yyyy');
+    return format(currentDate, 'EEEE, dd.MM.yyyy');
   };
 
   return (
@@ -432,7 +432,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
       {selectedDate && view !== 'day' && (
         <div className="mt-6">
           <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            {t('tournaments.eventsOn', 'Tournaments on')} {format(selectedDate, 'MMMM d, yyyy')}
+            {t('tournaments.eventsOn', 'Tournaments on')} {format(selectedDate, 'dd.MM.yyyy')}
           </h3>
           
           {selectedDateTournaments.length === 0 ? (
@@ -452,7 +452,7 @@ export function TournamentCalendar({ tournaments, className }: TournamentCalenda
                       <h4 className="font-medium text-gray-900">{tournament.name}</h4>
                       <p className="text-sm text-gray-500 mt-1">
                         {tournament.startDate && tournament.endDate ? (
-                          <>{format(safeParseDateString(tournament.startDate)!, 'MMM d')} - {format(safeParseDateString(tournament.endDate)!, 'MMM d, yyyy')}</>
+                          <>{format(safeParseDateString(tournament.startDate)!, 'dd.MM')} - {format(safeParseDateString(tournament.endDate)!, 'dd.MM.yyyy')}</>
                         ) : (
                           <span className="text-gray-400">Date TBD</span>
                         )}

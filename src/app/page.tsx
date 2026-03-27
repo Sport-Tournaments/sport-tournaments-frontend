@@ -12,6 +12,9 @@ export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuthStore();
+  const createTournamentHref = isAuthenticated
+    ? '/dashboard/tournaments/create'
+    : '/auth/register?role=ORGANIZER';
 
   const handleFeatureNavigation = (targetPath: string) => {
     if (isLoading) return;
@@ -109,9 +112,9 @@ export default function HomePage() {
                     {t('home.hero.browseTournaments')}
                   </Button>
                 </Link>
-                <Link href="/auth/register">
+                <Link href={isAuthenticated ? createTournamentHref : '/auth/register'}>
                   <Button variant="outline" size="lg">
-                    {t('home.hero.getStarted')}
+                    {isAuthenticated ? t('dashboard.createTournament') : t('home.hero.getStarted')}
                   </Button>
                 </Link>
               </div>
@@ -197,14 +200,14 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">{t('home.cta.title')}</h2>
           <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-blue-100">{t('home.cta.subtitle')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/register?role=ORGANIZER">
+            <Link href="/main/tournaments">
               <Button size="lg" className="!bg-white !text-[#1e3a5f] hover:!bg-blue-50 shadow-lg">
-                {t('home.cta.organizer')}
+                {t('home.hero.browseTournaments')}
               </Button>
             </Link>
-            <Link href="/auth/register?role=PARTICIPANT">
+            <Link href={createTournamentHref}>
               <Button size="lg" className="!bg-transparent border-2 border-white !text-white hover:!bg-white/10">
-                {t('home.cta.participant')}
+                {t('dashboard.createTournament')}
               </Button>
             </Link>
           </div>

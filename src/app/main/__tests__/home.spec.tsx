@@ -2,11 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import HomePage from '@/app/page';
 
+const mockUseAuthStore = vi.fn();
+
 // Mock next/link
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
     <a href={href}>{children}</a>
   ),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+  usePathname: () => '/',
 }));
 
 // Mock i18next
@@ -18,6 +27,7 @@ vi.mock('react-i18next', () => ({
         'home.hero.subtitle': 'The complete platform for organizing and managing youth football tournaments worldwide',
         'home.hero.browseTournaments': 'Browse Tournaments',
         'home.hero.getStarted': 'Get Started',
+        'dashboard.createTournament': 'Create Tournament',
         'home.hero.platformName': 'tournamente.com',
         'home.hero.platformTagline': 'Your Tournament Platform',
         'home.stats.tournaments': 'Tournaments',
@@ -37,11 +47,14 @@ vi.mock('react-i18next', () => ({
         'home.features.notifications.description': 'Stay updated with real-time notifications',
         'home.cta.title': 'Ready to Get Started?',
         'home.cta.subtitle': 'Join thousands of clubs and organizers',
-        'home.cta.register': 'Register Now',
       };
       return translations[key] || key;
     },
   }),
+}));
+
+vi.mock('@/store', () => ({
+  useAuthStore: () => mockUseAuthStore(),
 }));
 
 // Mock MainLayout
@@ -65,6 +78,10 @@ vi.mock('@/components/ui', () => ({
 describe('Home Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseAuthStore.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
   });
 
   describe('Hero Section', () => {
@@ -83,27 +100,51 @@ describe('Home Page', () => {
     it('should render browse tournaments button', () => {
       render(<HomePage />);
 
-      expect(screen.getByRole('button', { name: /browse tournaments/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /browse tournaments/i })[0]).toBeInTheDocument();
     });
 
-    it('should render get started button', () => {
+    it('should render get started button for logged out users', () => {
       render(<HomePage />);
 
       expect(screen.getByRole('button', { name: /get started/i })).toBeInTheDocument();
     });
 
+    it('should render create tournament button for logged in users', () => {
+      mockUseAuthStore.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      render(<HomePage />);
+
+      expect(screen.getAllByRole('button', { name: /create tournament/i })[0]).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /get started/i })).not.toBeInTheDocument();
+    });
+
     it('should link browse tournaments to tournaments page', () => {
       render(<HomePage />);
 
-      const link = screen.getByRole('button', { name: /browse tournaments/i }).closest('a');
+      const link = screen.getAllByRole('button', { name: /browse tournaments/i })[0].closest('a');
       expect(link).toHaveAttribute('href', '/main/tournaments');
     });
 
-    it('should link get started to register page', () => {
+    it('should link get started to register page for logged out users', () => {
       render(<HomePage />);
 
       const link = screen.getByRole('button', { name: /get started/i }).closest('a');
       expect(link).toHaveAttribute('href', '/auth/register');
+    });
+
+    it('should link create tournament to dashboard page for logged in users', () => {
+      mockUseAuthStore.mockReturnValue({
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      render(<HomePage />);
+
+      const link = screen.getAllByRole('button', { name: /create tournament/i })[0].closest('a');
+      expect(link).toHaveAttribute('href', '/dashboard/tournaments/create');
     });
   });
 
@@ -214,11 +255,11 @@ describe('Home Page', () => {
       expect(screen.getByText('Join thousands of clubs and organizers')).toBeInTheDocument();
     });
 
-    it('should render register button in CTA', () => {
+    it('should render browse and create tournament buttons in CTA', () => {
       render(<HomePage />);
 
-      // CTA section has organizer and participant buttons
-      expect(screen.getByRole('button', { name: /home\.cta\.organizer/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /browse tournaments/i }).length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByRole('button', { name: /create tournament/i })).toBeInTheDocument();
     });
   });
 
@@ -227,7 +268,7 @@ describe('Home Page', () => {
       render(<HomePage />);
 
       // The container should have flex-col for small screens
-      const buttonsContainer = screen.getByRole('button', { name: /browse tournaments/i }).closest('div');
+      const buttonsContainer = screen.getAllByRole('button', { name: /browse tournaments/i })[0].closest('div');
       expect(buttonsContainer).toHaveClass('flex-col');
     });
   });

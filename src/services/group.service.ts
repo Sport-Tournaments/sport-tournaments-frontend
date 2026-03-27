@@ -109,6 +109,18 @@ export async function generateBracket(
   );
 }
 
+// Generate knockout bracket after all group matches are completed
+export async function generateKnockoutBracket(
+  tournamentId: string,
+  ageGroupId?: string
+): Promise<ApiResponse<any>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPost<ApiResponse<any>>(
+    `/v1/tournaments/${tournamentId}/bracket/generate-knockout${params}`,
+    {}
+  );
+}
+
 // Schedule a match (set date/time and optional court number)
 export async function scheduleMatch(
   tournamentId: string,
@@ -137,6 +149,18 @@ export async function setGroupTiebreak(
   );
 }
 
+// Update a specific group (teams array, groupLetter)
+export async function updateGroup(
+  tournamentId: string,
+  groupId: string,
+  data: { teams?: string[]; groupLetter?: string }
+): Promise<ApiResponse<Group>> {
+  return apiPatch<ApiResponse<Group>>(
+    `/v1/tournaments/${tournamentId}/groups/${groupId}`,
+    data
+  );
+}
+
 export const groupService = {
   executeDraw,
   resetDraw,
@@ -148,8 +172,10 @@ export const groupService = {
   setMatchAdvancement,
   updateMatchScore,
   generateBracket,
+  generateKnockoutBracket,
   scheduleMatch,
   setGroupTiebreak,
+  updateGroup,
 };
 
 export default groupService;

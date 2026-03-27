@@ -37,6 +37,7 @@ export default function MatchManagement({
   isOrganizer = false,
   ageGroupId,
   isRegistrationOpen = false,
+  drawCompleted,
 }: MatchManagementProps) {
   const { t } = useTranslation();
   const [matchData, setMatchData] = useState<MatchesResponse | null>(null);
@@ -284,6 +285,26 @@ export default function MatchManagement({
     }
   };
 
+  const handleGenerateKnockout = async () => {
+    try {
+      setGenerating(true);
+      setError(null);
+      await groupService.generateKnockoutBracket(tournamentId, ageGroupId);
+      setSuccessMessage('Knockout bracket generated successfully!');
+      await fetchMatches(true);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to generate knockout bracket:', err);
+      setError(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          'Failed to generate knockout bracket.'
+      );
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -354,7 +375,7 @@ export default function MatchManagement({
           <>
             <button
               onClick={handleGenerateBracket}
-              disabled={generating || isRegistrationOpen}
+              disabled={generating || isRegistrationOpen || drawCompleted === false}
               className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {generating ? (
@@ -615,27 +636,104 @@ export default function MatchManagement({
             )
           );
 
+          const allGroupMatchesCompleted =
+            allMatches.length > 0 &&
+            allMatches.every((m) => m.status === 'COMPLETED');
+          const completedCount = allMatches.filter(
+            (m) => m.status === 'COMPLETED'
+          ).length;
+
           return (
             <div className="space-y-6">
               {/* Group phase — one card per group */}
               {groupPhaseSection}
-              {/* Knockout stage — bracket chart */}
-              {playoffRounds.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Knockout Stage</h4>
-                  <DoubleEliminationBracket
-                    playoffRounds={playoffRounds}
-                    teamNames={teamNamesMap}
-                    isOrganizer={isOrganizer}
-                    twoLegged={false}
-                    onAdvance={handleAdvancement}
-                    onScoreUpdate={handleScoreUpdate}
-                    onSchedule={handleScheduleMatch}
-                    savingMatchId={savingMatchId}
-                    schedulingMatchId={schedulingMatchId}
-                    t={t}
-                  />
-                </div>
+              {/* Knockout stage */}
+              {bracketType === 'GROUPS_PLUS_KNOCKOUT' && (
+                <>
+                  {playoffRounds.length > 0 ? (
+                    <div className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Knockout Stage</h4>
+                      <DoubleEliminationBracket
+                        playoffRounds={playoffRounds}
+                        teamNames={teamNamesMap}
+                        isOrganizer={isOrganizer}
+                        twoLegged={false}
+                        onAdvance={handleAdvancement}
+                        onScoreUpdate={handleScoreUpdate}
+                        onSchedule={handleScheduleMatch}
+                        savingMatchId={savingMatchId}
+                        schedulingMatchId={schedulingMatchId}
+                        t={t}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+                      <svg
+                        className="w-12 h-12 mx-auto text-gray-400 mb-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                        />
+                      </svg>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                        Knockout Stage
+                      </h4>
+                      {allMatches.length === 0 ? (
+                        <p className="text-sm text-gray-500 mb-4">
+                          Generate group matches first to unlock the knockout stage.
+                        </p>
+                      ) : !allGroupMatchesCompleted ? (
+                        <p className="text-sm text-gray-500 mb-4">
+                          Complete all group stage matches before generating the knockout bracket.
+                          <span className="block mt-1 text-xs text-gray-400">
+                            {completedCount} / {allMatches.length} matches completed
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-500 mb-4">
+                          All group matches are completed. Generate the knockout bracket to continue.
+                        </p>
+                      )}
+                      {isOrganizer && allMatches.length > 0 && (
+                        <button
+                          onClick={handleGenerateKnockout}
+                          disabled={generating || !allGroupMatchesCompleted}
+                          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {generating ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="w-4 h-4 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                              Generate Knockout Bracket
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           );

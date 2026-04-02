@@ -23,6 +23,8 @@ vi.mock('react-i18next', () => ({
         'club.createFirst': 'Create First Club',
         'club.members': 'Members',
         'common.search': 'Search clubs...',
+        'common.searchClubs': 'Search clubs...',
+        'common.country': 'Country',
       };
       return translations[key] || key;
     },
@@ -109,10 +111,21 @@ vi.mock('@/components/ui', () => ({
   Button: ({ children, variant, onClick }: { children: React.ReactNode; variant?: string; onClick?: () => void }) => (
     <button data-variant={variant} onClick={onClick}>{children}</button>
   ),
-  Input: ({ placeholder, value, onChange, leftIcon }: { placeholder?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; leftIcon?: React.ReactNode }) => (
+  Input: ({ placeholder, label, value, onChange, leftIcon }: { placeholder?: string; label?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; leftIcon?: React.ReactNode }) => (
     <div>
+      {label && <label>{label}</label>}
       {leftIcon}
       <input data-testid="search-input" placeholder={placeholder} value={value} onChange={onChange} />
+    </div>
+  ),
+  Select: ({ label, value, onChange, options }: { label?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: { value: string; label: string }[] }) => (
+    <div>
+      {label && <label>{label}</label>}
+      <select data-testid="country-select" value={value} onChange={onChange}>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
     </div>
   ),
   Loading: ({ size }: { size?: string }) => <div data-testid="loading" data-size={size}>Loading...</div>,
@@ -161,6 +174,14 @@ describe('Clubs Page', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('search-input')).toBeInTheDocument();
+      });
+    });
+
+    it('should render country filter dropdown', async () => {
+      render(<ClubsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('country-select')).toBeInTheDocument();
       });
     });
   });

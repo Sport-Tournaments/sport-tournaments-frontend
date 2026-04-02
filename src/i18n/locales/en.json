@@ -157,6 +157,7 @@
   "nav": {
     "home": "Home",
     "tournaments": "Tournaments",
+    "tournamentsCreated": "Tournaments Created",
     "clubs": "Clubs",
     "dashboard": "Dashboard",
     "myTournaments": "My Tournaments",

@@ -3,6 +3,8 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TournamentsPage from '@/app/main/tournaments/page';
 
+const mockUseAuthStore = vi.fn();
+
 // Mock next/link
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => (
@@ -28,12 +30,23 @@ vi.mock('react-i18next', () => ({
         'tournament.status.IN_PROGRESS': 'In Progress',
         'tournament.status.COMPLETED': 'Completed',
         'tournament.status.CANCELLED': 'Cancelled',
+        'tournament.status.published': 'Published',
+        'tournament.status.ongoing': 'Ongoing',
+        'tournament.status.completed': 'Completed',
+        'tournament.status.cancelled': 'Cancelled',
+        'tournament.pendingApproval': 'pending',
         'common.all': 'All',
         'common.search': 'Search tournaments...',
+        'common.country': 'Country',
+        'common.teams': 'teams',
       };
       return translations[key] || key;
     },
   }),
+}));
+
+vi.mock('@/store', () => ({
+  useAuthStore: () => mockUseAuthStore(),
 }));
 
 // Mock tournament service
@@ -53,8 +66,8 @@ const mockTournaments = [
     name: 'Summer Cup 2024',
     description: 'Annual summer tournament',
     status: 'REGISTRATION_OPEN',
-    startDate: '2024-07-01',
-    endDate: '2024-07-15',
+    startDate: '2099-07-01',
+    endDate: '2099-07-15',
     location: 'Barcelona, Spain',
     bannerImage: 'https://example.com/banner1.jpg',
   },
@@ -63,17 +76,17 @@ const mockTournaments = [
     name: 'Winter League',
     description: 'Winter football league',
     status: 'DRAFT',
-    startDate: '2024-12-01',
-    endDate: '2024-12-20',
+    startDate: '2099-12-01',
+    endDate: '2099-12-20',
     location: 'Munich, Germany',
   },
   {
     id: '3',
     name: 'Spring Tournament',
     description: 'Youth spring tournament',
-    status: 'COMPLETED',
-    startDate: '2024-03-01',
-    endDate: '2024-03-10',
+    status: 'PUBLISHED',
+    startDate: '2099-03-01',
+    endDate: '2099-03-10',
     location: 'Paris, France',
   },
 ];
@@ -127,10 +140,22 @@ vi.mock('@/components/ui', () => ({
   Button: ({ children, variant, onClick }: { children: React.ReactNode; variant?: string; onClick?: () => void }) => (
     <button data-variant={variant} onClick={onClick}>{children}</button>
   ),
-  Input: ({ placeholder, value, onChange, leftIcon }: { placeholder?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; leftIcon?: React.ReactNode }) => (
+  Input: ({ placeholder, label, value, onChange, leftIcon }: { placeholder?: string; label?: string; value?: string; onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; leftIcon?: React.ReactNode }) => (
     <div>
+      {label && <label>{label}</label>}
       {leftIcon}
-      <input data-testid="search-input" placeholder={placeholder} value={value} onChange={onChange} />
+      <input
+        data-testid={
+          label === 'Country'
+            ? 'country-input'
+            : placeholder === 'Search tournaments...'
+              ? 'search-input'
+              : 'generic-input'
+        }
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+      />
     </div>
   ),
   Select: ({ options, value, onChange }: { options: { value: string; label: string }[]; value?: string; onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void }) => (
@@ -149,6 +174,9 @@ vi.mock('@/components/ui', () => ({
 describe('Tournaments Page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseAuthStore.mockReturnValue({
+      user: { country: 'Romania' },
+    });
     // Reset hook state to default with mock tournaments
     mockHookState = {
       items: mockTournaments,
@@ -197,6 +225,14 @@ describe('Tournaments Page', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('status-filter')).toBeInTheDocument();
+      });
+    });
+
+    it('should default country filter to the authenticated user country', async () => {
+      render(<TournamentsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('country-input')).toHaveValue('Romania');
       });
     });
   });
@@ -319,8 +355,10 @@ describe('Tournaments Page', () => {
 
       const statusFilter = screen.getByTestId('status-filter');
       expect(within(statusFilter).getByText('All')).toBeInTheDocument();
-      // Status values are translation keys in the actual component
-      expect(within(statusFilter).getByRole('option', { name: /draft/i })).toBeInTheDocument();
+      expect(within(statusFilter).getByRole('option', { name: /published/i })).toBeInTheDocument();
+      expect(within(statusFilter).getByRole('option', { name: /ongoing/i })).toBeInTheDocument();
+      expect(within(statusFilter).getByRole('option', { name: /completed/i })).toBeInTheDocument();
+      expect(within(statusFilter).getByRole('option', { name: /cancelled/i })).toBeInTheDocument();
     });
 
     it('should call API when status filter changes', async () => {

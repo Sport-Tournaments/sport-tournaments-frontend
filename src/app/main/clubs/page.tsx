@@ -4,16 +4,32 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardContent, Button, Input, Loading, Avatar } from '@/components/ui';
+import { Card, CardContent, Button, Input, Loading, Avatar, Select } from '@/components/ui';
 import { clubService } from '@/services';
 import { Club } from '@/types';
 import { useDebounce, useInfiniteScroll } from '@/hooks';
 
 const PAGE_SIZE = 12;
 
+const countryOptions = [
+  { value: 'Romania', label: 'Romania' },
+  { value: 'Bulgaria', label: 'Bulgaria' },
+  { value: 'Hungary', label: 'Hungary' },
+  { value: 'Serbia', label: 'Serbia' },
+  { value: 'Moldova', label: 'Moldova' },
+  { value: 'Ukraine', label: 'Ukraine' },
+  { value: 'Germany', label: 'Germany' },
+  { value: 'France', label: 'France' },
+  { value: 'Italy', label: 'Italy' },
+  { value: 'Spain', label: 'Spain' },
+  { value: 'Netherlands', label: 'Netherlands' },
+  { value: 'Portugal', label: 'Portugal' },
+];
+
 export default function ClubsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
+  const [country, setCountry] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
   const fetchClubs = useCallback(async (page: number) => {
@@ -22,6 +38,7 @@ export default function ClubsPage() {
       pageSize: PAGE_SIZE,
     };
     if (debouncedSearch) params.search = debouncedSearch;
+    if (country) params.country = country;
 
     const response = await clubService.getClubs(params);
     const resData = response.data as any;
@@ -48,7 +65,7 @@ export default function ClubsPage() {
       hasMore: page < totalPages,
       totalPages,
     };
-  }, [debouncedSearch]);
+  }, [country, debouncedSearch]);
 
   const {
     items: clubs,
@@ -60,7 +77,7 @@ export default function ClubsPage() {
     retry,
   } = useInfiniteScroll<Club>({
     fetchData: fetchClubs,
-    dependencies: [debouncedSearch],
+    dependencies: [debouncedSearch, country],
   });
 
   return (
@@ -86,8 +103,8 @@ export default function ClubsPage() {
           </Link>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
+        {/* Filters */}
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 md:max-w-[656px] gap-4 items-start">
           <Input
             placeholder={t('common.searchClubs')}
             value={search}
@@ -97,7 +114,15 @@ export default function ClubsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             }
-            className="max-w-md"
+            containerClassName="w-full"
+          />
+          <Select
+            options={countryOptions}
+            placeholder="Select country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            aria-label={t('common.country')}
+            containerClassName="w-full"
           />
         </div>
 

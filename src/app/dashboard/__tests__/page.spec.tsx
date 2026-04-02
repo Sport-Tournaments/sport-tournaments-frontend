@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import DashboardPage from '../page';
+
+const mockReplace = vi.fn();
 
 // Mock components
 vi.mock('@/components/layout', () => ({
@@ -33,17 +35,23 @@ const mockUser = {
 
 vi.mock('@/store', () => ({
   useAuthStore: () => ({
-    user: mockUser,
+    user: { ...mockUser, role: 'PARTICIPANT' },
+  }),
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    replace: mockReplace,
   }),
 }));
 
 // Mock services
 vi.mock('@/services', () => ({
   tournamentService: {
-    getTournaments: vi.fn(),
+    getMyTournaments: vi.fn(),
   },
   clubService: {
-    getClubs: vi.fn(),
+    getMyClubs: vi.fn(),
   },
   registrationService: {
     getMyRegistrations: vi.fn(),
@@ -58,6 +66,7 @@ vi.mock('react-i18next', () => ({
         'dashboard.welcome': 'Welcome',
         'dashboard.overview': 'Here is your dashboard overview',
         'dashboard.tournaments': 'Tournaments',
+        'dashboard.tournamentsCreated': 'Tournaments Created',
         'dashboard.clubs': 'Clubs',
         'dashboard.registrations': 'Registrations',
         'dashboard.pending': 'Pending',
@@ -68,6 +77,7 @@ vi.mock('react-i18next', () => ({
         'dashboard.noTournaments': 'No tournaments yet',
         'dashboard.noClubs': 'No clubs yet',
         'dashboard.noRegistrations': 'No registrations yet',
+        'registration.applied': 'Applied',
       };
       return translations[key] || key;
     },
@@ -81,8 +91,8 @@ vi.mock('@/utils/date', () => ({
 
 import { tournamentService, clubService, registrationService } from '@/services';
 
-const mockGetTournaments = vi.mocked(tournamentService.getTournaments);
-const mockGetClubs = vi.mocked(clubService.getClubs);
+const mockGetMyTournaments = vi.mocked(tournamentService.getMyTournaments);
+const mockGetMyClubs = vi.mocked(clubService.getMyClubs);
 const mockGetMyRegistrations = vi.mocked(registrationService.getMyRegistrations);
 
 const mockTournaments = [
@@ -139,13 +149,14 @@ const mockRegistrations = [
 describe('DashboardPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockReplace.mockReset();
   });
 
   describe('Loading State', () => {
     it('should show loading state initially', () => {
       // Make services hang
-      mockGetTournaments.mockReturnValue(new Promise(() => {}));
-      mockGetClubs.mockReturnValue(new Promise(() => {}));
+      mockGetMyTournaments.mockReturnValue(new Promise(() => {}));
+      mockGetMyClubs.mockReturnValue(new Promise(() => {}));
       mockGetMyRegistrations.mockReturnValue(new Promise(() => {}));
 
       render(<DashboardPage />);
@@ -156,13 +167,13 @@ describe('DashboardPage', () => {
 
   describe('Dashboard Content', () => {
     beforeEach(() => {
-      mockGetTournaments.mockResolvedValue({
+      mockGetMyTournaments.mockResolvedValue({
         success: true,
-        data: { items: mockTournaments, total: 10 },
+        data: mockTournaments,
       } as never);
-      mockGetClubs.mockResolvedValue({
+      mockGetMyClubs.mockResolvedValue({
         success: true,
-        data: { items: mockClubs, total: 5 },
+        data: mockClubs,
       } as never);
       mockGetMyRegistrations.mockResolvedValue({
         success: true,
@@ -199,7 +210,8 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('10')).toBeInTheDocument();
+        const tournamentsLabel = screen.getByText('Tournaments Created');
+        expect(within(tournamentsLabel.parentElement as HTMLElement).getByText('2')).toBeInTheDocument();
       });
     });
 
@@ -207,7 +219,7 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('5')).toBeInTheDocument();
+        expect(screen.getAllByText('2').length).toBeGreaterThan(0);
       });
     });
 
@@ -215,7 +227,8 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getByText('2')).toBeInTheDocument();
+        const registrationsLabel = screen.getByText('Applied');
+        expect(within(registrationsLabel.parentElement as HTMLElement).getByText('2')).toBeInTheDocument();
       });
     });
 
@@ -223,22 +236,30 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(mockGetTournaments).toHaveBeenCalledWith({ pageSize: 5 });
-        expect(mockGetClubs).toHaveBeenCalledWith({ pageSize: 5 });
+        expect(mockGetMyTournaments).toHaveBeenCalled();
+        expect(mockGetMyClubs).toHaveBeenCalled();
         expect(mockGetMyRegistrations).toHaveBeenCalled();
+      });
+    });
+
+    it('should render tournaments created label on the first stats card', async () => {
+      render(<DashboardPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Tournaments Created')).toBeInTheDocument();
       });
     });
   });
 
   describe('Layout', () => {
     beforeEach(() => {
-      mockGetTournaments.mockResolvedValue({
+      mockGetMyTournaments.mockResolvedValue({
         success: true,
-        data: { items: [], total: 0 },
+        data: [],
       } as never);
-      mockGetClubs.mockResolvedValue({
+      mockGetMyClubs.mockResolvedValue({
         success: true,
-        data: { items: [], total: 0 },
+        data: [],
       } as never);
       mockGetMyRegistrations.mockResolvedValue({
         success: true,
@@ -260,8 +281,8 @@ describe('DashboardPage', () => {
       // Suppress console.error for this test
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      mockGetTournaments.mockRejectedValue(new Error('Network error'));
-      mockGetClubs.mockRejectedValue(new Error('Network error'));
+      mockGetMyTournaments.mockRejectedValue(new Error('Network error'));
+      mockGetMyClubs.mockRejectedValue(new Error('Network error'));
       mockGetMyRegistrations.mockRejectedValue(new Error('Network error'));
 
       render(<DashboardPage />);

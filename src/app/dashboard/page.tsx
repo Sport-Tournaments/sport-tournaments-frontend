@@ -226,7 +226,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.tournaments}</p>
-                  <p className="text-sm text-gray-500">{t('dashboard.tournaments')}</p>
+                  <p className="text-sm text-gray-500">{t('dashboard.tournamentsCreated')}</p>
                 </div>
               </div>
               </CardContent>

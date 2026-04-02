@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layout";
@@ -22,6 +22,7 @@ import { Tournament, TournamentStatus, GeolocationFilters } from "@/types";
 import { formatDate } from "@/utils/date";
 import { getTournamentPublicPath } from "@/utils/helpers";
 import { useDebounce, useInfiniteScroll } from "@/hooks";
+import { useAuthStore } from "@/store";
 
 const PAGE_SIZE = 12;
 
@@ -29,11 +30,15 @@ type ViewMode = "list" | "calendar" | "map";
 
 export default function TournamentsPage() {
   const { t } = useTranslation();
+  const { user } = useAuthStore();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
   const [geoFilters, setGeoFilters] = useState<GeolocationFilters>({});
   const [level, setLevel] = useState<string>("");
-  const [country, setCountry] = useState("");
+  const [country, setCountry] = useState(() => user?.country ?? "");
+  const [didInitializeCountry, setDidInitializeCountry] = useState(
+    () => Boolean(user?.country),
+  );
   const [gameSystem, setGameSystem] = useState("");
   const [startDateFromInput, setStartDateFromInput] = useState("");
   const [startDateToInput, setStartDateToInput] = useState("");
@@ -49,6 +54,13 @@ export default function TournamentsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [showPastTournaments, setShowPastTournaments] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
+
+  useEffect(() => {
+    if (!didInitializeCountry && user?.country) {
+      setCountry(user.country);
+      setDidInitializeCountry(true);
+    }
+  }, [didInitializeCountry, user?.country]);
 
   const dateOnlyFrom = startDateFromInput
     ? startDateFromInput.split("T")[0]
@@ -307,6 +319,51 @@ export default function TournamentsPage() {
       CANCELLED: "danger",
     };
     return variants[tournamentStatus] || "default";
+  };
+
+  const getMaxTeamsDisplay = (tournament: Tournament) => {
+    const derivedMaxTeams =
+      tournament.maxTeams ??
+      tournament.ageGroups?.reduce((total, ageGroup) => {
+        const ageGroupMaxTeams =
+          ageGroup.teamCount ??
+          ageGroup.maxTeams ??
+          ((ageGroup.teamsPerGroup ?? 0) * (ageGroup.groupsCount ?? 0));
+
+        return total + (ageGroupMaxTeams || 0);
+      }, 0);
+
+    return derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
+  };
+
+  const getConfirmedTeamsDisplay = (tournament: Tournament) => {
+    if (typeof tournament.confirmedTeams === "number") {
+      return tournament.confirmedTeams;
+    }
+
+    if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+      return tournament.ageGroups.reduce(
+        (total, ageGroup) => total + (ageGroup.currentTeams ?? 0),
+        0,
+      );
+    }
+
+    return tournament.currentTeams ?? 0;
+  };
+
+  const getRegisteredTeamsDisplay = (tournament: Tournament) => {
+    if (typeof tournament.registeredTeams === "number") {
+      return tournament.registeredTeams;
+    }
+
+    if (tournament.ageGroups && tournament.ageGroups.length > 0) {
+      return tournament.ageGroups.reduce(
+        (total, ageGroup) => total + (ageGroup.currentTeams ?? 0),
+        0,
+      );
+    }
+
+    return tournament.currentTeams ?? getConfirmedTeamsDisplay(tournament);
   };
 
 
@@ -670,7 +727,13 @@ export default function TournamentsPage() {
           /* Tournament grid with infinite scroll */
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {activeTournaments.map((tournament) => (
+              {activeTournaments.map((tournament) => {
+                const confirmedTeams = getConfirmedTeamsDisplay(tournament);
+                const registeredTeams = getRegisteredTeamsDisplay(tournament);
+                const maxTeams = getMaxTeamsDisplay(tournament);
+                const pendingTeams = Math.max(registeredTeams - confirmedTeams, 0);
+
+                return (
                 <Link
                   key={tournament.id}
                   href={getTournamentPublicPath(tournament)}
@@ -783,11 +846,18 @@ export default function TournamentsPage() {
                               />
                             </svg>
                           </span>
-                          {tournament.confirmedTeams ?? 0} /{"\ "}
-                          {tournament.maxTeams}{" "}{t("common.teams")}
-                          {((tournament.registeredTeams ?? 0) - (tournament.confirmedTeams ?? 0)) > 0 && (
+                          {maxTeams > 0 ? (
+                            <>
+                              {confirmedTeams} / {maxTeams} {t("common.teams")}
+                            </>
+                          ) : (
+                            <>
+                              {registeredTeams} {t("common.teams")}
+                            </>
+                          )}
+                          {pendingTeams > 0 && (
                             <span className="ml-1 text-xs text-amber-500">
-                              +{(tournament.registeredTeams ?? 0) - (tournament.confirmedTeams ?? 0)} {t("tournament.pendingApproval", "pending")}
+                              +{pendingTeams} {t("tournament.pendingApproval", "pending")}
                             </span>
                           )}
                         </div>
@@ -806,7 +876,8 @@ export default function TournamentsPage() {
                     </CardContent>
                   </Card>
                 </Link>
-              ))}
+                );
+              })}
             </div>
 
             {/* FE-01: Past / Completed tournaments collapsible section */}

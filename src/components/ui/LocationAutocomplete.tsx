@@ -46,6 +46,7 @@ export default function LocationAutocomplete({
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
 
   const debouncedQuery = useDebounce(inputValue, 300);
 
@@ -113,7 +114,11 @@ export default function LocationAutocomplete({
   // Handle click outside to close suggestions
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current && !containerRef.current.contains(target) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(target))
+      ) {
         setShowSuggestions(false);
       }
     }
@@ -273,6 +278,7 @@ export default function LocationAutocomplete({
       {showSuggestions && suggestions.length > 0 && dropdownRect &&
         createPortal(
           <ul
+            ref={dropdownRef}
             style={{
               position: 'fixed',
               top: dropdownRect.bottom + 4,

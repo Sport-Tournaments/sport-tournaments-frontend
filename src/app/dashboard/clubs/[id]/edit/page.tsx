@@ -17,7 +17,10 @@ const clubSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   shortName: z.string().min(2, 'Short name must be at least 2 characters').max(10, 'Short name max 10 characters').optional().or(z.literal('')),
   description: z.string().optional(),
-  foundedYear: z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Year cannot be in the future').optional().nullable(),
+  foundedYear: z.preprocess(
+    val => (typeof val === 'number' && isNaN(val) ? undefined : val),
+    z.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Year cannot be in the future').optional().nullable()
+  ),
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
   latitude: z.coerce.number().min(-90).max(90).optional(),
@@ -240,7 +243,8 @@ export default function EditClubPage() {
         router.push(`/dashboard/clubs/${params.id}`);
       }, 1500);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update club';
+      const axiosError = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = axiosError?.response?.data?.message || axiosError?.message || 'Failed to update club';
       setError(errorMessage);
     } finally {
       setSaving(false);

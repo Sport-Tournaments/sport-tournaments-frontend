@@ -46,6 +46,8 @@ export default function LocationAutocomplete({
   const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLUListElement>(null);
+  const lastSelectedRef = useRef<string>(value);
 
   const debouncedQuery = useDebounce(inputValue, 300);
 
@@ -54,6 +56,11 @@ export default function LocationAutocomplete({
     async function fetchSuggestions() {
       if (!debouncedQuery || debouncedQuery.length < 2) {
         setSuggestions([]);
+        return;
+      }
+
+      // Skip re-fetching immediately after a suggestion was selected
+      if (lastSelectedRef.current && debouncedQuery === lastSelectedRef.current) {
         return;
       }
 
@@ -113,7 +120,11 @@ export default function LocationAutocomplete({
   // Handle click outside to close suggestions
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current && !containerRef.current.contains(target) &&
+        (!dropdownRef.current || !dropdownRef.current.contains(target))
+      ) {
         setShowSuggestions(false);
       }
     }
@@ -144,6 +155,7 @@ export default function LocationAutocomplete({
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = e.target.value;
+      lastSelectedRef.current = ''; // Reset so new searches work after manual edit
       setInputValue(newValue);
       onChange?.(newValue);
       setSelectedIndex(-1);
@@ -153,6 +165,7 @@ export default function LocationAutocomplete({
 
   const handleSelect = useCallback(
     (suggestion: LocationSuggestion) => {
+      lastSelectedRef.current = suggestion.formattedAddress;
       setInputValue(suggestion.formattedAddress);
       onChange?.(suggestion.formattedAddress);
       onSelect?.(suggestion);
@@ -273,6 +286,7 @@ export default function LocationAutocomplete({
       {showSuggestions && suggestions.length > 0 && dropdownRect &&
         createPortal(
           <ul
+            ref={dropdownRef}
             style={{
               position: 'fixed',
               top: dropdownRect.bottom + 4,

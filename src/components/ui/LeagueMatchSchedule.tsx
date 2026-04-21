@@ -11,7 +11,11 @@ export interface LeagueMatchScheduleProps {
   onScoreUpdate?: (
     matchId: string,
     team1Score: number,
-    team2Score: number
+    team2Score: number,
+    advancingTeamId?: string,
+    hasPenalties?: boolean,
+    penaltyTeam1Score?: number,
+    penaltyTeam2Score?: number
   ) => void;
   onSchedule?: (
     matchId: string,
@@ -35,6 +39,9 @@ interface ScoreModalState {
   t2: string;
   score1: string;
   score2: string;
+  hasPenalties: boolean;
+  penaltyScore1: string;
+  penaltyScore2: string;
 }
 
 interface DetailsModalState {
@@ -144,6 +151,9 @@ export default function LeagueMatchSchedule({
       t2,
       score1: String(match.team1Score ?? 0),
       score2: String(match.team2Score ?? 0),
+      hasPenalties: match.hasPenalties ?? false,
+      penaltyScore1: String(match.penaltyTeam1Score ?? ''),
+      penaltyScore2: String(match.penaltyTeam2Score ?? ''),
     });
   }
 
@@ -185,7 +195,10 @@ export default function LeagueMatchSchedule({
     const s1 = Number(scoreModal.score1);
     const s2 = Number(scoreModal.score2);
     if (isNaN(s1) || isNaN(s2)) return;
-    onScoreUpdate(scoreModal.match.id, s1, s2);
+    const hasPenalties = scoreModal.hasPenalties;
+    const p1 = hasPenalties ? Number(scoreModal.penaltyScore1) : undefined;
+    const p2 = hasPenalties ? Number(scoreModal.penaltyScore2) : undefined;
+    onScoreUpdate(scoreModal.match.id, s1, s2, undefined, hasPenalties || undefined, p1, p2);
     setScoreModal(null);
   }
 
@@ -257,9 +270,16 @@ export default function LeagueMatchSchedule({
                             <span className="font-medium text-gray-900 truncate text-right flex-1">{t1}</span>
                             <div className="flex items-center gap-1 flex-shrink-0">
                               {hasScore ? (
-                                <span className="text-sm font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
-                                  {match.team1Score} – {match.team2Score}
-                                </span>
+                                <div className="flex flex-col items-center">
+                                  <span className="text-sm font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
+                                    {match.team1Score} – {match.team2Score}
+                                  </span>
+                                  {match.hasPenalties && match.penaltyTeam1Score != null && match.penaltyTeam2Score != null && (
+                                    <span className="text-xs text-amber-700 font-medium mt-0.5">
+                                      (pen. {match.penaltyTeam1Score}–{match.penaltyTeam2Score})
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
                                 <span className="text-sm text-gray-400 px-2">vs</span>
                               )}
@@ -319,9 +339,16 @@ export default function LeagueMatchSchedule({
                         <span className="font-medium text-gray-900 text-xs truncate flex-1 text-right">{t1}</span>
                         <div className="flex-shrink-0 px-1">
                           {hasScore ? (
-                            <span className="text-xs font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
-                              {match.team1Score}–{match.team2Score}
-                            </span>
+                            <div className="flex flex-col items-center">
+                              <span className="text-xs font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                {match.team1Score}–{match.team2Score}
+                              </span>
+                              {match.hasPenalties && match.penaltyTeam1Score != null && match.penaltyTeam2Score != null && (
+                                <span className="text-xs text-amber-700 font-medium mt-0.5 whitespace-nowrap">
+                                  pen. {match.penaltyTeam1Score}–{match.penaltyTeam2Score}
+                                </span>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-xs text-gray-400">vs</span>
                           )}
@@ -412,6 +439,55 @@ export default function LeagueMatchSchedule({
                   />
                 </div>
               </div>
+
+              {/* Penalty checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={scoreModal.hasPenalties}
+                  onChange={(e) =>
+                    setScoreModal((s) => s && { ...s, hasPenalties: e.target.checked, penaltyScore1: '', penaltyScore2: '' })
+                  }
+                  className="w-4 h-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                />
+                <span className="text-xs font-medium text-gray-700">Decided by penalty shootout</span>
+              </label>
+
+              {/* Penalty scores (only shown when hasPenalties is checked) */}
+              {scoreModal.hasPenalties && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                  <p className="text-xs font-medium text-amber-800">Penalty Shootout Score</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1 truncate">{scoreModal.t1}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={scoreModal.penaltyScore1}
+                        onChange={(e) =>
+                          setScoreModal((s) => s && { ...s, penaltyScore1: e.target.value })
+                        }
+                        className="w-full border border-amber-300 rounded-lg px-3 py-2 text-center text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        placeholder="0"
+                      />
+                    </div>
+                    <span className="text-gray-400 font-bold mt-5">–</span>
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1 truncate">{scoreModal.t2}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={scoreModal.penaltyScore2}
+                        onChange={(e) =>
+                          setScoreModal((s) => s && { ...s, penaltyScore2: e.target.value })
+                        }
+                        className="w-full border border-amber-300 rounded-lg px-3 py-2 text-center text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="px-5 py-3 bg-gray-50 flex justify-end gap-2">
               <button

@@ -234,7 +234,6 @@ export default function TournamentsPage() {
     { value: "8+1", label: "8+1" },
     { value: "9+1", label: "9+1" },
     { value: "10+1", label: "10+1" },
-    { value: "11+1", label: "11+1" },
   ];
 
   const privateOptions = [
@@ -870,7 +869,7 @@ export default function TournamentsPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                   </svg>
                                 </span>
-                                {formatDate(tournament.startDate)} – {formatDate(tournament.endDate)}
+                                {formatDate(tournament.startDate)} \u2013 {formatDate(tournament.endDate)}
                               </div>
                               <div className="flex items-center gap-2 text-sm text-gray-500">
                                 <span className="uefa-icon-chip-sm">

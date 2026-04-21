@@ -106,6 +106,9 @@ export interface BracketMatch {
   loserId?: string;
   manualWinnerId?: string;
   isManualOverride?: boolean;
+  hasPenalties?: boolean;
+  penaltyTeam1Score?: number;
+  penaltyTeam2Score?: number;
   scheduledAt?: string;
   courtNumber?: number;
   fieldName?: string;
@@ -143,5 +146,8 @@ export interface UpdateMatchScoreDto {
   leg2Team1Score?: number | null;
   leg2Team2Score?: number | null;
   advancingTeamId?: string;
+  hasPenalties?: boolean;
+  penaltyTeam1Score?: number;
+  penaltyTeam2Score?: number;
   status?: string;
 }

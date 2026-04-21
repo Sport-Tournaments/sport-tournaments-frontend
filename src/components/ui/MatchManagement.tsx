@@ -180,7 +180,10 @@ export default function MatchManagement({
     matchId: string,
     team1Score: number,
     team2Score: number,
-    advancingTeamId?: string
+    advancingTeamId?: string,
+    hasPenalties?: boolean,
+    penaltyTeam1Score?: number,
+    penaltyTeam2Score?: number
   ) => {
     try {
       setSavingMatchId(matchId);
@@ -190,6 +193,9 @@ export default function MatchManagement({
         team1Score,
         team2Score,
         advancingTeamId,
+        hasPenalties,
+        penaltyTeam1Score,
+        penaltyTeam2Score,
       }, ageGroupId);
       setSuccessMessage(
         t('matches.scoreUpdated', 'Match score updated successfully!')
@@ -801,7 +807,10 @@ function RoundSection({
     matchId: string,
     s1: number,
     s2: number,
-    advancingTeamId?: string
+    advancingTeamId?: string,
+    hasPenalties?: boolean,
+    penaltyTeam1Score?: number,
+    penaltyTeam2Score?: number
   ) => Promise<void>;
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
@@ -861,7 +870,10 @@ function MatchCard({
     matchId: string,
     s1: number,
     s2: number,
-    advancingTeamId?: string
+    advancingTeamId?: string,
+    hasPenalties?: boolean,
+    penaltyTeam1Score?: number,
+    penaltyTeam2Score?: number
   ) => Promise<void>;
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
@@ -877,6 +889,13 @@ function MatchCard({
   );
   const [selectedWinner, setSelectedWinner] = useState<string>(
     match.manualWinnerId || match.winnerId || ''
+  );
+  const [hasPenalties, setHasPenalties] = useState<boolean>(match.hasPenalties ?? false);
+  const [penaltyScore1, setPenaltyScore1] = useState<string>(
+    match.penaltyTeam1Score?.toString() ?? ''
+  );
+  const [penaltyScore2, setPenaltyScore2] = useState<string>(
+    match.penaltyTeam2Score?.toString() ?? ''
   );
   const [scheduleMode, setScheduleMode] = useState(false);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>(() => {
@@ -904,11 +923,17 @@ function MatchCard({
   const handleSaveScore = async () => {
     const s1 = parseInt(score1) || 0;
     const s2 = parseInt(score2) || 0;
+    const isTiedEdit = s1 === s2;
+    const p1 = hasPenalties && isTiedEdit ? (parseInt(penaltyScore1) || 0) : undefined;
+    const p2 = hasPenalties && isTiedEdit ? (parseInt(penaltyScore2) || 0) : undefined;
     await onScoreUpdate(
       match.id,
       s1,
       s2,
-      s1 === s2 ? selectedWinner || undefined : undefined
+      isTiedEdit && !hasPenalties ? selectedWinner || undefined : undefined,
+      hasPenalties && isTiedEdit ? true : undefined,
+      p1,
+      p2
     );
     setEditMode(false);
   };
@@ -1063,39 +1088,88 @@ function MatchCard({
                   </div>
                 </div>
 
-                {/* If scores are tied, show winner selection */}
+                {/* If scores are tied, show penalty option or winner selection */}
                 {score1 !== '' &&
                   score2 !== '' &&
                   parseInt(score1) === parseInt(score2) && (
-                    <div className="p-2 bg-amber-50 rounded-lg border border-amber-200">
-                      <label className="text-xs font-medium text-amber-800 block mb-2">
-                        {t(
-                          'matches.selectWinner',
-                          'Scores are tied - Select advancing team:'
-                        )}
+                    <div className="p-2 bg-amber-50 rounded-lg border border-amber-200 space-y-2">
+                      {/* Penalty checkbox */}
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={hasPenalties}
+                          onChange={(e) => {
+                            setHasPenalties(e.target.checked);
+                            if (!e.target.checked) {
+                              setPenaltyScore1('');
+                              setPenaltyScore2('');
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-400"
+                        />
+                        <span className="text-xs font-medium text-amber-800">Decided by penalty shootout</span>
                       </label>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setSelectedWinner(match.team1Id || '')}
-                          className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            selectedWinner === match.team1Id
-                              ? 'bg-[#1e3a5f] text-white'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {team1Name}
-                        </button>
-                        <button
-                          onClick={() => setSelectedWinner(match.team2Id || '')}
-                          className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                            selectedWinner === match.team2Id
-                              ? 'bg-[#1e3a5f] text-white'
-                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          {team2Name}
-                        </button>
-                      </div>
+
+                      {hasPenalties ? (
+                        /* Penalty score inputs */
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <label className="text-xs text-gray-500 mb-1 block">{team1Name} (pen)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={penaltyScore1}
+                              onChange={(e) => setPenaltyScore1(e.target.value)}
+                              className="w-full px-2 py-1.5 border border-amber-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-amber-400"
+                              placeholder="0"
+                            />
+                          </div>
+                          <span className="text-gray-400 font-medium pt-5">-</span>
+                          <div className="flex-1">
+                            <label className="text-xs text-gray-500 mb-1 block">{team2Name} (pen)</label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={penaltyScore2}
+                              onChange={(e) => setPenaltyScore2(e.target.value)}
+                              className="w-full px-2 py-1.5 border border-amber-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-amber-400"
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        /* Manual winner selection (no penalties) */
+                        <>
+                          <label className="text-xs font-medium text-amber-800 block">
+                            {t(
+                              'matches.selectWinner',
+                              'Scores are tied - Select advancing team:'
+                            )}
+                          </label>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setSelectedWinner(match.team1Id || '')}
+                              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                selectedWinner === match.team1Id
+                                  ? 'bg-[#1e3a5f] text-white'
+                                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              {team1Name}
+                            </button>
+                            <button
+                              onClick={() => setSelectedWinner(match.team2Id || '')}
+                              className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                selectedWinner === match.team2Id
+                                  ? 'bg-[#1e3a5f] text-white'
+                                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              {team2Name}
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 

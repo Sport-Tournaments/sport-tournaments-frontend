@@ -2,10 +2,11 @@ import { createServer } from 'http'
 import next from 'next'
 import { config } from 'dotenv'
 
-// Load .env file
+// Load .env first, then .env.local overrides it (mirrors Next.js env loading order)
 config()
+config({ path: '.env.local', override: true })
 
-const port = parseInt(process.env.PORT || '3000', 10)
+const port = parseInt(process.env.PORT || '4000', 10)
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()

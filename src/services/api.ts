@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'ax
 import { getTokenFromCookie, setTokenCookie, clearAllTokens } from '@/utils/cookies';
 import type { ApiError } from '@/types';
 
-const DEFAULT_API_BASE_URL = 'http://localhost:3001/api';
+const DEFAULT_API_BASE_URL = 'http://localhost:4001/api';
 
 const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, '');
 
@@ -30,7 +30,7 @@ const resolveApiBaseUrl = () => {
     return normalizeBaseUrl(parsed.toString());
   } catch {
     const { protocol, hostname } = window.location;
-    return normalizeBaseUrl(`${protocol}//${hostname}:3001/api`);
+    return normalizeBaseUrl(`${protocol}//${hostname}:4001/api`);
   }
 };
 

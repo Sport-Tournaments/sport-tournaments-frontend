@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement } from '@/components/ui';
-import { tournamentService, registrationService, clubService, fileService } from '@/services';
-import { Tournament, TournamentStatus, Registration, Club, AgeGroup } from '@/types';
+import { tournamentService, registrationService, clubService, fileService, groupService } from '@/services';
+import { Tournament, TournamentStatus, Registration, Club, AgeGroup, Group } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { useAuthStore } from '@/store';
 import { RegistrationWizard } from '@/components/registration';
@@ -36,6 +36,8 @@ export default function TournamentDetailPage() {
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
   const [hasValidInvite, setHasValidInvite] = useState(false);
   const [validatingInvite, setValidatingInvite] = useState(false);
+  const [groupsMap, setGroupsMap] = useState<Record<string, any[]>>({});
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -69,6 +71,35 @@ export default function TournamentDetailPage() {
     }
   }, [id]);
 
+  const fetchGroups = async (tournamentId: string, ageGroups?: AgeGroup[]) => {
+    setLoadingGroups(true);
+    try {
+      if (ageGroups && ageGroups.length > 0) {
+        const results = await Promise.all(
+          ageGroups.map(async (ag) => {
+            if (!ag.id) return null;
+            const res = await groupService.getGroups(tournamentId, ag.id);
+            const data = (res as any)?.data ?? res ?? [];
+            return { key: ag.id, groups: Array.isArray(data) ? data : [] };
+          })
+        );
+        const map: Record<string, any[]> = {};
+        for (const r of results) {
+          if (r) map[r.key] = r.groups;
+        }
+        setGroupsMap(map);
+      } else {
+        const res = await groupService.getGroups(tournamentId);
+        const data = (res as any)?.data ?? res ?? [];
+        setGroupsMap({ root: Array.isArray(data) ? data : [] });
+      }
+    } catch (err) {
+      console.error('Failed to fetch groups:', err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
   useEffect(() => {
     if (tournament?.id && isAuthenticated) {
       fetchMyRegistrations(tournament.id);
@@ -76,6 +107,12 @@ export default function TournamentDetailPage() {
       setMyRegistrations([]);
     }
   }, [tournament?.id, isAuthenticated]);
+
+  useEffect(() => {
+    if (tournament?.id) {
+      fetchGroups(tournament.id, tournament.ageGroups);
+    }
+  }, [tournament?.id]);
 
   // Validate invitation code for private tournaments
   useEffect(() => {
@@ -793,29 +830,65 @@ export default function TournamentDetailPage() {
     };
   };
 
-  const buildGroupsTab = (ageGroup?: AgeGroup) => ({
-    id: 'groups',
-    label: t('tournament.tabs.groups'),
-    content: (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('tournament.groups')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-gray-500 py-8">
-            {(tournament.status === 'PUBLISHED' || tournament.status === 'ONGOING')
-              ? t('tournament.groupsNotDrawn')
-              : t('tournament.noGroups')}
-          </p>
-          {ageGroup && (
-            <p className="text-center text-xs text-gray-400 mt-2">
-              {getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel)}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    ),
-  });
+  const buildGroupsTab = (ageGroup?: AgeGroup) => {
+    const groupKey = ageGroup?.id || 'root';
+    const groupsList: any[] = groupsMap[groupKey] || [];
+
+    return {
+      id: 'groups',
+      label: t('tournament.tabs.groups'),
+      content: (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('tournament.groups')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingGroups ? (
+              <div className="flex justify-center py-8">
+                <Loading size="md" />
+              </div>
+            ) : groupsList.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {groupsList.map((group: any) => {
+                  const teamDetails: any[] = Array.isArray(group.teamDetails) ? group.teamDetails : [];
+                  return (
+                    <div key={group.id} className="border border-gray-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
+                        {t('groups.group')} {group.groupLetter}
+                      </h4>
+                      <div className="space-y-2">
+                        {teamDetails.map((teamDetail: any, idx: number) => (
+                          <div key={teamDetail?.id || idx} className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-500 shrink-0">
+                              {idx + 1}
+                            </span>
+                            {teamDetail?.club?.logo && (
+                              <img
+                                src={teamDetail.club.logo}
+                                alt={teamDetail.club.name}
+                                className="w-5 h-5 object-contain shrink-0"
+                              />
+                            )}
+                            <span className="truncate">{teamDetail?.club?.name || `Team ${idx + 1}`}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-8">
+                {(tournament.status === 'PUBLISHED' || tournament.status === 'ONGOING')
+                  ? t('tournament.groupsNotDrawn')
+                  : t('tournament.noGroups')}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ),
+    };
+  };
 
   const buildMatchesTab = (ageGroup?: AgeGroup) => ({
     id: 'matches',

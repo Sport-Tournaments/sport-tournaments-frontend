@@ -60,17 +60,26 @@ export default function DashboardTournamentsPage() {
     fetchData: fetchTournaments,
   });
 
+  const getEffectiveDates = (tournament: Tournament): { startDate: string | undefined; endDate: string | undefined } => {
+    const startDate = tournament.startDate
+      ?? tournament.ageGroups?.map((ag) => ag.startDate).filter(Boolean).sort()[0];
+    const endDate = tournament.endDate
+      ?? tournament.ageGroups?.map((ag) => ag.endDate).filter(Boolean).sort().reverse()[0];
+    return { startDate, endDate };
+  };
+
   const getEffectiveTournamentStatus = (tournament: Tournament): TournamentStatus => {
     if (tournament.status === 'CANCELLED') {
       return 'CANCELLED';
     }
 
-    if (tournament.endDate) {
-      const endDate = new Date(tournament.endDate);
+    const { endDate } = getEffectiveDates(tournament);
+    if (endDate) {
+      const endDateObj = new Date(endDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (!Number.isNaN(endDate.getTime()) && endDate < today) {
+      if (!Number.isNaN(endDateObj.getTime()) && endDateObj < today) {
         return 'COMPLETED';
       }
     }
@@ -200,7 +209,7 @@ export default function DashboardTournamentsPage() {
                             </Badge>
                           </div>
                           <div className="text-sm text-gray-500">
-                            {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
+                            {(() => { const { startDate, endDate } = getEffectiveDates(tournament); return `${formatDate(startDate)} - ${formatDate(endDate)}`; })()}
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
                             {getRegisteredTeamsDisplay(tournament)} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}
@@ -258,7 +267,7 @@ export default function DashboardTournamentsPage() {
                               </Badge>
                             </div>
                             <div className="text-sm text-gray-500 mt-2">
-                              {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}
+                              {(() => { const { startDate, endDate } = getEffectiveDates(tournament); return `${formatDate(startDate)} - ${formatDate(endDate)}`; })()}
                             </div>
                             <div className="text-sm text-gray-500 mt-1">
                               {getRegisteredTeamsDisplay(tournament)} / {getMaxTeamsDisplay(tournament)} {t('common.teams')}

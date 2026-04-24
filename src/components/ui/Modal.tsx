@@ -110,7 +110,7 @@ export default function Modal({
           >
             {/* Close button */}
             {showCloseButton && (
-              <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+              <div className="absolute right-0 top-0 block pr-4 pt-4">
                 <button
                   type="button"
                   onClick={onClose}

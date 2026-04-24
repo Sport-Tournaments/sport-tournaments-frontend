@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement, EditGroupsModal } from '@/components/ui';
 import { tournamentService, registrationService, fileService, groupService } from '@/services';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
@@ -32,6 +32,10 @@ export default function TournamentDetailPage() {
   const [rejectingRegistrationId, setRejectingRegistrationId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
+
+  // Edit Groups modal state
+  const [editGroupsModalOpen, setEditGroupsModalOpen] = useState(false);
+  const [editGroupsAgeGroupId, setEditGroupsAgeGroupId] = useState<string | undefined>(undefined);
 
   // Handle downloading/viewing regulations PDF
   const handleDownloadRegulations = async () => {
@@ -474,7 +478,7 @@ export default function TournamentDetailPage() {
                     ? t(`tournament.level.${ageGroup.level}`)
                     : tournament.level
                       ? t(`tournament.level.${tournament.level}`)
-                      : '—'}
+                      : '\u2014'}
                 </p>
               </div>
             </div>
@@ -642,17 +646,29 @@ export default function TournamentDetailPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">Draw Results</h2>
-                    <p className="text-sm text-gray-500">{scopedGroups.length} group{scopedGroups.length !== 1 ? 's' : ''} — {scopedGroups.reduce((sum, g) => sum + (g.teamDetails?.length ?? g.teams?.length ?? 0), 0)} teams assigned</p>
+                    <p className="text-sm text-gray-500">{scopedGroups.length} group{scopedGroups.length !== 1 ? 's' : ''} \u2014 {scopedGroups.reduce((sum, g) => sum + (g.teamDetails?.length ?? g.teams?.length ?? 0), 0)} teams assigned</p>
                   </div>
-                  <Link href={`/dashboard/tournaments/${tournament.id}/pots${ageGroupId ? `?ageGroupId=${ageGroupId}` : ''}`}>
-                    <Button variant="outline" size="sm">
-                      <Users className="w-4 h-4 mr-2" />
-                      Manage Pots & Draw
+                  <div className="flex items-center gap-2">
+                    <Link href={`/dashboard/tournaments/${tournament.id}/pots${ageGroupId ? `?ageGroupId=${ageGroupId}` : ''}`} aria-disabled tabIndex={-1} className="pointer-events-none">
+                      <Button variant="outline" size="sm" disabled>
+                        <Users className="w-4 h-4 mr-2" />
+                        Manage Pots & Draw
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        setEditGroupsAgeGroupId(ageGroupId);
+                        setEditGroupsModalOpen(true);
+                      }}
+                    >
+                      Edit Groups
                     </Button>
-                  </Link>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {scopedGroups.map((group) => {
+                  {[...scopedGroups].sort((a, b) => a.groupLetter.localeCompare(b.groupLetter)).map((group) => {
                     const teamDetails: any[] = group.teamDetails || [];
                     return (
                       <Card key={group.id} className="overflow-hidden">
@@ -702,7 +718,7 @@ export default function TournamentDetailPage() {
                     Groups & Draw Management
                   </h3>
                   <p className="text-gray-500 mb-6">
-                    {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
+                    {ageGroup ? `${getAgeGroupLabel(ageGroup)} \u2022 ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
                   </p>
                   <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
                     <Button variant="primary">
@@ -971,6 +987,27 @@ export default function TournamentDetailPage() {
           </div>
         </div>
       </Modal>
+
+      {/* Edit Groups Modal */}
+      {tournament && (
+        <EditGroupsModal
+          isOpen={editGroupsModalOpen}
+          onClose={() => setEditGroupsModalOpen(false)}
+          onSuccess={() => {
+            setEditGroupsModalOpen(false);
+            fetchData();
+          }}
+          tournamentId={tournament.id}
+          groups={
+            editGroupsAgeGroupId
+              ? groups.filter((g) => {
+                  const firstTeam = g.teamDetails?.[0];
+                  return firstTeam ? firstTeam.ageGroupId === editGroupsAgeGroupId : true;
+                })
+              : groups
+          }
+        />
+      )}
     </DashboardLayout>
   );
 }

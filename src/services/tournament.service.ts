@@ -170,6 +170,18 @@ export async function updateTournamentAgeGroups(
   return apiPut<ApiResponse<AgeGroup[]>>(`${TOURNAMENTS_BASE}/${id}/age-groups`, { ageGroups });
 }
 
+// Set registration closed/open for a specific age group
+export async function setAgeGroupRegistrationClosed(
+  tournamentId: string,
+  ageGroupId: string,
+  isRegistrationClosed: boolean
+): Promise<ApiResponse<AgeGroup>> {
+  return apiPatch<ApiResponse<AgeGroup>>(
+    `${TOURNAMENTS_BASE}/${tournamentId}/age-groups/${ageGroupId}/registration-status`,
+    { isRegistrationClosed }
+  );
+}
+
 export const tournamentService = {
   getTournaments,
   searchTournaments,
@@ -191,6 +203,7 @@ export const tournamentService = {
   validateInvitationCode,
   getTournamentStatistics,
   updateTournamentAgeGroups,
+  setAgeGroupRegistrationClosed,
 };
 
 export default tournamentService;

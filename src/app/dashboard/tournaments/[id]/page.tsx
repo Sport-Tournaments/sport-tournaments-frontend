@@ -24,6 +24,7 @@ export default function TournamentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
   const [updatingRegistrations, setUpdatingRegistrations] = useState(false);
+  const [updatingAgeGroupRegistrations, setUpdatingAgeGroupRegistrations] = useState<string | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
   
   // Rejection modal state
@@ -162,6 +163,20 @@ export default function TournamentDetailPage() {
       setError(err.response?.data?.message || 'Failed to stop registrations');
     } finally {
       setUpdatingRegistrations(false);
+    }
+  };
+
+  const handleToggleAgeGroupRegistrations = async (ageGroupId: string, close: boolean) => {
+    if (!tournament) return;
+    setUpdatingAgeGroupRegistrations(ageGroupId);
+    setError(null);
+    try {
+      await tournamentService.setAgeGroupRegistrationClosed(tournament.id, ageGroupId, close);
+      await fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to update age group registration status');
+    } finally {
+      setUpdatingAgeGroupRegistrations(null);
     }
   };
 
@@ -779,11 +794,45 @@ export default function TournamentDetailPage() {
         label: getAgeGroupLabel(ageGroup),
         count: getPendingBadgeCount(ageGroup.id),
         content: (
-          <Tabs
-            tabs={buildTabsForAgeGroup(ageGroup)}
-            defaultTab={searchParams.get('tab') ?? 'overview'}
-            variant="pills-gray"
-          />
+          <div className="space-y-4">
+            {tournament.status === 'PUBLISHED' && ageGroup.id && !ageGroup.isRegistrationClosed && (
+              <Alert variant="info" className="flex items-center justify-between">
+                <div className="flex w-full items-center gap-3">
+                  <span className="min-w-0">Registrations are open for {getAgeGroupLabel(ageGroup)}.</span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="ml-auto"
+                    onClick={() => handleToggleAgeGroupRegistrations(ageGroup.id!, true)}
+                    isLoading={updatingAgeGroupRegistrations === ageGroup.id}
+                  >
+                    Stop Registrations
+                  </Button>
+                </div>
+              </Alert>
+            )}
+            {tournament.status === 'PUBLISHED' && ageGroup.id && ageGroup.isRegistrationClosed && (
+              <Alert variant="warning" className="flex items-center justify-between">
+                <div className="flex w-full items-center gap-3">
+                  <span className="min-w-0">Registrations are closed for {getAgeGroupLabel(ageGroup)}.</span>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="ml-auto"
+                    onClick={() => handleToggleAgeGroupRegistrations(ageGroup.id!, false)}
+                    isLoading={updatingAgeGroupRegistrations === ageGroup.id}
+                  >
+                    Open Registrations
+                  </Button>
+                </div>
+              </Alert>
+            )}
+            <Tabs
+              tabs={buildTabsForAgeGroup(ageGroup)}
+              defaultTab={searchParams.get('tab') ?? 'overview'}
+              variant="pills-gray"
+            />
+          </div>
         ),
       }))
     : tabs;
@@ -839,7 +888,7 @@ export default function TournamentDetailPage() {
 
         {/* Status Actions */}
 
-        {tournament.status === 'PUBLISHED' && !tournament.isRegistrationClosed && (
+        {tournament.status === 'PUBLISHED' && !tournament.isRegistrationClosed && (!tournament.ageGroups || tournament.ageGroups.length === 0) && (
           <Alert variant="info" className="flex items-center justify-between">
             <div className="flex w-full items-center gap-3">
               <span className="min-w-0">{t('tournament.registrationOpenMessage')}</span>
@@ -856,7 +905,7 @@ export default function TournamentDetailPage() {
           </Alert>
         )}
 
-        {tournament.status === 'PUBLISHED' && tournament.isRegistrationClosed && (
+        {tournament.status === 'PUBLISHED' && tournament.isRegistrationClosed && (!tournament.ageGroups || tournament.ageGroups.length === 0) && (
           <Alert variant="warning" className="flex items-center justify-between">
             <span>{t('tournament.registrationClosed')}</span>
           </Alert>

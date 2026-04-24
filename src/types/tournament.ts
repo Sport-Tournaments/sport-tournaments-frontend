@@ -58,6 +58,7 @@ export interface AgeGroup {
   notes?: string;
   drawCompleted?: boolean;
   drawSeed?: string;
+  isRegistrationClosed?: boolean;
 }
 
 export interface TournamentLocation {

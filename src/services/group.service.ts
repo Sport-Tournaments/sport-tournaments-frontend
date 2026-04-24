@@ -161,6 +161,22 @@ export async function updateGroup(
   );
 }
 
+// Swap two teams between two groups atomically (two sequential PATCH calls)
+export async function swapGroupTeams(
+  tournamentId: string,
+  groupAId: string,
+  groupATeams: string[],
+  teamAId: string,
+  groupBId: string,
+  groupBTeams: string[],
+  teamBId: string
+): Promise<void> {
+  const newGroupATeams = groupATeams.map((id) => (id === teamAId ? teamBId : id));
+  const newGroupBTeams = groupBTeams.map((id) => (id === teamBId ? teamAId : id));
+  await updateGroup(tournamentId, groupAId, { teams: newGroupATeams });
+  await updateGroup(tournamentId, groupBId, { teams: newGroupBTeams });
+}
+
 export const groupService = {
   executeDraw,
   resetDraw,
@@ -176,6 +192,7 @@ export const groupService = {
   scheduleMatch,
   setGroupTiebreak,
   updateGroup,
+  swapGroupTeams,
 };
 
 export default groupService;

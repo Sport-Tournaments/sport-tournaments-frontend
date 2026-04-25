@@ -321,6 +321,8 @@ export default function CreateTournamentPage() {
         teamsPerGroup: ag.teamsPerGroup ?? undefined,
         qualifyingTeamsPerGroup: ag.qualifyingTeamsPerGroup ?? undefined,
         halfDurationMinutes: ag.halfDurationMinutes ?? undefined,
+        halfTimePauseMinutes: ag.halfTimePauseMinutes ?? undefined,
+        pauseBetweenMatchesMinutes: ag.pauseBetweenMatchesMinutes ?? undefined,
         locationId: ag.locationId || undefined,
         locationAddress: ag.locationAddress || undefined,
         notes: ag.notes || undefined,

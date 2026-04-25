@@ -25,6 +25,11 @@ export interface MatchManagementProps {
   ageGroupId?: string;
   isRegistrationOpen?: boolean;
   drawCompleted?: boolean;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
+  pauseBetweenMatchesMinutes?: number;
+  fieldsCount?: number;
 }
 
 type MatchWithTeamNames = BracketMatch & {
@@ -38,6 +43,11 @@ export default function MatchManagement({
   ageGroupId,
   isRegistrationOpen = false,
   drawCompleted,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
+  pauseBetweenMatchesMinutes,
+  fieldsCount,
 }: MatchManagementProps) {
   const { t } = useTranslation();
   const [matchData, setMatchData] = useState<MatchesResponse | null>(null);
@@ -48,6 +58,7 @@ export default function MatchManagement({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [savingMatchId, setSavingMatchId] = useState<string | null>(null);
   const [schedulingMatchId, setSchedulingMatchId] = useState<string | null>(null);
+  const [bulkScheduling, setBulkScheduling] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -239,6 +250,33 @@ export default function MatchManagement({
       );
     } finally {
       setSchedulingMatchId(null);
+    }
+  };
+
+  const handleBulkSchedule = async (
+    schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }>
+  ) => {
+    setBulkScheduling(true);
+    setError(null);
+    let successCount = 0;
+    for (const s of schedules) {
+      try {
+        await groupService.scheduleMatch(
+          tournamentId,
+          s.matchId,
+          { scheduledAt: s.scheduledAt, fieldName: s.fieldName },
+          ageGroupId
+        );
+        successCount++;
+      } catch (err: any) {
+        console.error('Failed to bulk-schedule match:', s.matchId, err);
+      }
+    }
+    setBulkScheduling(false);
+    if (successCount > 0) {
+      setSuccessMessage(`${successCount} match${successCount !== 1 ? 'es' : ''} scheduled!`);
+      await fetchMatches(true);
+      setTimeout(() => setSuccessMessage(null), 3000);
     }
   };
 
@@ -479,18 +517,31 @@ export default function MatchManagement({
           matchData.playoffRounds.length > 0
         ) {
           return (
-            <DoubleEliminationBracket
-              playoffRounds={matchData.playoffRounds}
-              teamNames={teamNamesMap}
-              isOrganizer={isOrganizer}
-              twoLegged={true}
-              onAdvance={handleAdvancement}
-              onScoreUpdate={handleScoreUpdate}
-              onSchedule={handleScheduleMatch}
-              savingMatchId={savingMatchId}
-              schedulingMatchId={schedulingMatchId}
-              t={t}
-            />
+            <div className="space-y-4">
+              <AutoSchedulePanel
+                playoffRounds={matchData.playoffRounds}
+                matchPeriodType={matchPeriodType}
+                halfDurationMinutes={halfDurationMinutes}
+                halfTimePauseMinutes={halfTimePauseMinutes}
+                pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                fieldsCount={fieldsCount}
+                isOrganizer={isOrganizer}
+                onBulkSchedule={handleBulkSchedule}
+                bulkScheduling={bulkScheduling}
+              />
+              <DoubleEliminationBracket
+                playoffRounds={matchData.playoffRounds}
+                teamNames={teamNamesMap}
+                isOrganizer={isOrganizer}
+                twoLegged={true}
+                onAdvance={handleAdvancement}
+                onScoreUpdate={handleScoreUpdate}
+                onSchedule={handleScheduleMatch}
+                savingMatchId={savingMatchId}
+                schedulingMatchId={schedulingMatchId}
+                t={t}
+              />
+            </div>
           );
         }
 
@@ -513,6 +564,13 @@ export default function MatchManagement({
                   onSchedule={handleScheduleMatch}
                   savingMatchId={savingMatchId}
                   schedulingMatchId={schedulingMatchId}
+                  matchPeriodType={matchPeriodType}
+                  halfDurationMinutes={halfDurationMinutes}
+                  halfTimePauseMinutes={halfTimePauseMinutes}
+                  fieldsCount={fieldsCount}
+                  pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                  onBulkSchedule={handleBulkSchedule}
+                  bulkScheduling={bulkScheduling}
                 />
               </div>
             </div>
@@ -538,6 +596,13 @@ export default function MatchManagement({
                   onSchedule={handleScheduleMatch}
                   savingMatchId={savingMatchId}
                   schedulingMatchId={schedulingMatchId}
+                  matchPeriodType={matchPeriodType}
+                  halfDurationMinutes={halfDurationMinutes}
+                  halfTimePauseMinutes={halfTimePauseMinutes}
+                  fieldsCount={fieldsCount}
+                  pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                  onBulkSchedule={handleBulkSchedule}
+                  bulkScheduling={bulkScheduling}
                 />
               </div>
             </div>
@@ -613,6 +678,13 @@ export default function MatchManagement({
                           onSchedule={handleScheduleMatch}
                           savingMatchId={savingMatchId}
                           schedulingMatchId={schedulingMatchId}
+                          matchPeriodType={matchPeriodType}
+                          halfDurationMinutes={halfDurationMinutes}
+                          halfTimePauseMinutes={halfTimePauseMinutes}
+                          fieldsCount={fieldsCount}
+                          pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                          onBulkSchedule={handleBulkSchedule}
+                          bulkScheduling={bulkScheduling}
                         />
                       </div>
                     )}
@@ -636,6 +708,13 @@ export default function MatchManagement({
                     onSchedule={handleScheduleMatch}
                     savingMatchId={savingMatchId}
                     schedulingMatchId={schedulingMatchId}
+                    matchPeriodType={matchPeriodType}
+                    halfDurationMinutes={halfDurationMinutes}
+                    halfTimePauseMinutes={halfTimePauseMinutes}
+                    fieldsCount={fieldsCount}
+                    pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                    onBulkSchedule={handleBulkSchedule}
+                    bulkScheduling={bulkScheduling}
                   />
                 </div>
               </div>
@@ -748,18 +827,31 @@ export default function MatchManagement({
         // --- SINGLE_ELIMINATION (default) + any unrecognised type ---
         if (matchData?.playoffRounds && matchData.playoffRounds.length > 0) {
           return (
-            <DoubleEliminationBracket
-              playoffRounds={matchData.playoffRounds}
-              teamNames={teamNamesMap}
-              isOrganizer={isOrganizer}
-              twoLegged={false}
-              onAdvance={handleAdvancement}
-              onScoreUpdate={handleScoreUpdate}
-              onSchedule={handleScheduleMatch}
-              savingMatchId={savingMatchId}
-              schedulingMatchId={schedulingMatchId}
-              t={t}
-            />
+            <div className="space-y-4">
+              <AutoSchedulePanel
+                playoffRounds={matchData.playoffRounds}
+                matchPeriodType={matchPeriodType}
+                halfDurationMinutes={halfDurationMinutes}
+                halfTimePauseMinutes={halfTimePauseMinutes}
+                pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                fieldsCount={fieldsCount}
+                isOrganizer={isOrganizer}
+                onBulkSchedule={handleBulkSchedule}
+                bulkScheduling={bulkScheduling}
+              />
+              <DoubleEliminationBracket
+                playoffRounds={matchData.playoffRounds}
+                teamNames={teamNamesMap}
+                isOrganizer={isOrganizer}
+                twoLegged={false}
+                onAdvance={handleAdvancement}
+                onScoreUpdate={handleScoreUpdate}
+                onSchedule={handleScheduleMatch}
+                savingMatchId={savingMatchId}
+                schedulingMatchId={schedulingMatchId}
+                t={t}
+              />
+            </div>
           );
         }
 
@@ -777,6 +869,9 @@ export default function MatchManagement({
                 onSchedule={handleScheduleMatch}
                 savingMatchId={savingMatchId}
                 schedulingMatchId={schedulingMatchId}
+                matchPeriodType={matchPeriodType}
+                halfDurationMinutes={halfDurationMinutes}
+                halfTimePauseMinutes={halfTimePauseMinutes}
                 t={t}
               />
             ))}
@@ -797,6 +892,9 @@ function RoundSection({
   onSchedule,
   savingMatchId,
   schedulingMatchId,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
   t,
 }: {
   round: PlayoffRound;
@@ -815,6 +913,9 @@ function RoundSection({
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
   schedulingMatchId: string | null;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
   t: any;
 }) {
   return (
@@ -842,6 +943,9 @@ function RoundSection({
             onSchedule={onSchedule}
             savingMatchId={savingMatchId}
             schedulingMatchId={schedulingMatchId}
+            matchPeriodType={matchPeriodType}
+            halfDurationMinutes={halfDurationMinutes}
+            halfTimePauseMinutes={halfTimePauseMinutes}
             t={t}
           />
         ))}
@@ -860,6 +964,9 @@ function MatchCard({
   onSchedule,
   savingMatchId,
   schedulingMatchId,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
   t,
 }: {
   match: BracketMatch;
@@ -878,6 +985,9 @@ function MatchCard({
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => Promise<void>;
   savingMatchId: string | null;
   schedulingMatchId: string | null;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
   t: any;
 }) {
   const [editMode, setEditMode] = useState(false);
@@ -899,7 +1009,10 @@ function MatchCard({
   );
   const [scheduleMode, setScheduleMode] = useState(false);
   const [scheduledAtInput, setScheduledAtInput] = useState<string>(() => {
-    if (match.scheduledAt) return match.scheduledAt.slice(0, 16);
+    if (match.scheduledAt) {
+      const d = new Date(match.scheduledAt);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:00`;
   });
@@ -943,6 +1056,17 @@ function MatchCard({
     await onSchedule(match.id, new Date(scheduledAtInput).toISOString(), fieldNameInput || undefined);
     setScheduleMode(false);
   };
+
+  // Compute end time based on match duration settings
+  const computedEndTime = (() => {
+    const startIso = scheduleMode ? scheduledAtInput : match.scheduledAt;
+    if (!startIso || !halfDurationMinutes) return null;
+    const periods = matchPeriodType === 'ONE_HALF' ? 1 : 2;
+    const totalMinutes = periods * halfDurationMinutes + (periods - 1) * (halfTimePauseMinutes ?? 0);
+    const endMs = new Date(startIso).getTime() + totalMinutes * 60000;
+    const d = new Date(endMs);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  })();
 
   const handleDirectAdvance = async (teamId: string) => {
     if (!isOrganizer || isSaving) return;
@@ -1215,7 +1339,12 @@ function MatchCard({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               {match.scheduledAt && (
-                <span>{formatDateTime(match.scheduledAt)}</span>
+                <span>
+                  {formatDateTime(match.scheduledAt)}
+                  {computedEndTime && (
+                    <span className="text-gray-400"> → {computedEndTime}</span>
+                  )}
+                </span>
               )}
               {match.fieldName && (
                 <span className="ml-1 px-1.5 py-0.5 bg-[#e0f7ff] text-[#0090c7] rounded text-xs font-medium">
@@ -1241,6 +1370,11 @@ function MatchCard({
                     onChange={(e) => setScheduledAtInput(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
+                  {computedEndTime && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      {t('matches.estimatedEnd', 'Estimated end')}: <span className="font-medium text-gray-600">{computedEndTime}</span>
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">
@@ -1384,5 +1518,168 @@ function TeamRow({
         )}
       </div>
     </div>
+  );
+}
+
+// ── Auto Schedule Panel (for DE / SE / knockout phases) ──────────────────────
+const HH_OPTS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MM_OPTS = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+function AutoSchedulePanel({
+  playoffRounds,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
+  pauseBetweenMatchesMinutes,
+  fieldsCount,
+  isOrganizer,
+  onBulkSchedule,
+  bulkScheduling,
+}: {
+  playoffRounds: PlayoffRound[];
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
+  pauseBetweenMatchesMinutes?: number;
+  fieldsCount?: number;
+  isOrganizer: boolean;
+  onBulkSchedule: (schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }>) => void;
+  bulkScheduling: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState('');
+  const [hh, setHH] = useState('10');
+  const [mm, setMM] = useState('00');
+
+  if (!isOrganizer) return null;
+
+  const periods = matchPeriodType === 'ONE_HALF' ? 1 : 2;
+  const matchDuration = periods * (halfDurationMinutes ?? 0) + (periods - 1) * (halfTimePauseMinutes ?? 0);
+  const slotMinutes = matchDuration + (pauseBetweenMatchesMinutes ?? 0);
+  const fields = (fieldsCount && fieldsCount > 0) ? fieldsCount : 1;
+
+  function openModal() {
+    const now = new Date();
+    setDate(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`);
+    setHH('10');
+    setMM('00');
+    setOpen(true);
+  }
+
+  function apply() {
+    if (!date) return;
+    const startMs = new Date(`${date}T${hh}:${mm}:00`).getTime();
+    const schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }> = [];
+    let slotIndex = 0;
+    for (const round of playoffRounds) {
+      const roundMatches = round.matches;
+      const numBatches = Math.ceil(roundMatches.length / fields);
+      for (let b = 0; b < numBatches; b++) {
+        const batch = roundMatches.slice(b * fields, (b + 1) * fields);
+        const slotMs = startMs + slotIndex * slotMinutes * 60000;
+        batch.forEach((m, fi) => {
+          schedules.push({
+            matchId: m.id,
+            scheduledAt: new Date(slotMs).toISOString(),
+            fieldName: String(fi + 1),
+          });
+        });
+        slotIndex++;
+      }
+    }
+    onBulkSchedule(schedules);
+    setOpen(false);
+  }
+
+  const round2Time = (() => {
+    if (!slotMinutes) return null;
+    const d = new Date(`2000-01-01T${hh}:${mm}:00`);
+    d.setMinutes(d.getMinutes() + slotMinutes);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  })();
+
+  return (
+    <>
+      <div className="flex justify-end">
+        <button
+          onClick={openModal}
+          disabled={bulkScheduling}
+          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-colors disabled:opacity-50 flex items-center gap-1.5"
+        >
+          {bulkScheduling ? (
+            <>
+              <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Scheduling…
+            </>
+          ) : (
+            <>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Auto Schedule
+            </>
+          )}
+        </button>
+      </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
+        >
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900">Auto Schedule Matches</h3>
+              <p className="text-xs text-gray-500 mt-1">
+                All matches will be scheduled sequentially. With <strong>{fields}</strong> field{fields > 1 ? 's' : ''}, each slot is <strong>{slotMinutes} min</strong> ({matchDuration} min match + {pauseBetweenMatchesMinutes ?? 0} min pause).
+              </p>
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Start Time</label>
+                <div className="flex items-center gap-2">
+                  <select value={hh} onChange={(e) => setHH(e.target.value)} className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]">
+                    {HH_OPTS.map((h) => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                  <span className="text-gray-400 font-bold text-lg">:</span>
+                  <select value={mm} onChange={(e) => setMM(e.target.value)} className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]">
+                    {MM_OPTS.map((m) => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700 space-y-1">
+                <div>Round 1 → <strong>{hh}:{mm}</strong></div>
+                {round2Time && <div>Round 2 → <strong>{round2Time}</strong></div>}
+                <div className="text-blue-500">Field names will be set to 1, 2, … {fields}</div>
+              </div>
+            </div>
+            <div className="px-5 py-3 bg-gray-50 flex justify-end gap-2">
+              <button onClick={() => setOpen(false)} className="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={apply}
+                disabled={!date || slotMinutes === 0}
+                className="px-4 py-1.5 text-sm font-medium bg-[#1e3a5f] text-white rounded-lg hover:bg-[#152a45] transition-colors disabled:opacity-50"
+              >
+                Apply to All Matches
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

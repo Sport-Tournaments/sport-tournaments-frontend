@@ -278,6 +278,8 @@ export default function EditTournamentPage() {
               qualifyingTeamsPerGroup: (ag as any).qualifyingTeamsPerGroup,
               matchPeriodType: (ag as any).matchPeriodType,
               halfDurationMinutes: (ag as any).halfDurationMinutes,
+              halfTimePauseMinutes: (ag as any).halfTimePauseMinutes ?? 0,
+              pauseBetweenMatchesMinutes: (ag as any).pauseBetweenMatchesMinutes ?? 0,
               notes: (ag as any).notes,
             }))
           : [];

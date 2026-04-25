@@ -54,6 +54,8 @@ export interface AgeGroup {
   qualifyingTeamsPerGroup?: number;
   matchPeriodType?: "ONE_HALF" | "TWO_HALVES";
   halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
+  pauseBetweenMatchesMinutes?: number;
   numberOfMatches?: number;
   notes?: string;
   drawCompleted?: boolean;

@@ -122,9 +122,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
 
   const _todayDate = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })();
   const _todayHH   = String(new Date().getHours()).padStart(2, '0');
-  const existingDate = match.scheduledAt ? match.scheduledAt.slice(0, 10) : _todayDate;
-  const existingHH   = match.scheduledAt ? match.scheduledAt.slice(11, 13) : _todayHH;
-  const existingMM   = match.scheduledAt ? match.scheduledAt.slice(14, 16) : '00';
+  const existingDate = match.scheduledAt ? (() => { const d = new Date(match.scheduledAt!); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })() : _todayDate;
+  const existingHH   = match.scheduledAt ? String(new Date(match.scheduledAt).getHours()).padStart(2, '0') : _todayHH;
+  const existingMM   = match.scheduledAt ? String(new Date(match.scheduledAt).getMinutes()).padStart(2, '0') : '00';
 
   const [scoreModal,   setScoreModal]   = useState({ open: false, leg1t1: '', leg1t2: '', leg2t1: '', leg2t2: '' });
   const [detailsModal, setDetailsModal] = useState({ open: false, date: existingDate, hh: existingHH, mm: existingMM, fieldName: match.fieldName ?? '' });
@@ -156,7 +156,7 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   };
   const handleDetailsSave = () => {
     if (!detailsModal.date || !onSchedule) return;
-    onSchedule(match.id, `${detailsModal.date}T${detailsModal.hh}:${detailsModal.mm}:00.000Z`, detailsModal.fieldName || undefined);
+    onSchedule(match.id, new Date(`${detailsModal.date}T${detailsModal.hh}:${detailsModal.mm}:00`).toISOString(), detailsModal.fieldName || undefined);
     setDetailsModal(s => ({ ...s, open: false }));
   };
 

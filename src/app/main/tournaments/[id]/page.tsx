@@ -322,11 +322,16 @@ export default function TournamentDetailPage() {
   const formatMatchDuration = (ag: AgeGroup): string => {
     if (!ag.halfDurationMinutes) return '—';
     const periods = ag.matchPeriodType === 'TWO_HALVES' ? 2 : 1;
-    const total = periods * ag.halfDurationMinutes;
+    const playTime = periods * ag.halfDurationMinutes;
+    const halfTimePause = (periods > 1 && ag.halfTimePauseMinutes) ? ag.halfTimePauseMinutes : 0;
+    const totalMinutes = playTime + halfTimePause;
     const periodLabel = periods === 2
       ? t('tournaments.ageGroups.twoHalves', '2 halves')
       : t('tournaments.ageGroups.oneHalf', '1 half');
-    return `${periodLabel} × ${ag.halfDurationMinutes} min (${total} min ${t('common.total', 'total')})`;
+    let label = `${periodLabel} × ${ag.halfDurationMinutes} min`;
+    if (halfTimePause > 0) label += ` + ${halfTimePause} min ${t('tournaments.ageGroups.halfTimePause', 'half-time')}`;
+    label += ` (${totalMinutes} min ${t('common.total', 'total')})`;
+    return label;
   };
 
   const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
@@ -903,6 +908,10 @@ export default function TournamentDetailPage() {
             tournamentId={tournament.id}
             isOrganizer={false}
             ageGroupId={ageGroup?.id}
+            matchPeriodType={ageGroup?.matchPeriodType}
+            halfDurationMinutes={ageGroup?.halfDurationMinutes}
+            halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}
+            pauseBetweenMatchesMinutes={ageGroup?.pauseBetweenMatchesMinutes}
           />
         </CardContent>
       </Card>

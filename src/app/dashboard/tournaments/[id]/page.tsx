@@ -776,6 +776,11 @@ export default function TournamentDetailPage() {
                   isOrganizer={true}
                   ageGroupId={ageGroupId}
                   isRegistrationOpen={!tournament.isRegistrationClosed}
+                  matchPeriodType={ageGroup?.matchPeriodType}
+                  halfDurationMinutes={ageGroup?.halfDurationMinutes}
+                  halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}
+                  pauseBetweenMatchesMinutes={ageGroup?.pauseBetweenMatchesMinutes}
+                  fieldsCount={ageGroup?.fieldsCount}
                 />
               </CardContent>
             </Card>

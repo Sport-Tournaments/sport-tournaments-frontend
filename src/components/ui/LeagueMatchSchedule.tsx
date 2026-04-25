@@ -24,6 +24,13 @@ export interface LeagueMatchScheduleProps {
   ) => void;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
+  fieldsCount?: number;
+  pauseBetweenMatchesMinutes?: number;
+  onBulkSchedule?: (schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }>) => void;
+  bulkScheduling?: boolean;
 }
 
 const HH_OPTIONS = Array.from({ length: 24 }, (_, i) =>
@@ -119,6 +126,20 @@ const STATUS_CONFIG: Record<
   COMPLETED: { label: 'Final', cls: 'bg-green-100 text-green-700' },
 };
 
+function computeMatchEndTime(
+  scheduledAt: string | undefined | null,
+  matchPeriodType: 'ONE_HALF' | 'TWO_HALVES' | undefined,
+  halfDurationMinutes: number | undefined,
+  halfTimePauseMinutes: number | undefined
+): string | null {
+  if (!scheduledAt || !halfDurationMinutes) return null;
+  const periods = matchPeriodType === 'ONE_HALF' ? 1 : 2;
+  const totalMinutes = periods * halfDurationMinutes + (periods - 1) * (halfTimePauseMinutes ?? 0);
+  const endMs = new Date(scheduledAt).getTime() + totalMinutes * 60000;
+  const d = new Date(endMs);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export default function LeagueMatchSchedule({
   matches,
   teamNames,
@@ -127,9 +148,20 @@ export default function LeagueMatchSchedule({
   onSchedule,
   savingMatchId,
   schedulingMatchId,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
+  fieldsCount,
+  pauseBetweenMatchesMinutes,
+  onBulkSchedule,
+  bulkScheduling,
 }: LeagueMatchScheduleProps) {
   const [scoreModal, setScoreModal] = useState<ScoreModalState | null>(null);
   const [detailsModal, setDetailsModal] = useState<DetailsModalState | null>(null);
+  const [autoOpen, setAutoOpen] = useState(false);
+  const [autoDate, setAutoDate] = useState('');
+  const [autoHH, setAutoHH] = useState('10');
+  const [autoMM, setAutoMM] = useState('00');
   const [cols, setCols] = useState(1);
 
   // Responsive default: 1 col on mobile, 4 cols on desktop; updates on resize
@@ -206,9 +238,51 @@ export default function LeagueMatchSchedule({
     if (!detailsModal || !onSchedule) return;
     const { date, hh, mm, fieldName, match } = detailsModal;
     if (!date) return;
-    const iso = `${date}T${hh}:${mm}:00.000Z`;
+    const iso = new Date(`${date}T${hh}:${mm}:00`).toISOString();
     onSchedule(match.id, iso, fieldName || undefined);
     setDetailsModal(null);
+  }
+
+  function openAutoSchedule() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    setAutoDate(`${y}-${mo}-${day}`);
+    setAutoHH('10');
+    setAutoMM('00');
+    setAutoOpen(true);
+  }
+
+  function handleAutoScheduleApply() {
+    if (!autoDate || !onBulkSchedule) return;
+    const periods = matchPeriodType === 'ONE_HALF' ? 1 : 2;
+    const matchDuration = periods * (halfDurationMinutes ?? 0) + (periods - 1) * (halfTimePauseMinutes ?? 0);
+    const slotMinutes = matchDuration + (pauseBetweenMatchesMinutes ?? 0);
+    const startMs = new Date(`${autoDate}T${autoHH}:${autoMM}:00`).getTime();
+    const fields = (fieldsCount && fieldsCount > 0) ? fieldsCount : 1;
+    const roundMap = groupByRound(matches);
+    const sortedRounds = [...roundMap.keys()].sort((a, b) => a - b);
+    const schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }> = [];
+    let slotIndex = 0;
+    for (const roundNum of sortedRounds) {
+      const roundMatches = roundMap.get(roundNum)!;
+      const numBatches = Math.ceil(roundMatches.length / fields);
+      for (let batchIdx = 0; batchIdx < numBatches; batchIdx++) {
+        const batchMatches = roundMatches.slice(batchIdx * fields, (batchIdx + 1) * fields);
+        const slotMs = startMs + slotIndex * slotMinutes * 60000;
+        batchMatches.forEach((m, fieldIdx) => {
+          schedules.push({
+            matchId: m.id,
+            scheduledAt: new Date(slotMs).toISOString(),
+            fieldName: String(fieldIdx + 1),
+          });
+        });
+        slotIndex++;
+      }
+    }
+    onBulkSchedule(schedules);
+    setAutoOpen(false);
   }
 
   if (matches.length === 0) {
@@ -221,8 +295,34 @@ export default function LeagueMatchSchedule({
 
   return (
     <>
-      {/* Column layout selector */}
-      <div className="flex items-center justify-end mb-3">
+      {/* Toolbar: Auto Schedule + column selector */}
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          {isOrganizer && onBulkSchedule && (
+            <button
+              onClick={openAutoSchedule}
+              disabled={bulkScheduling}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {bulkScheduling ? (
+                <>
+                  <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Scheduling…
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Auto Schedule
+                </>
+              )}
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
           {[1, 2, 3, 4].map((c) => (
             <button
@@ -292,7 +392,13 @@ export default function LeagueMatchSchedule({
                               {status.label}
                             </span>
                             {match.scheduledAt && (
-                              <span className="text-xs text-gray-400">{formatDateTime(match.scheduledAt)}</span>
+                              <span className="text-xs text-gray-400">
+                                {formatDateTime(match.scheduledAt)}
+                                {(() => {
+                                  const end = computeMatchEndTime(match.scheduledAt, matchPeriodType, halfDurationMinutes, halfTimePauseMinutes);
+                                  return end ? <span className="text-gray-300"> → {end}</span> : null;
+                                })()}
+                              </span>
                             )}
                             {match.fieldName && (
                               <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium">
@@ -359,7 +465,13 @@ export default function LeagueMatchSchedule({
                       {(match.scheduledAt || match.fieldName) && (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {match.scheduledAt && (
-                            <span className="text-xs text-gray-400 truncate">{formatDateTime(match.scheduledAt)}</span>
+                            <span className="text-xs text-gray-400 truncate">
+                              {formatDateTime(match.scheduledAt)}
+                              {(() => {
+                                const end = computeMatchEndTime(match.scheduledAt, matchPeriodType, halfDurationMinutes, halfTimePauseMinutes);
+                                return end ? <span className="text-gray-300"> → {end}</span> : null;
+                              })()}
+                            </span>
                           )}
                           {match.fieldName && (
                             <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium flex-shrink-0">
@@ -397,6 +509,86 @@ export default function LeagueMatchSchedule({
           );
         })}
       </div>
+
+      {/* ── Auto Schedule Modal ── */}
+      {autoOpen && (() => {
+        const periods = matchPeriodType === 'ONE_HALF' ? 1 : 2;
+        const matchDuration = periods * (halfDurationMinutes ?? 0) + (periods - 1) * (halfTimePauseMinutes ?? 0);
+        const slotMinutes = matchDuration + (pauseBetweenMatchesMinutes ?? 0);
+        const fields = (fieldsCount && fieldsCount > 0) ? fieldsCount : 1;
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+            onClick={(e) => { if (e.target === e.currentTarget) setAutoOpen(false); }}
+          >
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900">Auto Schedule Matches</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  All matches will be scheduled sequentially. With <strong>{fields}</strong> field{fields > 1 ? 's' : ''}, each slot is <strong>{slotMinutes} min</strong> ({matchDuration} min match + {pauseBetweenMatchesMinutes ?? 0} min pause).
+                </p>
+              </div>
+              <div className="px-5 py-4 space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    value={autoDate}
+                    onChange={(e) => setAutoDate(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Start Time</label>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={autoHH}
+                      onChange={(e) => setAutoHH(e.target.value)}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] bg-white"
+                    >
+                      {HH_OPTIONS.map((h) => <option key={h} value={h}>{h}</option>)}
+                    </select>
+                    <span className="text-gray-400 font-bold text-lg">:</span>
+                    <select
+                      value={autoMM}
+                      onChange={(e) => setAutoMM(e.target.value)}
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] bg-white"
+                    >
+                      {MM_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700 space-y-1">
+                  <div>Round 1 → <strong>{autoHH}:{autoMM}</strong></div>
+                  {slotMinutes > 0 && (
+                    <div>Round 2 → <strong>{(() => {
+                      const d = new Date(`2000-01-01T${autoHH}:${autoMM}:00`);
+                      d.setMinutes(d.getMinutes() + slotMinutes);
+                      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                    })()}</strong></div>
+                  )}
+                  <div className="text-blue-500">Field names will be set to 1, 2, … {fields}</div>
+                </div>
+              </div>
+              <div className="px-5 py-3 bg-gray-50 flex justify-end gap-2">
+                <button
+                  onClick={() => setAutoOpen(false)}
+                  className="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAutoScheduleApply}
+                  disabled={!autoDate || slotMinutes === 0}
+                  className="px-4 py-1.5 text-sm font-medium bg-[#1e3a5f] text-white rounded-lg hover:bg-[#152a45] transition-colors disabled:opacity-50"
+                >
+                  Apply to All Matches
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Score Modal ── */}
       {scoreModal && (

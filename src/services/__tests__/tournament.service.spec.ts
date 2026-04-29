@@ -21,7 +21,6 @@ describe('Tournament Service', () => {
     id: '1',
     name: 'U12 Summer Cup 2025',
     description: 'Annual youth tournament',
-    ageCategory: 'U12',
     level: 'I',
     status: 'PUBLISHED',
     startDate: '2025-06-15T09:00:00Z',
@@ -185,7 +184,6 @@ describe('Tournament Service', () => {
       const createData: CreateTournamentDto = {
         name: 'New Tournament',
         description: 'Test tournament',
-        ageCategory: 'U12',
         level: 'I',
         startDate: '2025-06-15T09:00:00Z',
         endDate: '2025-06-17T18:00:00Z',

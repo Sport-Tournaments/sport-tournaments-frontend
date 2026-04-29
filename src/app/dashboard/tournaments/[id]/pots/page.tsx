@@ -7,7 +7,7 @@ import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select, Modal } from '@/components/ui';
 import { potDrawService, tournamentService, registrationService } from '@/services';
 import type { Tournament, Registration, AgeGroup } from '@/types';
-import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle } from 'lucide-react';
+import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle, Undo2, Redo2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface PotAssignment {
@@ -21,6 +21,14 @@ interface Pot {
   count: number;
   teams: PotAssignment[];
 }
+
+/** Snapshot of pot assignments used by the Clear Pots undo/redo stacks. */
+interface ClearSnapshot {
+  assignments: { registrationId: string; potNumber: number }[];
+}
+
+/** Per-age-group undo/redo history for the Clear Pots action. */
+type ClearHistory = Record<string, { undo: ClearSnapshot[]; redo: ClearSnapshot[] }>;
 
 const NUMBER_OF_GROUPS_OPTIONS = Array.from({ length: 32 }, (_, i) => {
   const value = i + 1;
@@ -49,6 +57,11 @@ export default function PotManagementPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExecuteDrawModal, setShowExecuteDrawModal] = useState(false);
   const [showClearPotsModal, setShowClearPotsModal] = useState(false);
+
+  // Undo/redo history for the Clear Pots action, kept per age group so each
+  // tab has its own independent stack.
+  const [clearHistory, setClearHistory] = useState<ClearHistory>({});
+  const [undoRedoBusy, setUndoRedoBusy] = useState(false);
 
   // Registrations filtered by selected age group
   const registrations = selectedAgeGroupId
@@ -203,15 +216,119 @@ export default function PotManagementPage() {
     setShowClearPotsModal(true);
   };
 
+  /** Build a snapshot of the current pot assignments for the visible age group. */
+  const snapshotCurrentAssignments = (): ClearSnapshot => {
+    const assignments: { registrationId: string; potNumber: number }[] = [];
+    for (const pot of pots) {
+      for (const team of pot.teams) {
+        assignments.push({ registrationId: team.registrationId, potNumber: pot.potNumber });
+      }
+    }
+    return { assignments };
+  };
+
+  const getHistoryFor = (ageGroupId: string | null) => {
+    const key = ageGroupId ?? '__all__';
+    return clearHistory[key] ?? { undo: [], redo: [] };
+  };
+
+  const updateHistoryFor = (
+    ageGroupId: string | null,
+    updater: (h: { undo: ClearSnapshot[]; redo: ClearSnapshot[] }) => {
+      undo: ClearSnapshot[];
+      redo: ClearSnapshot[];
+    },
+  ) => {
+    const key = ageGroupId ?? '__all__';
+    setClearHistory((prev) => ({
+      ...prev,
+      [key]: updater(prev[key] ?? { undo: [], redo: [] }),
+    }));
+  };
+
   const confirmClearPots = async () => {
     setShowClearPotsModal(false);
+
+    // Snapshot what's about to be cleared so the user can undo it.
+    const snapshot = snapshotCurrentAssignments();
 
     try {
       await potDrawService.clearPotAssignments(tournamentId, selectedAgeGroupId || undefined);
       await fetchPotAssignments(selectedAgeGroupId || undefined);
+
+      // Only record history when there was actually something to clear so we
+      // don't pollute the stack with empty snapshots.
+      if (snapshot.assignments.length > 0) {
+        updateHistoryFor(selectedAgeGroupId, (h) => ({
+          undo: [...h.undo, snapshot],
+          redo: [], // any new clear invalidates the redo branch
+        }));
+      }
     } catch (err: any) {
       console.error('Failed to clear pot assignments:', err);
       setError(err.response?.data?.message || 'Failed to clear pot assignments');
+    }
+  };
+
+  /** Restore the most recent cleared snapshot for the visible age group. */
+  const handleUndoClear = async () => {
+    const history = getHistoryFor(selectedAgeGroupId);
+    if (history.undo.length === 0 || undoRedoBusy) return;
+
+    const snapshot = history.undo[history.undo.length - 1];
+    const currentSnapshot = snapshotCurrentAssignments();
+
+    setUndoRedoBusy(true);
+    setError(null);
+    try {
+      // Wipe whatever is there now (may be empty after a clear, or partial if
+      // the user re-assigned some teams) before restoring the snapshot.
+      await potDrawService.clearPotAssignments(tournamentId, selectedAgeGroupId || undefined);
+      if (snapshot.assignments.length > 0) {
+        await potDrawService.assignTeamsToPotsBulk(tournamentId, snapshot.assignments);
+      }
+      await fetchPotAssignments(selectedAgeGroupId || undefined);
+
+      updateHistoryFor(selectedAgeGroupId, (h) => ({
+        undo: h.undo.slice(0, -1),
+        redo: [...h.redo, currentSnapshot],
+      }));
+    } catch (err: any) {
+      console.error('Failed to undo clear pots:', err);
+      setError(err.response?.data?.message || 'Failed to undo clear pots');
+    } finally {
+      setUndoRedoBusy(false);
+    }
+  };
+
+  /** Re-apply the most recently undone clear for the visible age group. */
+  const handleRedoClear = async () => {
+    const history = getHistoryFor(selectedAgeGroupId);
+    if (history.redo.length === 0 || undoRedoBusy) return;
+
+    const snapshot = history.redo[history.redo.length - 1];
+    const currentSnapshot = snapshotCurrentAssignments();
+
+    setUndoRedoBusy(true);
+    setError(null);
+    try {
+      // Apply the redo snapshot exactly: clear current then bulk-assign the
+      // stored state. When the redo snapshot is empty this is just a re-clear.
+      await potDrawService.clearPotAssignments(tournamentId, selectedAgeGroupId || undefined);
+      if (snapshot.assignments.length > 0) {
+        await potDrawService.assignTeamsToPotsBulk(tournamentId, snapshot.assignments);
+      }
+      await fetchPotAssignments(selectedAgeGroupId || undefined);
+
+      updateHistoryFor(selectedAgeGroupId, (h) => ({
+        undo: [...h.undo, currentSnapshot],
+        redo: h.redo.slice(0, -1),
+      }));
+    } catch (err: any) {
+      console.error('Failed to redo clear pots:', err);
+      setError(err.response?.data?.message || 'Failed to redo clear pots');
+    } finally {
+      setUndoRedoBusy(false);
     }
   };
 
@@ -277,11 +394,45 @@ export default function PotManagementPage() {
               <h1 className="text-3xl font-bold text-gray-900">Pot Management</h1>
               <p className="text-gray-600 mt-1">{tournament.name}</p>
             </div>
+            {selectedGroup?.format === 'GROUPS_PLUS_KNOCKOUT' && (
             <div className="flex gap-2">
+              {(() => {
+                const history = getHistoryFor(selectedAgeGroupId);
+                return (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleUndoClear}
+                      disabled={history.undo.length === 0 || undoRedoBusy}
+                      title="Undo last Clear Pots"
+                      aria-label="Undo last Clear Pots"
+                    >
+                      <Undo2 className="w-4 h-4 mr-2" />
+                      Undo
+                      {history.undo.length > 0 && (
+                        <span className="ml-1 text-xs text-gray-500">({history.undo.length})</span>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={handleRedoClear}
+                      disabled={history.redo.length === 0 || undoRedoBusy}
+                      title="Redo Clear Pots"
+                      aria-label="Redo Clear Pots"
+                    >
+                      <Redo2 className="w-4 h-4 mr-2" />
+                      Redo
+                      {history.redo.length > 0 && (
+                        <span className="ml-1 text-xs text-gray-500">({history.redo.length})</span>
+                      )}
+                    </Button>
+                  </>
+                );
+              })()}
               <Button
                 variant="outline"
                 onClick={handleClearPots}
-                disabled={getTotalAssigned() === 0}
+                disabled={getTotalAssigned() === 0 || undoRedoBusy}
               >
                 Clear Pots
               </Button>
@@ -294,6 +445,7 @@ export default function PotManagementPage() {
                 {executing ? 'Executing...' : 'Execute Draw'}
               </Button>
             </div>
+            )}
           </div>
         </div>
 
@@ -425,24 +577,30 @@ export default function PotManagementPage() {
             {(selectedGroup?.format === 'SINGLE_ELIMINATION' ||
               selectedGroup?.format === 'DOUBLE_ELIMINATION' ||
               selectedGroup?.format === 'LEAGUE') && (
-              <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div>
-                    <h3 className="text-sm font-semibold text-blue-800">
-                      Seeding Draw — {selectedGroup.format === 'LEAGUE' ? 'League' : selectedGroup.format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}
+                    <h3 className="text-sm font-semibold text-amber-800">
+                      Pot draw not applicable for {selectedGroup.format === 'LEAGUE' ? 'League' : selectedGroup.format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}
                     </h3>
-                    <p className="mt-1 text-sm text-blue-700">
-                      Assign teams to pots to control seeding order. For this format, pots are used for seeding purposes only — the bracket will be generated based on seed positions.
+                    <p className="mt-1 text-sm text-amber-700">
+                      This age group uses the <strong>{selectedGroup.format === 'LEAGUE' ? 'League' : selectedGroup.format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}</strong> format — no pot draw is required. The bracket is generated based on registration order or seeding done elsewhere.
                     </p>
+                    <Link
+                      href={`/dashboard/tournaments/${tournamentId}?tab=matches&ageGroupId=${selectedAgeGroupId}`}
+                      className="mt-2 inline-flex items-center text-sm font-medium text-amber-800 hover:text-amber-900 underline"
+                    >
+                      Go to Bracket Generation →
+                    </Link>
                   </div>
                 </div>
               </div>
             )}
-            {/* Only show pot management for formats that use it */}
-            {selectedGroup?.format !== 'ROUND_ROBIN' && (
+            {/* Only show pot management for formats that use it (GROUPS_PLUS_KNOCKOUT) */}
+            {selectedGroup?.format === 'GROUPS_PLUS_KNOCKOUT' && (
             <><Card className="mb-6">
               <CardHeader>
                 <CardTitle>

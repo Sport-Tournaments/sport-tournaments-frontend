@@ -55,17 +55,15 @@ export default function PotManagementPage() {
     ? allRegistrations.filter((r) => r.ageGroupId === selectedAgeGroupId)
     : allRegistrations;
 
-  // Derive pot structure dynamically — supports non-divisible team counts
-  const numFullPots = registrations.length > 0 && numberOfGroups > 0
+  // Derive pot structure — numPots EQUALS numberOfGroups (one pot per group)
+  const teamsPerPot = registrations.length > 0 && numberOfGroups > 0
     ? Math.floor(registrations.length / numberOfGroups)
     : 0;
   const remainder = registrations.length > 0 && numberOfGroups > 0
     ? registrations.length % numberOfGroups
     : 0;
-  const totalPots = numFullPots + (remainder > 0 ? 1 : 0); // includes remainder pot if needed
-  const teamsPerPot = numberOfGroups; // each full pot has exactly numberOfGroups teams
-  // For backward compat, keep numPots as total pot count
-  const numPots = totalPots;
+  // Each group maps to exactly one pot
+  const numPots = numberOfGroups;
 
   useEffect(() => {
     fetchInitialData();
@@ -473,14 +471,14 @@ export default function PotManagementPage() {
                   </div>
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
                     <p className="text-sm text-gray-600">Pot Structure</p>
-                    {numFullPots > 0 ? (
+                    {numPots > 0 && teamsPerPot > 0 ? (
                       <div>
                         <p className="text-2xl font-bold text-[#1e3a5f]">
-                          {numFullPots} pots &times; {teamsPerPot} teams
+                          {numPots} pots &times; {teamsPerPot} teams
                         </p>
                         {remainder > 0 && (
                           <p className="text-xs text-amber-600 font-medium mt-1">
-                            + 1 remainder pot ({remainder} {remainder === 1 ? 'team' : 'teams'})
+                            {remainder} pot{remainder > 1 ? 's' : ''} get +1 ({teamsPerPot + 1} teams)
                           </p>
                         )}
                       </div>
@@ -498,11 +496,11 @@ export default function PotManagementPage() {
                       <div className="text-sm text-amber-800">
                         <p>
                           <span className="font-semibold">Uneven distribution:</span> {registrations.length} teams ÷ {numberOfGroups} groups
-                          = {numFullPots} teams/group + {remainder} extra {remainder === 1 ? 'team' : 'teams'}.
+                          = {teamsPerPot} teams/group + {remainder} extra {remainder === 1 ? 'team' : 'teams'}.
                         </p>
                         <p className="mt-1">
-                          Assign {numFullPots} full pots ({teamsPerPot} teams each), then assign the remaining {remainder} {remainder === 1 ? 'team' : 'teams'} to
-                          <span className="font-semibold"> Pot {numFullPots + 1} (Remainder)</span>.
+                          Assign teams across {numPots} pots: {numberOfGroups - remainder} pot{numberOfGroups - remainder !== 1 ? 's' : ''} with {teamsPerPot} teams
+                          and {remainder} pot{remainder !== 1 ? 's' : ''} with <span className="font-semibold">{teamsPerPot + 1} teams</span>.
                           During the draw, {remainder} randomly chosen {remainder === 1 ? 'group' : 'groups'} will receive an extra team.
                         </p>
                       </div>
@@ -547,8 +545,8 @@ export default function PotManagementPage() {
                       <p className="text-sm text-green-800 font-semibold">
                         Ready to execute draw for {selectedGroup?.displayLabel}! Click &ldquo;Execute Draw&rdquo; to create {numberOfGroups} groups
                         {remainder > 0
-                          ? ` (${numberOfGroups - remainder} groups with ${numFullPots} teams, ${remainder} groups with ${numFullPots + 1} teams).`
-                          : ` with ${numFullPots} teams each.`}
+                          ? ` (${numberOfGroups - remainder} groups with ${teamsPerPot} teams, ${remainder} groups with ${teamsPerPot + 1} teams).`
+                          : ` with ${teamsPerPot} teams each.`}
                       </p>
                     </div>
                   </div>
@@ -559,23 +557,25 @@ export default function PotManagementPage() {
             {/* Pots Grid */}
             <div className={`grid grid-cols-1 md:grid-cols-2 ${pots.length <= 4 ? 'lg:grid-cols-4' : pots.length <= 6 ? 'lg:grid-cols-3 xl:grid-cols-6' : 'lg:grid-cols-4 xl:grid-cols-4'} gap-4 mb-6`}>
               {pots.map((pot) => {
-                const isRemainderPot = remainder > 0 && pot.potNumber === numFullPots + 1;
-                const expectedCount = isRemainderPot ? remainder : teamsPerPot;
+                // First `remainder` pots have one extra slot when teams don't divide evenly
+                const expectedCount = remainder > 0 && pot.potNumber <= remainder
+                  ? teamsPerPot + 1
+                  : teamsPerPot;
                 const bgColors = ['bg-yellow-50', 'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-pink-50', 'bg-orange-50', 'bg-teal-50', 'bg-indigo-50'];
-                const bgColor = isRemainderPot ? 'bg-amber-50' : (bgColors[(pot.potNumber - 1) % bgColors.length] || 'bg-white');
+                const bgColor = bgColors[(pot.potNumber - 1) % bgColors.length] || 'bg-white';
                 const isFull = expectedCount > 0 && pot.count === expectedCount;
                 const isOverfull = expectedCount > 0 && pot.count > expectedCount;
                 return (
-                  <Card key={pot.potNumber} className={isRemainderPot ? 'border-amber-300 border-dashed border-2' : ''}>
+                  <Card key={pot.potNumber}>
                     <CardHeader className={bgColor}>
                       <CardTitle className="flex items-center justify-between">
-                        <span>{isRemainderPot ? `Pot ${pot.potNumber} (Remainder)` : `Pot ${pot.potNumber}`}</span>
+                        <span>Pot {pot.potNumber}</span>
                         <Badge variant={isFull ? 'success' : isOverfull ? 'error' : pot.count > 0 ? 'primary' : 'default'}>
                           {pot.count}/{expectedCount} teams
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-gray-600">
-                        {isRemainderPot ? 'Extra teams' : pot.potNumber === 1 ? 'Strongest Teams' : `Tier ${pot.potNumber}`}
+                        {pot.potNumber === 1 ? 'Strongest Teams' : `Tier ${pot.potNumber}`}
                       </p>
                     </CardHeader>
                     <CardContent>

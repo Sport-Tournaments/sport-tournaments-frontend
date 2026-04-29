@@ -484,21 +484,25 @@ export default function MatchManagement({
         </div>
       </div>
 
-      {/* Messages */}
-      {error && (
-        <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm flex items-center">
-          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-          </svg>
-          {error}
-        </div>
-      )}
-      {successMessage && (
-        <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm flex items-center">
-          <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          {successMessage}
+      {/* Messages — fixed-position toast to prevent layout shift when notifications disappear */}
+      {(error || successMessage) && (
+        <div className="fixed top-4 right-4 z-50 w-80 flex flex-col gap-2">
+          {error && (
+            <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm flex items-center shadow-sm">
+              <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </div>
+          )}
+          {successMessage && (
+            <div className="p-3 bg-green-50 text-green-700 border border-green-200 rounded-lg text-sm flex items-center shadow-sm">
+              <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {successMessage}
+            </div>
+          )}
         </div>
       )}
 
@@ -1014,11 +1018,24 @@ function MatchCard({
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
     const n = new Date();
-    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'0')}:00`;
+    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}T${String(n.getHours()).padStart(2,'00')}:00`;
   });
   const [fieldNameInput, setFieldNameInput] = useState<string>(
     match.fieldName ?? ''
   );
+
+  // Sync inputs when match data changes externally (e.g. after auto-schedule or refetch),
+  // but only when the user is not actively editing.
+  useEffect(() => {
+    if (scheduleMode) return;
+    if (match.scheduledAt) {
+      const d = new Date(match.scheduledAt);
+      setScheduledAtInput(
+        `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`
+      );
+    }
+    setFieldNameInput(match.fieldName ?? '');
+  }, [match.scheduledAt, match.fieldName, scheduleMode]);
 
   const isSaving = savingMatchId === match.id;
   const isScheduling = schedulingMatchId === match.id;

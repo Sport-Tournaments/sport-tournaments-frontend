@@ -42,7 +42,6 @@ export default function TournamentsPage() {
   const [isPremium, setIsPremium] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [hasAvailableSpots, setHasAvailableSpots] = useState(false);
-  const [isPrivateFilter, setIsPrivateFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -92,10 +91,10 @@ export default function TournamentsPage() {
         params.numberOfMatchesMin = Number(numberOfMatchesMin);
       if (numberOfMatchesMax)
         params.numberOfMatchesMax = Number(numberOfMatchesMax);
+      params.isPrivate = false;
       if (isPremium) params.isPremium = true;
       if (isFeatured) params.isFeatured = true;
       if (hasAvailableSpots) params.hasAvailableSpots = true;
-      if (isPrivateFilter) params.isPrivate = isPrivateFilter === "true";
       if (sortBy) {
         params.sortBy = sortBy;
         params.sortOrder = sortOrder;
@@ -163,7 +162,6 @@ export default function TournamentsPage() {
       isPremium,
       isFeatured,
       hasAvailableSpots,
-      isPrivateFilter,
       sortBy,
       sortOrder,
     ],
@@ -193,7 +191,6 @@ export default function TournamentsPage() {
       isPremium,
       isFeatured,
       hasAvailableSpots,
-      isPrivateFilter,
       sortBy,
       sortOrder,
     ],
@@ -236,12 +233,6 @@ export default function TournamentsPage() {
     { value: "10+1", label: "10+1" },
   ];
 
-  const privateOptions = [
-    { value: "", label: t("tournament.filters.any") },
-    { value: "false", label: t("tournament.filters.public") },
-    { value: "true", label: t("tournament.filters.private") },
-  ];
-
   const sortByOptions = [
     { value: "", label: t("tournament.filters.sort.default") },
     { value: "startDate", label: t("tournament.filters.sort.startDate") },
@@ -268,7 +259,6 @@ export default function TournamentsPage() {
     setIsPremium(false);
     setIsFeatured(false);
     setHasAvailableSpots(false);
-    setIsPrivateFilter("");
     setSortBy("");
     setSortOrder("ASC");
   };
@@ -428,12 +418,6 @@ export default function TournamentsPage() {
                 min={0}
                 value={numberOfMatchesMax}
                 onChange={(e) => setNumberOfMatchesMax(e.target.value)}
-              />
-              <Select
-                label={t("tournament.filters.privacy")}
-                options={privateOptions}
-                value={isPrivateFilter}
-                onChange={(e) => setIsPrivateFilter(e.target.value)}
               />
               <Select
                 label={t("common.sortBy")}

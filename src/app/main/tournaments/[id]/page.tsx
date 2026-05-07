@@ -908,6 +908,8 @@ export default function TournamentDetailPage() {
             tournamentId={tournament.id}
             isOrganizer={false}
             ageGroupId={ageGroup?.id}
+            isRegistrationOpen={!ageGroup?.isRegistrationClosed}
+            drawCompleted={ageGroup?.drawCompleted}
             matchPeriodType={ageGroup?.matchPeriodType}
             halfDurationMinutes={ageGroup?.halfDurationMinutes}
             halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}

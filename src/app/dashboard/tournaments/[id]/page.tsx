@@ -738,7 +738,7 @@ export default function TournamentDetailPage() {
         content: (() => {
           // Formats that require groups to be drawn before matches can be generated
           const format = ageGroup?.format;
-          const needsGroups = format === 'GROUPS_PLUS_KNOCKOUT' || format === 'LEAGUE';
+          const needsGroups = format === 'GROUPS_PLUS_KNOCKOUT';
           const scopedGroups = ageGroupId
             ? groups.filter((g) => {
                 const firstTeam = g.teamDetails?.[0];
@@ -775,7 +775,8 @@ export default function TournamentDetailPage() {
                   tournamentId={tournament.id}
                   isOrganizer={true}
                   ageGroupId={ageGroupId}
-                  isRegistrationOpen={!tournament.isRegistrationClosed}
+                  isRegistrationOpen={!ageGroup?.isRegistrationClosed}
+                  drawCompleted={ageGroup?.drawCompleted}
                   matchPeriodType={ageGroup?.matchPeriodType}
                   halfDurationMinutes={ageGroup?.halfDurationMinutes}
                   halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}

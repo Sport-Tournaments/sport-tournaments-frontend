@@ -428,6 +428,10 @@ export default function TournamentDetailPage() {
     const approvedCount = ageGroupId
       ? (ageGroupStats?.approved ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length)
       : (statistics?.overall?.approved ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length);
+    const ageGroupPendingPaymentCount = (ageGroupStats as { pendingPayment?: number } | undefined)?.pendingPayment ?? 0;
+    const overallPendingPaymentCount = (
+      statistics?.overall as ({ pendingPayment?: number } | undefined)
+    )?.pendingPayment ?? 0;
     const pendingCount = ageGroupId
       ? getPendingCount(
           scopedRegistrations.filter(
@@ -436,7 +440,7 @@ export default function TournamentDetailPage() {
               reg.status === 'PENDING_PAYMENT',
           ).length,
           ageGroupStats?.pending,
-          ageGroupStats?.pendingPayment,
+          ageGroupPendingPaymentCount,
         )
       : getPendingCount(
           scopedRegistrations.filter(
@@ -445,7 +449,7 @@ export default function TournamentDetailPage() {
               reg.status === 'PENDING_PAYMENT',
           ).length,
           statistics?.overall?.pending,
-          statistics?.overall?.pendingPayment,
+          overallPendingPaymentCount,
         );
 
     const registeredTeams = ageGroup
@@ -850,11 +854,15 @@ export default function TournamentDetailPage() {
   const getPendingCountForAgeGroup = (ageGroupId?: string) => {
     const ageGroupStats = getAgeGroupStats(ageGroupId);
     if (ageGroupStats) {
-      return (ageGroupStats.pending || 0) + (ageGroupStats.pendingPayment || 0);
+      const pendingPaymentCount = (ageGroupStats as { pendingPayment?: number } | undefined)?.pendingPayment ?? 0;
+      return (ageGroupStats.pending || 0) + pendingPaymentCount;
     }
     if (!ageGroupId) {
+      const overallPendingPaymentCount = (
+        statistics?.overall as ({ pendingPayment?: number } | undefined)
+      )?.pendingPayment ?? 0;
       const pendingFromStats = statistics?.overall
-        ? (statistics.overall.pending || 0) + (statistics.overall.pendingPayment || 0)
+        ? (statistics.overall.pending || 0) + overallPendingPaymentCount
         : undefined;
       if (pendingFromStats != null) {
         return pendingFromStats;

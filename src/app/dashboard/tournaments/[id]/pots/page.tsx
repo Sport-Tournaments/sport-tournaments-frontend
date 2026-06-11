@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select, Modal } from '@/components/ui';
@@ -39,9 +39,12 @@ const NUMBER_OF_GROUPS_OPTIONS = Array.from({ length: 32 }, (_, i) => {
 });
 
 export default function PotManagementPage() {
+  const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
+
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const tournamentId = params.id as string;
 
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -67,6 +70,25 @@ export default function PotManagementPage() {
   const registrations = selectedAgeGroupId
     ? allRegistrations.filter((r) => r.ageGroupId === selectedAgeGroupId)
     : allRegistrations;
+
+  const selectedAgeGroupIdFromQuery = searchParams.get('ageGroupId');
+
+  useEffect(() => {
+    if (!ageGroups.length) return;
+
+    if (
+      selectedAgeGroupIdFromQuery &&
+      selectedAgeGroupIdFromQuery !== selectedAgeGroupId &&
+      ageGroups.some((ageGroup) => ageGroup.id === selectedAgeGroupIdFromQuery)
+    ) {
+      setSelectedAgeGroupId(selectedAgeGroupIdFromQuery);
+      return;
+    }
+
+    if (!selectedAgeGroupId) {
+      setSelectedAgeGroupId(ageGroups[0]?.id || null);
+    }
+  }, [ageGroups, selectedAgeGroupIdFromQuery, selectedAgeGroupId]);
 
   // Derive pot structure — numPots EQUALS numberOfGroups (one pot per group)
   const teamsPerPot = registrations.length > 0 && numberOfGroups > 0
@@ -104,10 +126,32 @@ export default function PotManagementPage() {
       const groups = tournamentData.ageGroups || [];
       setAgeGroups(groups);
 
-      // Fetch registrations
-      const regRes = await registrationService.getTournamentRegistrations(tournamentId);
-      const approvedRegs = regRes.data.items.filter((r: Registration) => r.status === 'APPROVED');
-      setAllRegistrations(approvedRegs);
+      // Fetch all approved registrations (pageSize: 200 to cover large tournaments)
+      const firstPage = await registrationService.getTournamentRegistrations(tournamentId, {
+        page: 1,
+        pageSize: TOURNAMENT_REGISTRATIONS_PAGE_SIZE,
+        status: 'APPROVED',
+      });
+
+      let allApprovedRegistrations = [...firstPage.data.items];
+      const totalPages = firstPage.data.totalPages || 1;
+
+      if (totalPages > 1) {
+        const pagePromises = Array.from({ length: totalPages - 1 }, (_, index) =>
+          registrationService.getTournamentRegistrations(tournamentId, {
+            page: index + 2,
+            pageSize: TOURNAMENT_REGISTRATIONS_PAGE_SIZE,
+            status: 'APPROVED',
+          }),
+        );
+
+        const pages = await Promise.all(pagePromises);
+        for (const page of pages) {
+          allApprovedRegistrations = allApprovedRegistrations.concat(page.data.items);
+        }
+      }
+
+      setAllRegistrations(allApprovedRegistrations);
 
       // Auto-select first age group if available
       if (groups.length > 0) {
@@ -141,7 +185,7 @@ export default function PotManagementPage() {
         
         return {
           potNumber,
-          count: existingPot?.count || 0,
+          count: existingPot?.count || existingPot?.teams?.length || 0,
           teams: existingPot?.teams || [],
         };
       });
@@ -343,8 +387,10 @@ export default function PotManagementPage() {
 
   const getTotalAssigned = () => {
     if (!Array.isArray(pots)) return 0;
-    return pots.reduce((sum, pot) => sum + pot.count, 0);
+    return pots.reduce((sum, pot) => sum + pot.teams.length, 0);
   };
+
+  const getPotTeamCount = (pot: Pot) => pot.teams.length;
 
   const canExecuteDraw = () => {
     const totalAssigned = getTotalAssigned();
@@ -721,15 +767,16 @@ export default function PotManagementPage() {
                   : teamsPerPot;
                 const bgColors = ['bg-yellow-50', 'bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-pink-50', 'bg-orange-50', 'bg-teal-50', 'bg-indigo-50'];
                 const bgColor = bgColors[(pot.potNumber - 1) % bgColors.length] || 'bg-white';
-                const isFull = expectedCount > 0 && pot.count === expectedCount;
-                const isOverfull = expectedCount > 0 && pot.count > expectedCount;
+                const teamCount = getPotTeamCount(pot);
+                const isFull = expectedCount > 0 && teamCount === expectedCount;
+                const isOverfull = expectedCount > 0 && teamCount > expectedCount;
                 return (
                   <Card key={pot.potNumber}>
                     <CardHeader className={bgColor}>
                       <CardTitle className="flex items-center justify-between">
                         <span>Pot {pot.potNumber}</span>
-                        <Badge variant={isFull ? 'success' : isOverfull ? 'error' : pot.count > 0 ? 'primary' : 'default'}>
-                          {pot.count}/{expectedCount} teams
+                        <Badge variant={isFull ? 'success' : isOverfull ? 'error' : teamCount > 0 ? 'primary' : 'default'}>
+                          {teamCount}/{expectedCount} teams
                         </Badge>
                       </CardTitle>
                       <p className="text-sm text-gray-600">

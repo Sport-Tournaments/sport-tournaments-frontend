@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
@@ -8,17 +8,19 @@ import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement, EditGroupsModal } from '@/components/ui';
 import { tournamentService, registrationService, fileService, groupService } from '@/services';
+import { useInfiniteScroll } from '@/hooks';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
 
 export default function TournamentDetailPage() {
+  const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
+
   const { t } = useTranslation();
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatisticsByAgeGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function TournamentDetailPage() {
   const [updatingRegistrations, setUpdatingRegistrations] = useState(false);
   const [updatingAgeGroupRegistrations, setUpdatingAgeGroupRegistrations] = useState<string | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
-  
+
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectingRegistrationId, setRejectingRegistrationId] = useState<string | null>(null);
@@ -36,6 +38,31 @@ export default function TournamentDetailPage() {
   // Edit Groups modal state
   const [editGroupsModalOpen, setEditGroupsModalOpen] = useState(false);
   const [editGroupsAgeGroupId, setEditGroupsAgeGroupId] = useState<string | undefined>(undefined);
+
+  // Infinite scroll for registrations
+  const fetchRegistrationsPage = useCallback(async (page: number) => {
+    const response = await registrationService.getTournamentRegistrations(
+      params.id as string,
+      { page, pageSize: TOURNAMENT_REGISTRATIONS_PAGE_SIZE },
+    );
+    return {
+      items: response.data.items,
+      hasMore: response.data.hasMore,
+      totalPages: response.data.totalPages,
+    };
+  }, [params.id]);
+
+  const {
+    items: registrations,
+    isLoading: registrationsLoading,
+    isFetchingMore,
+    hasMore: hasMoreRegistrations,
+    sentinelRef,
+    reset: resetRegistrations,
+  } = useInfiniteScroll<Registration>({
+    fetchData: fetchRegistrationsPage,
+    dependencies: [params.id],
+  });
 
   // Handle downloading/viewing regulations PDF
   const handleDownloadRegulations = async () => {
@@ -67,16 +94,6 @@ export default function TournamentDetailPage() {
     try {
       const tournamentData = await tournamentService.getTournamentById(params.id as string);
       setTournament(tournamentData.data);
-      
-      // Fetch registrations separately to handle errors gracefully
-      try {
-        const registrationsData = await registrationService.getTournamentRegistrations(params.id as string, {});
-        const items = registrationsData?.data?.items || [];
-        setRegistrations(Array.isArray(items) ? items : []);
-      } catch (regErr) {
-        console.error('Failed to load registrations:', regErr);
-        setRegistrations([]);
-      }
 
       // Fetch registration statistics by age group
       try {
@@ -101,6 +118,11 @@ export default function TournamentDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const refreshTournamentData = async () => {
+    await fetchData();
+    resetRegistrations();
   };
 
   const normalizeStatus = (status: TournamentStatus) => status;
@@ -130,7 +152,7 @@ export default function TournamentDetailPage() {
   const handleApproveRegistrationWithPayment = async (registrationId: string) => {
     try {
       await registrationService.approveRegistrationWithPayment(registrationId);
-      fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to approve registration with payment');
     }
@@ -139,7 +161,7 @@ export default function TournamentDetailPage() {
   const handleApproveRegistrationWithoutPayment = async (registrationId: string) => {
     try {
       await registrationService.approveRegistrationWithoutPayment(registrationId);
-      fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to approve registration without payment');
     }
@@ -148,7 +170,7 @@ export default function TournamentDetailPage() {
   const handleMarkAsPaid = async (registrationId: string) => {
     try {
       await registrationService.markRegistrationAsPaid(registrationId);
-      fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to mark registration as paid');
     }
@@ -162,7 +184,7 @@ export default function TournamentDetailPage() {
       await tournamentService.updateTournament(tournament.id, {
         isRegistrationClosed: true,
       } as any);
-      await fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to stop registrations');
     } finally {
@@ -176,7 +198,7 @@ export default function TournamentDetailPage() {
     setError(null);
     try {
       await tournamentService.setAgeGroupRegistrationClosed(tournament.id, ageGroupId, close);
-      await fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update age group registration status');
     } finally {
@@ -199,7 +221,7 @@ export default function TournamentDetailPage() {
       setRejectModalOpen(false);
       setRejectingRegistrationId(null);
       setRejectionReason('');
-      fetchData();
+      await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to reject registration');
     } finally {
@@ -264,6 +286,12 @@ export default function TournamentDetailPage() {
 
   const getAgeGroupStats = (ageGroupId?: string) =>
     ageGroupId ? statsByAgeGroupId.get(ageGroupId) : undefined;
+
+  const getPendingCount = (
+    scopedCount = 0,
+    statPending = 0,
+    statPendingPayment = 0,
+  ) => statPending + statPendingPayment || scopedCount;
 
   const getAgeGroupLabel = (ageGroup: AgeGroup) => {
     if (ageGroup.displayLabel) return ageGroup.displayLabel;
@@ -395,16 +423,30 @@ export default function TournamentDetailPage() {
 
     const ageGroupStats = getAgeGroupStats(ageGroupId);
     const totalApplied = ageGroupId
-      ? scopedRegistrations.length
-      : statistics?.overall?.total ?? scopedRegistrations.length;
+      ? (ageGroupStats?.total ?? scopedRegistrations.length)
+      : (statistics?.overall?.total ?? scopedRegistrations.length);
     const approvedCount = ageGroupId
-      ? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length
-      : statistics?.overall?.approved
-        ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length;
+      ? (ageGroupStats?.approved ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length)
+      : (statistics?.overall?.approved ?? scopedRegistrations.filter((reg) => reg.status === 'APPROVED').length);
     const pendingCount = ageGroupId
-      ? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length
-      : statistics?.overall?.pending
-        ?? scopedRegistrations.filter((reg) => reg.status === 'PENDING').length;
+      ? getPendingCount(
+          scopedRegistrations.filter(
+            (reg) =>
+              reg.status === 'PENDING' ||
+              reg.status === 'PENDING_PAYMENT',
+          ).length,
+          ageGroupStats?.pending,
+          ageGroupStats?.pendingPayment,
+        )
+      : getPendingCount(
+          scopedRegistrations.filter(
+            (reg) =>
+              reg.status === 'PENDING' ||
+              reg.status === 'PENDING_PAYMENT',
+          ).length,
+          statistics?.overall?.pending,
+          statistics?.overall?.pendingPayment,
+        );
 
     const registeredTeams = ageGroup
       ? approvedCount
@@ -585,7 +627,11 @@ export default function TournamentDetailPage() {
         content: (
           <Card>
             <CardContent className="p-0">
-              {scopedRegistrations.length === 0 ? (
+              {registrationsLoading && scopedRegistrations.length === 0 ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loading size="md" />
+                </div>
+              ) : scopedRegistrations.length === 0 ? (
                 <div className="text-center py-12">
                   <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -596,7 +642,15 @@ export default function TournamentDetailPage() {
                   <p className="text-gray-500">{t('registration.noRegistrationsDesc')}</p>
                 </div>
               ) : (
-                renderRegistrationsTable(scopedRegistrations)
+                <>
+                  {renderRegistrationsTable(scopedRegistrations)}
+                  {/* Infinite scroll sentinel */}
+                  {hasMoreRegistrations && (
+                    <div ref={sentinelRef} className="flex items-center justify-center py-4">
+                      {isFetchingMore && <Loading size="sm" />}
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -795,13 +849,24 @@ export default function TournamentDetailPage() {
 
   const getPendingCountForAgeGroup = (ageGroupId?: string) => {
     const ageGroupStats = getAgeGroupStats(ageGroupId);
-    if (ageGroupStats) return ageGroupStats.pending;
+    if (ageGroupStats) {
+      return (ageGroupStats.pending || 0) + (ageGroupStats.pendingPayment || 0);
+    }
     if (!ageGroupId) {
-      return statistics?.overall?.pending
-        ?? registrations.filter((reg) => reg.status === 'PENDING').length;
+      const pendingFromStats = statistics?.overall
+        ? (statistics.overall.pending || 0) + (statistics.overall.pendingPayment || 0)
+        : undefined;
+      if (pendingFromStats != null) {
+        return pendingFromStats;
+      }
+
+      return getScopedRegistrations().filter(
+        (reg) =>
+          reg.status === 'PENDING' || reg.status === 'PENDING_PAYMENT',
+      ).length;
     }
     return getScopedRegistrations(ageGroupId).filter(
-      (reg) => reg.status === 'PENDING'
+      (reg) => reg.status === 'PENDING' || reg.status === 'PENDING_PAYMENT',
     ).length;
   };
 
@@ -995,13 +1060,13 @@ export default function TournamentDetailPage() {
       </Modal>
 
       {/* Edit Groups Modal */}
-      {tournament && (
+        {tournament && (
         <EditGroupsModal
           isOpen={editGroupsModalOpen}
           onClose={() => setEditGroupsModalOpen(false)}
           onSuccess={() => {
             setEditGroupsModalOpen(false);
-            fetchData();
+            refreshTournamentData();
           }}
           tournamentId={tournament.id}
           groups={

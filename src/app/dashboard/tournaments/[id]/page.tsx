@@ -58,7 +58,7 @@ export default function TournamentDetailPage() {
     isFetchingMore,
     hasMore: hasMoreRegistrations,
     sentinelRef,
-    reset: resetRegistrations,
+    setItems: setRegistrations,
   } = useInfiniteScroll<Registration>({
     fetchData: fetchRegistrationsPage,
     dependencies: [params.id],
@@ -122,7 +122,18 @@ export default function TournamentDetailPage() {
 
   const refreshTournamentData = async () => {
     await fetchData();
-    resetRegistrations();
+  };
+
+  const updateRegistrationInList = (updatedRegistration: Registration) => {
+    setRegistrations((previous) => previous.map((registration) => {
+      if (registration.id !== updatedRegistration.id) {
+        return registration;
+      }
+      return {
+        ...registration,
+        ...updatedRegistration,
+      };
+    }));
   };
 
   const normalizeStatus = (status: TournamentStatus) => status;
@@ -151,7 +162,8 @@ export default function TournamentDetailPage() {
 
   const handleApproveRegistrationWithPayment = async (registrationId: string) => {
     try {
-      await registrationService.approveRegistrationWithPayment(registrationId);
+      const response = await registrationService.approveRegistrationWithPayment(registrationId);
+      updateRegistrationInList(response.data);
       await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to approve registration with payment');
@@ -160,7 +172,8 @@ export default function TournamentDetailPage() {
 
   const handleApproveRegistrationWithoutPayment = async (registrationId: string) => {
     try {
-      await registrationService.approveRegistrationWithoutPayment(registrationId);
+      const response = await registrationService.approveRegistrationWithoutPayment(registrationId);
+      updateRegistrationInList(response.data);
       await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to approve registration without payment');
@@ -169,7 +182,8 @@ export default function TournamentDetailPage() {
 
   const handleMarkAsPaid = async (registrationId: string) => {
     try {
-      await registrationService.markRegistrationAsPaid(registrationId);
+      const response = await registrationService.markRegistrationAsPaid(registrationId);
+      updateRegistrationInList(response.data);
       await refreshTournamentData();
     } catch (err: any) {
       setError('Failed to mark registration as paid');
@@ -217,7 +231,8 @@ export default function TournamentDetailPage() {
     
     setRejecting(true);
     try {
-      await registrationService.rejectRegistration(rejectingRegistrationId, { rejectionReason: rejectionReason.trim() });
+      const response = await registrationService.rejectRegistration(rejectingRegistrationId, { rejectionReason: rejectionReason.trim() });
+      updateRegistrationInList(response.data);
       setRejectModalOpen(false);
       setRejectingRegistrationId(null);
       setRejectionReason('');

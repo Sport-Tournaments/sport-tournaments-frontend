@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 
 export interface UseInfiniteScrollOptions<T> {
   /** Function to fetch data for a given page */
@@ -40,6 +41,8 @@ export interface UseInfiniteScrollReturn<T> {
   sentinelRef: (node: HTMLElement | null) => void;
   /** Manually load more items */
   loadMore: () => Promise<void>;
+  /** Replace loaded items (useful for in-place updates without reset) */
+  setItems: Dispatch<SetStateAction<T[]>>;
   /** Reset and reload from page 1 */
   reset: () => void;
   /** Retry after an error */
@@ -165,6 +168,7 @@ export function useInfiniteScroll<T>({
     totalPages,
     sentinelRef,
     loadMore,
+    setItems,
     reset,
     retry,
   };

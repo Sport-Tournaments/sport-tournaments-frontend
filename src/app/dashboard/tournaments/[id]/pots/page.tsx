@@ -30,11 +30,11 @@ interface ClearSnapshot {
 /** Per-age-group undo/redo history for the Clear Pots action. */
 type ClearHistory = Record<string, { undo: ClearSnapshot[]; redo: ClearSnapshot[] }>;
 
-const NUMBER_OF_GROUPS_OPTIONS = Array.from({ length: 32 }, (_, i) => {
+const NUMBER_OF_POTS_OPTIONS = Array.from({ length: 32 }, (_, i) => {
   const value = i + 1;
   return {
     value: value.toString(),
-    label: value === 1 ? '1 Group' : `${value} Groups`,
+    label: value === 1 ? '1 Pot' : `${value} Pots`,
   };
 });
 
@@ -56,7 +56,7 @@ export default function PotManagementPage() {
   const [error, setError] = useState<string | null>(null);
   const [executing, setExecuting] = useState(false);
   const [stoppingRegistration, setStoppingRegistration] = useState(false);
-  const [numberOfGroups, setNumberOfGroups] = useState(4);
+  const [numberOfPots, setNumberOfPots] = useState(4);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showExecuteDrawModal, setShowExecuteDrawModal] = useState(false);
   const [showClearPotsModal, setShowClearPotsModal] = useState(false);
@@ -90,15 +90,24 @@ export default function PotManagementPage() {
     }
   }, [ageGroups, selectedAgeGroupIdFromQuery, selectedAgeGroupId]);
 
-  // Derive pot structure — numPots EQUALS numberOfGroups (one pot per group)
-  const teamsPerPot = registrations.length > 0 && numberOfGroups > 0
+  const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
+  const numberOfGroups =
+    selectedGroup?.groupsCount ?? numberOfPots;
+
+  // Derive pot structure from the configured pot count.
+  const teamsPerPot = registrations.length > 0 && numberOfPots > 0
+    ? Math.floor(registrations.length / numberOfPots)
+    : 0;
+  const remainder = registrations.length > 0 && numberOfPots > 0
+    ? registrations.length % numberOfPots
+    : 0;
+  const numPots = numberOfPots;
+  const teamsPerGroup = numberOfGroups > 0 && registrations.length > 0
     ? Math.floor(registrations.length / numberOfGroups)
     : 0;
-  const remainder = registrations.length > 0 && numberOfGroups > 0
+  const groupsRemainder = numberOfGroups > 0 && registrations.length > 0
     ? registrations.length % numberOfGroups
     : 0;
-  // Each group maps to exactly one pot
-  const numPots = numberOfGroups;
 
   useEffect(() => {
     fetchInitialData();
@@ -230,7 +239,7 @@ export default function PotManagementPage() {
       setError(null);
       
       await potDrawService.executePotDraw(tournamentId, {
-        numberOfGroups,
+        numberOfPots,
         ageGroupId: selectedAgeGroupId,
       });
 
@@ -420,8 +429,6 @@ export default function PotManagementPage() {
       </DashboardLayout>
     );
   }
-
-  const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
 
   return (
     <DashboardLayout>
@@ -666,11 +673,11 @@ export default function PotManagementPage() {
                     </p>
                   </div>
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                    <label className="text-sm text-gray-600 block mb-2">Number of Groups</label>
+                    <label className="text-sm text-gray-600 block mb-2">Number of Pots</label>
                     <Select
-                      value={numberOfGroups.toString()}
-                      options={NUMBER_OF_GROUPS_OPTIONS}
-                      onChange={(e) => setNumberOfGroups(Number(e.target.value))}
+                      value={numberOfPots.toString()}
+                      options={NUMBER_OF_POTS_OPTIONS}
+                      onChange={(e) => setNumberOfPots(Number(e.target.value))}
                     />
                   </div>
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
@@ -699,11 +706,11 @@ export default function PotManagementPage() {
                       <AlertCircle className="w-5 h-5 text-amber-600 mr-2 mt-0.5" />
                       <div className="text-sm text-amber-800">
                         <p>
-                          <span className="font-semibold">Uneven distribution:</span> {registrations.length} teams ÷ {numberOfGroups} groups
-                          = {teamsPerPot} teams/group + {remainder} extra {remainder === 1 ? 'team' : 'teams'}.
+                          <span className="font-semibold">Uneven distribution:</span> {registrations.length} teams ÷ {numPots} pots
+                          = {teamsPerPot} teams/pot + {remainder} extra {remainder === 1 ? 'pot' : 'pots'} with {teamsPerPot + 1} teams.
                         </p>
                         <p className="mt-1">
-                          Assign teams across {numPots} pots: {numberOfGroups - remainder} pot{numberOfGroups - remainder !== 1 ? 's' : ''} with {teamsPerPot} teams
+                          Assign teams across {numPots} pots: {numPots - remainder} pot{numPots - remainder !== 1 ? 's' : ''} with {teamsPerPot} teams
                           and {remainder} pot{remainder !== 1 ? 's' : ''} with <span className="font-semibold">{teamsPerPot + 1} teams</span>.
                           During the draw, {remainder} randomly chosen {remainder === 1 ? 'group' : 'groups'} will receive an extra team.
                         </p>
@@ -748,9 +755,9 @@ export default function PotManagementPage() {
                       <CheckCircle2 className="w-5 h-5 text-green-600 mr-2" />
                       <p className="text-sm text-green-800 font-semibold">
                         Ready to execute draw for {selectedGroup?.displayLabel}! Click &ldquo;Execute Draw&rdquo; to create {numberOfGroups} groups
-                        {remainder > 0
-                          ? ` (${numberOfGroups - remainder} groups with ${teamsPerPot} teams, ${remainder} groups with ${teamsPerPot + 1} teams).`
-                          : ` with ${teamsPerPot} teams each.`}
+                        {groupsRemainder > 0
+                          ? ` (${numberOfGroups - groupsRemainder} groups with ${teamsPerGroup} teams, ${groupsRemainder} groups with ${teamsPerGroup + 1} teams).`
+                          : ` with ${teamsPerGroup} teams each.`}
                       </p>
                     </div>
                   </div>

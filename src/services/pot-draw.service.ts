@@ -7,7 +7,8 @@ export interface AssignTeamToPotDto {
 }
 
 export interface ExecutePotDrawDto {
-  numberOfGroups: number;
+  numberOfPots: number;
+  numberOfGroups?: number;
   ageGroupId?: string;
 }
 

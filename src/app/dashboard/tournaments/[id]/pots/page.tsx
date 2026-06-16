@@ -5,10 +5,14 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Select, Modal } from '@/components/ui';
-import { potDrawService, tournamentService, registrationService } from '@/services';
+import { potDrawService, tournamentService, registrationService, groupService } from '@/services';
 import type { Tournament, Registration, AgeGroup } from '@/types';
 import { ArrowLeft, Users, CheckCircle2, AlertCircle, Shuffle, Undo2, Redo2 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  completePotDrawFlow,
+  resolvePotCountForAgeGroup,
+} from '@/app/dashboard/tournaments/group-draw.utils';
 
 interface PotAssignment {
   registrationId: string;
@@ -91,6 +95,14 @@ export default function PotManagementPage() {
   }, [ageGroups, selectedAgeGroupIdFromQuery, selectedAgeGroupId]);
 
   const selectedGroup = ageGroups.find((g) => g.id === selectedAgeGroupId);
+  const getAgeGroupLabel = (ageGroup?: AgeGroup | null) =>
+    ageGroup?.displayLabel?.trim() ||
+    (typeof ageGroup?.birthYear === 'number' ? String(ageGroup.birthYear) : '');
+  const selectedGroupLabel = getAgeGroupLabel(selectedGroup);
+  const isPotCountLocked =
+    selectedGroup?.format === 'GROUPS_PLUS_KNOCKOUT' &&
+    typeof selectedGroup.groupsCount === 'number' &&
+    selectedGroup.groupsCount > 0;
   const numberOfGroups =
     selectedGroup?.groupsCount ?? numberOfPots;
 
@@ -120,6 +132,13 @@ export default function PotManagementPage() {
       fetchPotAssignments(selectedAgeGroupId);
     }
   }, [selectedAgeGroupId, numPots]);
+
+  useEffect(() => {
+    const requiredPotCount = resolvePotCountForAgeGroup(selectedGroup, numberOfPots);
+    if (requiredPotCount !== numberOfPots) {
+      setNumberOfPots(requiredPotCount);
+    }
+  }, [selectedGroup, numberOfPots]);
 
   const fetchInitialData = async () => {
     try {
@@ -237,16 +256,22 @@ export default function PotManagementPage() {
     try {
       setExecuting(true);
       setError(null);
-      
-      await potDrawService.executePotDraw(tournamentId, {
-        numberOfPots,
+
+      await completePotDrawFlow({
+        tournamentId,
         ageGroupId: selectedAgeGroupId,
+        numberOfPots,
+        executePotDraw: potDrawService.executePotDraw.bind(potDrawService),
+        generateBracket: groupService.generateBracket,
       });
 
       setShowSuccessModal(true);
     } catch (err: any) {
       console.error('Failed to execute draw:', err);
-      setError(err.response?.data?.message || 'Failed to execute pot-based draw');
+      setError(
+        err.response?.data?.message ||
+          'Failed to execute pot-based draw and regenerate matches',
+      );
     } finally {
       setExecuting(false);
     }
@@ -552,7 +577,7 @@ export default function PotManagementPage() {
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
-                      {ag.displayLabel || `Year ${ag.birthYear}`}
+                      {getAgeGroupLabel(ag)}
                       <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                         isSelected ? 'bg-[#dbeafe] text-[#1e3a5f]' : 'bg-gray-100 text-gray-600'
                       }`}>
@@ -586,9 +611,12 @@ export default function PotManagementPage() {
                 <div className="flex items-start gap-3 flex-1">
                   <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-green-800">Draw already completed for {selectedGroup?.displayLabel}</p>
+                    <p className="text-sm font-semibold text-green-800">
+                      Draw already completed{selectedGroupLabel ? ` for ${selectedGroupLabel}` : ''}
+                    </p>
                     <p className="text-sm text-green-700 mt-0.5">
-                      The pot draw has been executed. Groups have been created. You can now generate the bracket.
+                      The pot draw has been executed. Groups and matches have been created
+                      {selectedGroupLabel ? ` for ${selectedGroupLabel}` : ''}.
                     </p>
                   </div>
                 </div>
@@ -657,13 +685,17 @@ export default function PotManagementPage() {
             <><Card className="mb-6">
               <CardHeader>
                 <CardTitle>
-                  Draw Configuration — {selectedGroup?.displayLabel || 'Selected Age Group'}
+                  {selectedGroupLabel
+                    ? `Draw Configuration — ${selectedGroupLabel}`
+                    : 'Draw Configuration'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                    <p className="text-sm text-gray-600">Teams in {selectedGroup?.displayLabel || 'Age Group'}</p>
+                    <p className="text-sm text-gray-600">
+                      {selectedGroupLabel ? `Teams in ${selectedGroupLabel}` : 'Teams'}
+                    </p>
                     <p className="text-2xl font-bold">{registrations.length}</p>
                   </div>
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
@@ -678,7 +710,13 @@ export default function PotManagementPage() {
                       value={numberOfPots.toString()}
                       options={NUMBER_OF_POTS_OPTIONS}
                       onChange={(e) => setNumberOfPots(Number(e.target.value))}
+                      disabled={isPotCountLocked}
                     />
+                    {isPotCountLocked && (
+                      <p className="mt-2 text-xs text-gray-500">
+                        Pot count is locked to {selectedGroup?.groupsCount} because this age group is configured for {selectedGroup?.groupsCount} groups.
+                      </p>
+                    )}
                   </div>
                   <div className="p-4 bg-white border border-gray-200 rounded-lg">
                     <p className="text-sm text-gray-600">Pot Structure</p>
@@ -754,7 +792,7 @@ export default function PotManagementPage() {
                     <div className="flex items-center">
                       <CheckCircle2 className="w-5 h-5 text-green-600 mr-2" />
                       <p className="text-sm text-green-800 font-semibold">
-                        Ready to execute draw for {selectedGroup?.displayLabel}! Click &ldquo;Execute Draw&rdquo; to create {numberOfGroups} groups
+                        Ready to execute draw{selectedGroupLabel ? ` for ${selectedGroupLabel}` : ''}! Click &ldquo;Execute Draw&rdquo; to create {numberOfGroups} groups
                         {groupsRemainder > 0
                           ? ` (${numberOfGroups - groupsRemainder} groups with ${teamsPerGroup} teams, ${groupsRemainder} groups with ${teamsPerGroup + 1} teams).`
                           : ` with ${teamsPerGroup} teams each.`}
@@ -817,7 +855,9 @@ export default function PotManagementPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Users className="w-5 h-5 mr-2" />
-                  {selectedGroup?.displayLabel || 'Age Group'} — Assign Teams to Pots
+                  {selectedGroupLabel
+                    ? `${selectedGroupLabel} — Assign Teams to Pots`
+                    : 'Assign Teams to Pots'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -893,9 +933,14 @@ export default function PotManagementPage() {
                 Draw Completed Successfully!
               </h3>
               <p className="text-sm text-gray-500 mb-6">
-                Groups have been created for{' '}
-                <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>.
-                You can now manage groups and generate the bracket.
+                Groups and matches have been created
+                {selectedGroupLabel ? (
+                  <>
+                    {' '}for <span className="font-semibold">{selectedGroupLabel}</span>
+                  </>
+                ) : null}
+                .
+                You can now manage the groups and the regenerated match schedule.
               </p>
               <div className="flex flex-col gap-3">
                 <Button
@@ -907,7 +952,7 @@ export default function PotManagementPage() {
                   }}
                   className="w-full bg-[#1e3a5f] hover:bg-[#16304f]"
                 >
-                  View Groups &amp; Generate Bracket →
+                  View Groups →
                 </Button>
                 <Button
                   variant="outline"
@@ -946,8 +991,12 @@ export default function PotManagementPage() {
         }
       >
         <p className="text-sm text-gray-600">
-          Execute pot-based draw for{' '}
-          <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>{' '}
+          Execute pot-based draw
+          {selectedGroupLabel ? (
+            <>
+              {' '}for <span className="font-semibold">{selectedGroupLabel}</span>
+            </>
+          ) : null}{' '}
           to create{' '}
           <span className="font-semibold">{numberOfGroups} {numberOfGroups === 1 ? 'group' : 'groups'}</span>?
         </p>
@@ -982,8 +1031,13 @@ export default function PotManagementPage() {
         }
       >
         <p className="text-sm text-gray-600">
-          Remove all pot assignments for{' '}
-          <span className="font-semibold">{selectedGroup?.displayLabel || 'this age group'}</span>?
+          Remove all pot assignments
+          {selectedGroupLabel ? (
+            <>
+              {' '}for <span className="font-semibold">{selectedGroupLabel}</span>
+            </>
+          ) : null}
+          ?
         </p>
         <p className="text-sm text-red-600 mt-2 font-medium">All team assignments will be lost.</p>
       </Modal>

@@ -132,6 +132,7 @@ export interface AgeGroupRegistrationStatistics {
   ageGroupLabel: string;
   total: number;
   pending: number;
+  pendingPayment: number;
   approved: number;
   rejected: number;
   withdrawn: number;

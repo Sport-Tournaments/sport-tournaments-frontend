@@ -7,11 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement, EditGroupsModal } from '@/components/ui';
-import { tournamentService, registrationService, fileService, groupService } from '@/services';
+import { tournamentService, registrationService, fileService, groupService, potDrawService } from '@/services';
 import { useInfiniteScroll } from '@/hooks';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
+import { regenerateGroupsFlow } from '@/app/dashboard/tournaments/group-draw.utils';
 
 export default function TournamentDetailPage() {
   const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
@@ -38,6 +39,9 @@ export default function TournamentDetailPage() {
   // Edit Groups modal state
   const [editGroupsModalOpen, setEditGroupsModalOpen] = useState(false);
   const [editGroupsAgeGroupId, setEditGroupsAgeGroupId] = useState<string | undefined>(undefined);
+  const [regenerateGroupsModalOpen, setRegenerateGroupsModalOpen] = useState(false);
+  const [regenerateGroupsAgeGroupId, setRegenerateGroupsAgeGroupId] = useState<string | undefined>(undefined);
+  const [regeneratingGroups, setRegeneratingGroups] = useState(false);
 
   // Infinite scroll for registrations
   const fetchRegistrationsPage = useCallback(async (page: number) => {
@@ -241,6 +245,33 @@ export default function TournamentDetailPage() {
       setError('Failed to reject registration');
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const handleRegenerateGroups = (ageGroupId?: string) => {
+    setRegenerateGroupsAgeGroupId(ageGroupId);
+    setRegenerateGroupsModalOpen(true);
+  };
+
+  const confirmRegenerateGroups = async () => {
+    if (!tournament) return;
+
+    setRegeneratingGroups(true);
+    setError(null);
+    try {
+      const redirectPath = await regenerateGroupsFlow({
+        tournamentId: tournament.id,
+        ageGroupId: regenerateGroupsAgeGroupId,
+        resetDraw: groupService.resetDraw,
+        clearPotAssignments: potDrawService.clearPotAssignments,
+      });
+      setRegenerateGroupsModalOpen(false);
+      router.push(redirectPath);
+    } catch (err: any) {
+      console.error('Failed to regenerate groups:', err);
+      setError(err.response?.data?.message || 'Failed to regenerate groups');
+    } finally {
+      setRegeneratingGroups(false);
     }
   };
 
@@ -704,14 +735,18 @@ export default function TournamentDetailPage() {
             );
           }
 
-          // Filter groups by ageGroupId if available: each group's teamDetails carries
-          // a registration.ageGroupId, so filter by checking the first team's ageGroupId.
+          // Filter by the persisted group.ageGroupId first, and only fall back to
+          // teamDetails for legacy data that predates the ageGroupId column.
           const scopedGroups = ageGroupId
             ? groups.filter((g) => {
+                if (g.ageGroupId) {
+                  return g.ageGroupId === ageGroupId;
+                }
                 const firstTeam = g.teamDetails?.[0];
-                return firstTeam ? firstTeam.ageGroupId === ageGroupId : true;
+                return firstTeam ? firstTeam.ageGroupId === ageGroupId : false;
               })
             : groups;
+          const canRegenerateGroups = ageGroup?.format === 'GROUPS_PLUS_KNOCKOUT';
 
           if (scopedGroups.length > 0) {
             return (
@@ -719,7 +754,9 @@ export default function TournamentDetailPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-gray-900">Draw Results</h2>
-                    <p className="text-sm text-gray-500">{scopedGroups.length} group{scopedGroups.length !== 1 ? 's' : ''} \u2014 {scopedGroups.reduce((sum, g) => sum + (g.teamDetails?.length ?? g.teams?.length ?? 0), 0)} teams assigned</p>
+                    <p className="text-sm text-gray-500">
+                      {scopedGroups.length} group{scopedGroups.length !== 1 ? 's' : ''} | {scopedGroups.reduce((sum, g) => sum + (g.teamDetails?.length ?? g.teams?.length ?? 0), 0)} teams assigned
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Link href={`/dashboard/tournaments/${tournament.id}/pots${ageGroupId ? `?ageGroupId=${ageGroupId}` : ''}`} aria-disabled tabIndex={-1} className="pointer-events-none">
@@ -738,6 +775,15 @@ export default function TournamentDetailPage() {
                     >
                       Edit Groups
                     </Button>
+                    {canRegenerateGroups && (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleRegenerateGroups(ageGroupId)}
+                      >
+                        Regenerate Groups
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -844,18 +890,20 @@ export default function TournamentDetailPage() {
                     </Link>
                   </div>
                 )}
-                <MatchManagement
-                  tournamentId={tournament.id}
-                  isOrganizer={true}
-                  ageGroupId={ageGroupId}
-                  isRegistrationOpen={!ageGroup?.isRegistrationClosed}
-                  drawCompleted={ageGroup?.drawCompleted}
-                  matchPeriodType={ageGroup?.matchPeriodType}
-                  halfDurationMinutes={ageGroup?.halfDurationMinutes}
-                  halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}
-                  pauseBetweenMatchesMinutes={ageGroup?.pauseBetweenMatchesMinutes}
-                  fieldsCount={ageGroup?.fieldsCount}
-                />
+                {!groupsNotGenerated && (
+                  <MatchManagement
+                    tournamentId={tournament.id}
+                    isOrganizer={true}
+                    ageGroupId={ageGroupId}
+                    isRegistrationOpen={!ageGroup?.isRegistrationClosed}
+                    drawCompleted={ageGroup?.drawCompleted}
+                    matchPeriodType={ageGroup?.matchPeriodType}
+                    halfDurationMinutes={ageGroup?.halfDurationMinutes}
+                    halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}
+                    pauseBetweenMatchesMinutes={ageGroup?.pauseBetweenMatchesMinutes}
+                    fieldsCount={ageGroup?.fieldsCount}
+                  />
+                )}
               </CardContent>
             </Card>
           );
@@ -1077,6 +1125,45 @@ export default function TournamentDetailPage() {
               disabled={!rejectionReason.trim()}
             >
               {t('registration.reject')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={regenerateGroupsModalOpen}
+        onClose={() => {
+          if (!regeneratingGroups) {
+            setRegenerateGroupsModalOpen(false);
+            setRegenerateGroupsAgeGroupId(undefined);
+          }
+        }}
+        title="Regenerate Groups"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            This will delete the current groups and clear the existing pot assignments for this age group.
+          </p>
+          <p className="text-gray-600">
+            After confirmation, you will be redirected to pot management to assign teams to pots again and execute a new draw.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRegenerateGroupsModalOpen(false);
+                setRegenerateGroupsAgeGroupId(undefined);
+              }}
+              disabled={regeneratingGroups}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmRegenerateGroups}
+              isLoading={regeneratingGroups}
+            >
+              Regenerate Groups
             </Button>
           </div>
         </div>

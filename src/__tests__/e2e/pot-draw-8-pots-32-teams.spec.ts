@@ -148,7 +148,7 @@ test.describe('Pot draw — 8 pots / 32 teams', () => {
       expect(response.ok(), `Unable to read groups: ${await response.text()}`).toBeTruthy();
 
       const body = await response.json();
-      const groups = extractList(body);
+      const groups = extractList<{ id: string; teams?: unknown[] }>(body);
 
       expect(groups.length, 'Expected exactly 4 groups from ageGroup.groupsCount').toBe(
         NUMBER_OF_GROUPS,

@@ -12,6 +12,70 @@ import { formatDate, formatDateTime } from '@/utils/date';
 import { useAuthStore } from '@/store';
 import { RegistrationWizard } from '@/components/registration';
 
+export const PUBLIC_TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
+
+interface TournamentTeamMetrics {
+  maxTeams: number;
+  registeredTeams: number;
+  confirmedTeams: number;
+  pendingTeams: number;
+  visibleTeams: number;
+}
+
+export function getAgeGroupMaxTeams(ageGroup: AgeGroup) {
+  return (
+    ageGroup.teamCount
+      ?? ageGroup.maxTeams
+      ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
+        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
+        : 0)
+  );
+}
+
+export function getTournamentTeamMetrics({
+  tournament,
+  registrations,
+  ageGroup,
+}: {
+  tournament: Tournament;
+  registrations: Registration[];
+  ageGroup?: AgeGroup;
+}): TournamentTeamMetrics {
+  const scopedRegistrations = ageGroup?.id
+    ? registrations.filter((registration) => registration.ageGroupId === ageGroup.id)
+    : registrations;
+  const visibleTeams = scopedRegistrations.length;
+  const ageGroupCurrentTeams = ageGroup?.currentTeams;
+  const ageGroupConfirmedTeams = ageGroup?.id
+    ? scopedRegistrations.filter((registration) => registration.status === 'APPROVED').length
+    : undefined;
+
+  const registeredTeams = ageGroup
+    ? ageGroupCurrentTeams ?? visibleTeams
+    : tournament.ageGroups && tournament.ageGroups.length > 0
+      ? tournament.ageGroups.reduce((total, currentAgeGroup) => total + (currentAgeGroup.currentTeams ?? 0), 0)
+      : tournament.currentTeams ?? tournament.registeredTeams ?? visibleTeams;
+
+  const confirmedTeams = ageGroup
+    ? ageGroupConfirmedTeams
+    : tournament.confirmedTeams ?? visibleTeams;
+  const normalizedConfirmedTeams = Math.min(confirmedTeams ?? 0, registeredTeams);
+
+  const maxTeams = ageGroup
+    ? getAgeGroupMaxTeams(ageGroup)
+    : tournament.ageGroups && tournament.ageGroups.length > 0
+      ? tournament.ageGroups.reduce((total, currentAgeGroup) => total + getAgeGroupMaxTeams(currentAgeGroup), 0)
+      : tournament.maxTeams;
+
+  return {
+    maxTeams,
+    registeredTeams,
+    confirmedTeams: normalizedConfirmedTeams,
+    pendingTeams: Math.max(registeredTeams - normalizedConfirmedTeams, 0),
+    visibleTeams,
+  };
+}
+
 export default function TournamentDetailPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
@@ -156,6 +220,8 @@ export default function TournamentDetailPage() {
       try {
         const regsResponse = await registrationService.getTournamentRegistrations(response.data.id, {
           status: 'APPROVED' as any,
+          page: 1,
+          pageSize: PUBLIC_TOURNAMENT_REGISTRATIONS_PAGE_SIZE,
         });
         const items = regsResponse?.data?.items;
         setRegistrations(Array.isArray(items) ? items : []);
@@ -334,14 +400,6 @@ export default function TournamentDetailPage() {
     return label;
   };
 
-  const getAgeGroupMaxTeams = (ageGroup: AgeGroup) => (
-    ageGroup.teamCount
-      ?? ageGroup.maxTeams
-      ?? (ageGroup.teamsPerGroup && ageGroup.groupsCount
-        ? ageGroup.teamsPerGroup * ageGroup.groupsCount
-        : 0)
-  );
-
   if (loading) {
     return (
       <MainLayout>
@@ -377,31 +435,9 @@ export default function TournamentDetailPage() {
     );
   }
 
-  const ageGroupTotals = tournament.ageGroups?.reduce(
-    (acc, ageGroup) => {
-      const ageGroupMaxTeams =
-        ageGroup.teamCount ??
-        ageGroup.maxTeams ??
-        (ageGroup.teamsPerGroup && ageGroup.groupsCount
-          ? ageGroup.teamsPerGroup * ageGroup.groupsCount
-          : 0);
-      const currentTeams = ageGroup.currentTeams ?? 0;
-      return {
-        maxTeams: acc.maxTeams + (ageGroupMaxTeams || 0),
-        currentTeams: acc.currentTeams + currentTeams,
-      };
-    },
-    { maxTeams: 0, currentTeams: 0 }
-  );
-
-  const derivedMaxTeams = tournament.ageGroups && tournament.ageGroups.length > 0
-    ? ageGroupTotals?.maxTeams
-    : tournament.maxTeams;
-  const maxTeamsDisplay = derivedMaxTeams && derivedMaxTeams > 0 ? derivedMaxTeams : 0;
-  const currentTeamsDisplay = tournament.ageGroups && tournament.ageGroups.length > 0
-    ? ageGroupTotals?.currentTeams || 0
-    : registrations.length;
-  const spotsLeft = Math.max(maxTeamsDisplay - currentTeamsDisplay, 0);
+  const tournamentTeamMetrics = getTournamentTeamMetrics({ tournament, registrations });
+  const maxTeamsDisplay = tournamentTeamMetrics.maxTeams > 0 ? tournamentTeamMetrics.maxTeams : 0;
+  const currentTeamsDisplay = tournamentTeamMetrics.registeredTeams;
 
   const tournamentLatitude = typeof tournament.latitude === 'string'
     ? parseFloat(tournament.latitude)
@@ -427,21 +463,11 @@ export default function TournamentDetailPage() {
   );
 
   const buildOverviewTab = (ageGroup?: AgeGroup) => {
-    const ageGroupId = ageGroup?.id;
-    const scopedRegistrations = ageGroupId
-      ? registrations.filter((registration) => registration.ageGroupId === ageGroupId)
-      : registrations;
-    const ageGroupMaxTeams = ageGroup ? getAgeGroupMaxTeams(ageGroup) : maxTeamsDisplay;
-    const ageGroupCurrentTeams = ageGroup
-      ? (ageGroup.currentTeams ?? scopedRegistrations.length)
-      : currentTeamsDisplay;
-    // FE-10: compute confirmed (APPROVED) and pending teams
-    const ageGroupConfirmedTeams = ageGroupId
-      ? scopedRegistrations.filter((r) => r.status === 'APPROVED').length
-      : (tournament.confirmedTeams ?? scopedRegistrations.filter((r) => r.status === 'APPROVED').length);
-    const ageGroupPendingTeams = ageGroupId
-      ? scopedRegistrations.filter((r) => r.status === 'PENDING' || r.status === 'PENDING_PAYMENT').length
-      : Math.max(ageGroupCurrentTeams - ageGroupConfirmedTeams, 0);
+    const ageGroupMetrics = getTournamentTeamMetrics({ tournament, registrations, ageGroup });
+    const ageGroupMaxTeams = ageGroupMetrics.maxTeams;
+    const ageGroupCurrentTeams = ageGroupMetrics.registeredTeams;
+    const ageGroupConfirmedTeams = ageGroupMetrics.confirmedTeams;
+    const ageGroupPendingTeams = ageGroupMetrics.pendingTeams;
     const ageGroupSpotsLeft = ageGroupMaxTeams > 0
       ? Math.max(ageGroupMaxTeams - ageGroupCurrentTeams, 0)
       : null;
@@ -478,7 +504,7 @@ export default function TournamentDetailPage() {
               </div>
               {tournament.numberOfMatches && (
                 <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-                  <span className="text-gray-600">{t('tournament.numberOfMatches')}</span>
+                  <span className="text-gray-600">{t('tournament.matches', 'Matches')}</span>
                   <span className="font-medium">{tournament.numberOfMatches}</span>
                 </div>
               )}
@@ -564,7 +590,7 @@ export default function TournamentDetailPage() {
                         )}
                         <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ag)}</span>
                         {ag.numberOfMatches != null && (
-                          <span>{t('tournament.numberOfMatches', 'Matches')}: {ag.numberOfMatches}</span>
+                          <span>{t('tournament.matches', 'Matches')}: {ag.numberOfMatches}</span>
                         )}
                         {groupMaxTeams > 0 && (
                           <span>
@@ -662,7 +688,7 @@ export default function TournamentDetailPage() {
                   )}
                   <span className="col-span-2">{t('tournaments.ageGroups.matchDuration', 'Match Duration')}: {formatMatchDuration(ageGroup)}</span>
                   {ageGroup.numberOfMatches != null && (
-                    <span>{t('tournament.numberOfMatches', 'Matches')}: {ageGroup.numberOfMatches}</span>
+                    <span>{t('tournament.matches', 'Matches')}: {ageGroup.numberOfMatches}</span>
                   )}
                   {ageGroup.level && (
                     <span>{t('tournament.level.label')}: {t(`tournament.level.${ageGroup.level}`)}</span>
@@ -781,9 +807,10 @@ export default function TournamentDetailPage() {
     const scopedRegistrations = ageGroupId
       ? registrations.filter((registration) => registration.ageGroupId === ageGroupId)
       : registrations;
+    const teamMetrics = getTournamentTeamMetrics({ tournament, registrations, ageGroup });
     const teamsLabel = ageGroup
-      ? `${t('tournament.tabs.teams')} (${scopedRegistrations.length})`
-      : `${t('tournament.tabs.teams')} (${registrations.length})`;
+      ? `${t('tournament.tabs.teams')} (${teamMetrics.visibleTeams})`
+      : `${t('tournament.tabs.teams')} (${teamMetrics.visibleTeams})`;
 
     return {
       id: 'teams',
@@ -791,9 +818,19 @@ export default function TournamentDetailPage() {
       content: (
         <Card>
           <CardHeader>
-            <CardTitle>{t('tournament.registeredTeams')}</CardTitle>
+            <CardTitle>{t('tournament.confirmedTeamsTitle', 'Confirmed Teams')}</CardTitle>
           </CardHeader>
           <CardContent>
+            <p className="mb-4 text-sm text-gray-500">
+              {t(
+                'tournament.confirmedTeamsDescription',
+                'Showing {{confirmed}} confirmed teams out of {{registered}} registered.',
+                {
+                  confirmed: teamMetrics.confirmedTeams,
+                  registered: teamMetrics.registeredTeams,
+                }
+              )}
+            </p>
             {scopedRegistrations.length === 0 ? (
               <p className="text-center text-gray-500 py-8">{t('tournament.noTeamsYet')}</p>
             ) : (
@@ -1129,7 +1166,7 @@ export default function TournamentDetailPage() {
                           {t('registration.status.notRegisteredDesc', "You haven't registered for this tournament yet.")}
                         </p>
                       ) : (
-                        <div className="space-y-2">
+                        <div className="max-h-[28rem] space-y-2 overflow-y-auto pr-1">
                           {myRegistrations.map((registration) => {
                             const ageGroup = registration.ageGroupId
                               ? ageGroupById.get(registration.ageGroupId)

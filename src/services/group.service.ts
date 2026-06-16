@@ -23,9 +23,13 @@ export async function executeDraw(
   );
 }
 
-// Reset draw and clear all groups
-export async function resetDraw(tournamentId: string): Promise<ApiResponse<void>> {
-  return apiDelete<ApiResponse<void>>(`/v1/tournaments/${tournamentId}/draw`);
+// Reset draw and clear all groups (optionally scoped to one age group)
+export async function resetDraw(
+  tournamentId: string,
+  ageGroupId?: string,
+): Promise<ApiResponse<void>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiDelete<ApiResponse<void>>(`/v1/tournaments/${tournamentId}/draw${params}`);
 }
 
 // Get all groups and team assignments

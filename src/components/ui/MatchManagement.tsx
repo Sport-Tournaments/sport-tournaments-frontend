@@ -8,7 +8,7 @@ import { formatDateTime } from '@/utils/date';
 function formatFieldDisplay(fieldName: string): string {
   return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
 }
-import type { BracketMatch, PlayoffRound, MatchesResponse, Group } from '@/types';
+import type { BracketMatch, PlayoffRound, MatchesResponse, Group, TournamentFormat } from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
 import DoubleEliminationBracket from './DoubleEliminationBracket';
@@ -30,6 +30,7 @@ export interface MatchManagementProps {
   halfTimePauseMinutes?: number;
   pauseBetweenMatchesMinutes?: number;
   fieldsCount?: number;
+  ageGroupFormat?: TournamentFormat;
 }
 
 type MatchWithTeamNames = BracketMatch & {
@@ -48,6 +49,7 @@ export default function MatchManagement({
   halfTimePauseMinutes,
   pauseBetweenMatchesMinutes,
   fieldsCount,
+  ageGroupFormat,
 }: MatchManagementProps) {
   const { t } = useTranslation();
   const [matchData, setMatchData] = useState<MatchesResponse | null>(null);
@@ -386,9 +388,11 @@ export default function MatchManagement({
 
   // No bracket data - show generate button
   const hasMatches =
-    matchData &&
+    !!matchData &&
     (matchData.matches?.length > 0 ||
       (matchData.playoffRounds && matchData.playoffRounds.length > 0));
+  const requiresCompletedDrawBeforeGeneration =
+    ageGroupFormat === 'GROUPS_PLUS_KNOCKOUT' || ageGroupFormat == null;
 
   if (!hasMatches) {
     return (
@@ -419,7 +423,11 @@ export default function MatchManagement({
           <>
             <button
               onClick={handleGenerateBracket}
-              disabled={generating || isRegistrationOpen || drawCompleted === false}
+              disabled={
+                generating ||
+                isRegistrationOpen ||
+                (requiresCompletedDrawBeforeGeneration && drawCompleted === false)
+              }
               className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {generating ? (

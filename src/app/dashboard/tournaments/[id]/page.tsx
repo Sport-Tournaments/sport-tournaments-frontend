@@ -754,9 +754,19 @@ export default function TournamentDetailPage() {
         id: 'groups',
         label: t('tournament.groups'),
         content: (() => {
-          // Elimination formats don't use groups — show an informational message
+          // Formats without a group phase should not show the pot/manual-groups UI.
           const format = ageGroup?.format;
-          if (format === 'SINGLE_ELIMINATION' || format === 'DOUBLE_ELIMINATION') {
+          const grouplessFormatLabel =
+            format === 'SINGLE_ELIMINATION'
+              ? 'Single Elimination'
+              : format === 'DOUBLE_ELIMINATION'
+                ? 'Double Elimination'
+                : format === 'LEAGUE'
+                  ? 'League'
+                  : format === 'ROUND_ROBIN'
+                    ? 'Round Robin'
+                    : undefined;
+          if (grouplessFormatLabel) {
             return (
               <Card>
                 <CardContent className="text-center py-12">
@@ -769,9 +779,9 @@ export default function TournamentDetailPage() {
                   <p className="text-sm text-gray-500 max-w-sm mx-auto">
                     This age group uses{' '}
                     <span className="font-medium text-gray-700">
-                      {format === 'SINGLE_ELIMINATION' ? 'Single Elimination' : 'Double Elimination'}
+                      {grouplessFormatLabel}
                     </span>
-                    . Matches are generated automatically in the{' '}
+                    . Matches are generated and managed in the{' '}
                     <span className="font-medium text-gray-700">Matches</span> section.
                   </p>
                 </CardContent>
@@ -934,6 +944,7 @@ export default function TournamentDetailPage() {
                     halfTimePauseMinutes={ageGroup?.halfTimePauseMinutes}
                     pauseBetweenMatchesMinutes={ageGroup?.pauseBetweenMatchesMinutes}
                     fieldsCount={ageGroup?.fieldsCount}
+                    ageGroupFormat={ageGroup?.format}
                   />
                 )}
               </CardContent>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { BracketMatch } from '@/types';
 import { formatDateTime } from '@/utils/date';
+import { sortMatchesForDisplay } from './matchSorting';
 
 export interface LeagueMatchScheduleProps {
   matches: BracketMatch[];
@@ -173,8 +174,21 @@ export default function LeagueMatchSchedule({
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const rounds = groupByRound(matches);
-  const sortedRoundNums = [...rounds.keys()].sort((a, b) => a - b);
+  const displaySections = matches.some((match) => match.scheduledAt)
+    ? [
+        {
+          key: 'scheduled-matches',
+          title: 'Match Schedule',
+          matches: sortMatchesForDisplay(matches),
+        },
+      ]
+    : [...groupByRound(matches).entries()]
+        .sort(([roundA], [roundB]) => roundA - roundB)
+        .map(([round, roundMatches]) => ({
+          key: `round-${round}`,
+          title: `Round ${round}`,
+          matches: roundMatches,
+        }));
 
   function openScoreModal(match: BracketMatch, t1: string, t2: string) {
     setScoreModal({
@@ -341,13 +355,13 @@ export default function LeagueMatchSchedule({
         </div>
       </div>
       <div className="space-y-6">
-        {sortedRoundNums.map((roundNum) => {
-          const roundMatches = rounds.get(roundNum)!;
+        {displaySections.map((section) => {
+          const roundMatches = section.matches;
           return (
-            <div key={roundNum} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div key={section.key} className="border border-gray-200 rounded-lg overflow-hidden">
               <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
                 <span className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-                  Round {roundNum}
+                  {section.title}
                 </span>
               </div>
               <div className={GRID_COLS_CLASS[cols]}>

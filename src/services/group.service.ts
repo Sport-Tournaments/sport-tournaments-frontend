@@ -4,6 +4,7 @@ import type {
   Bracket,
   ExecuteDrawDto,
   CreateGroupDto,
+  ConfigureGroupsDto,
   UpdateBracketDto,
   MatchesResponse,
   UpdateMatchAdvancementDto,
@@ -44,6 +45,17 @@ export async function createGroup(
   data: CreateGroupDto
 ): Promise<ApiResponse<Group>> {
   return apiPost<ApiResponse<Group>>(`/v1/tournaments/${tournamentId}/groups`, data);
+}
+
+// Configure empty/manual groups from zero. Team assignments are then saved with updateGroup().
+export async function configureGroups(
+  tournamentId: string,
+  data: ConfigureGroupsDto
+): Promise<ApiResponse<any>> {
+  return apiPost<ApiResponse<any>>(
+    `/v1/tournaments/${tournamentId}/groups/configure`,
+    data
+  );
 }
 
 // Get full bracket/schedule
@@ -186,6 +198,7 @@ export const groupService = {
   resetDraw,
   getGroups,
   createGroup,
+  configureGroups,
   getBracket,
   updateBracket,
   getMatches,

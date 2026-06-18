@@ -280,6 +280,7 @@ export default function EditTournamentPage() {
               halfDurationMinutes: (ag as any).halfDurationMinutes,
               halfTimePauseMinutes: (ag as any).halfTimePauseMinutes ?? 0,
               pauseBetweenMatchesMinutes: (ag as any).pauseBetweenMatchesMinutes ?? 0,
+              leagueLegs: (ag as any).leagueLegs,
               notes: (ag as any).notes,
             }))
           : [];
@@ -408,6 +409,7 @@ export default function EditTournamentPage() {
             } = ag as any;
             return {
               ...allowed,
+              ...(ag.format === 'LEAGUE' && leagueLegs ? { leagueLegs } : {}),
               startDate: normalizeDateForPayload(allowed.startDate),
               endDate: normalizeDateForPayload(allowed.endDate),
               registrationStartDate: normalizeDateForPayload(

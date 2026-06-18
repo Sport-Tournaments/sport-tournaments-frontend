@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
@@ -12,14 +12,13 @@ import { useInfiniteScroll } from '@/hooks';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
-import { regenerateGroupsFlow } from '@/app/dashboard/tournaments/group-draw.utils';
+
 
 export default function TournamentDetailPage() {
   const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
 
   const { t } = useTranslation();
   const params = useParams();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [statistics, setStatistics] = useState<RegistrationStatisticsByAgeGroup | null>(null);
@@ -256,20 +255,48 @@ export default function TournamentDetailPage() {
   const confirmRegenerateGroups = async () => {
     if (!tournament) return;
 
+    const targetAgeGroup = regenerateGroupsAgeGroupId
+      ? tournament.ageGroups?.find((ag) => ag.id === regenerateGroupsAgeGroupId)
+      : undefined;
+    const approvedRegistrations = getScopedRegistrations(regenerateGroupsAgeGroupId).filter(
+      (reg) => reg.status === 'APPROVED',
+    );
+    const teamCount = approvedRegistrations.length;
+    const configuredGroupCount =
+      targetAgeGroup?.groupsCount ||
+      (targetAgeGroup?.teamsPerGroup
+        ? Math.ceil(teamCount / targetAgeGroup.teamsPerGroup)
+        : 2);
+    const numberOfGroups = Math.max(1, Math.min(configuredGroupCount, teamCount || configuredGroupCount));
+
     setRegeneratingGroups(true);
     setError(null);
     try {
-      const redirectPath = await regenerateGroupsFlow({
-        tournamentId: tournament.id,
+      await groupService.resetDraw(tournament.id, regenerateGroupsAgeGroupId);
+      await potDrawService.clearPotAssignments(tournament.id, regenerateGroupsAgeGroupId);
+
+      if (teamCount < 2) {
+        throw new Error('At least 2 approved teams are required to create manual groups.');
+      }
+
+      const teamsPerGroup = Array.from({ length: numberOfGroups }, (_, index) => ({
+        groupLetter: String.fromCharCode(65 + index),
+        teamCount: Math.floor(teamCount / numberOfGroups) + (index < teamCount % numberOfGroups ? 1 : 0),
+      }));
+
+      await groupService.configureGroups(tournament.id, {
+        numberOfGroups,
         ageGroupId: regenerateGroupsAgeGroupId,
-        resetDraw: groupService.resetDraw,
-        clearPotAssignments: potDrawService.clearPotAssignments,
+        teamsPerGroup,
       });
+
       setRegenerateGroupsModalOpen(false);
-      router.push(redirectPath);
+      setEditGroupsAgeGroupId(regenerateGroupsAgeGroupId);
+      await fetchData();
+      setEditGroupsModalOpen(true);
     } catch (err: any) {
       console.error('Failed to regenerate groups:', err);
-      setError(err.response?.data?.message || 'Failed to regenerate groups');
+      setError(err.response?.data?.message || err.message || 'Failed to regenerate groups');
     } finally {
       setRegeneratingGroups(false);
     }
@@ -324,6 +351,23 @@ export default function TournamentDetailPage() {
     return registrations.filter(
       (reg) => inferRegistrationAgeGroupId(reg) === ageGroupId,
     );
+  };
+
+  const registrationToTeamDetail = (reg: Registration) => ({
+    id: reg.id,
+    ageGroupId: inferRegistrationAgeGroupId(reg),
+    team: (reg as any).team,
+    club: (reg as any).club,
+    coachName: (reg as any).coachName,
+  });
+
+  const getScopedGroups = (ageGroupId?: string) => {
+    if (!ageGroupId) return groups;
+    return groups.filter((g) => {
+      if (g.ageGroupId) return g.ageGroupId === ageGroupId;
+      const firstTeam = g.teamDetails?.[0];
+      return firstTeam ? firstTeam.ageGroupId === ageGroupId : false;
+    });
   };
 
   const statsByAgeGroupId = new Map(
@@ -737,15 +781,7 @@ export default function TournamentDetailPage() {
 
           // Filter by the persisted group.ageGroupId first, and only fall back to
           // teamDetails for legacy data that predates the ageGroupId column.
-          const scopedGroups = ageGroupId
-            ? groups.filter((g) => {
-                if (g.ageGroupId) {
-                  return g.ageGroupId === ageGroupId;
-                }
-                const firstTeam = g.teamDetails?.[0];
-                return firstTeam ? firstTeam.ageGroupId === ageGroupId : false;
-              })
-            : groups;
+          const scopedGroups = getScopedGroups(ageGroupId);
           const canRegenerateGroups = ageGroup?.format === 'GROUPS_PLUS_KNOCKOUT';
 
           if (scopedGroups.length > 0) {
@@ -781,7 +817,7 @@ export default function TournamentDetailPage() {
                         size="sm"
                         onClick={() => handleRegenerateGroups(ageGroupId)}
                       >
-                        Regenerate Groups
+                        Start From Zero
                       </Button>
                     )}
                   </div>
@@ -826,7 +862,7 @@ export default function TournamentDetailPage() {
                 <CardHeader>
                   <CardTitle>Pot-Based Draw System</CardTitle>
                   <CardDescription>
-                    Organize teams into pots based on strength and create balanced groups
+                    Configure empty groups, assign teams manually, then save to regenerate matches automatically
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center py-8">
@@ -837,14 +873,15 @@ export default function TournamentDetailPage() {
                     Groups & Draw Management
                   </h3>
                   <p className="text-gray-500 mb-6">
-                    {ageGroup ? `${getAgeGroupLabel(ageGroup)} \u2022 ` : ''}Assign teams to pots (1-4) and execute a fair draw to create balanced groups
+                    {ageGroup ? `${getAgeGroupLabel(ageGroup)} • ` : ''}Start from zero, create empty groups, then assign teams manually
                   </p>
-                  <Link href={`/dashboard/tournaments/${tournament.id}/pots`}>
-                    <Button variant="primary">
-                      <Users className="w-4 h-4 mr-2" />
-                      Manage Pots & Draw
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="primary"
+                    onClick={() => handleRegenerateGroups(ageGroupId)}
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Create Manual Groups
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -858,12 +895,7 @@ export default function TournamentDetailPage() {
           // Formats that require groups to be drawn before matches can be generated
           const format = ageGroup?.format;
           const needsGroups = format === 'GROUPS_PLUS_KNOCKOUT';
-          const scopedGroups = ageGroupId
-            ? groups.filter((g) => {
-                const firstTeam = g.teamDetails?.[0];
-                return firstTeam ? firstTeam.ageGroupId === ageGroupId : true;
-              })
-            : groups;
+          const scopedGroups = getScopedGroups(ageGroupId);
           const groupsNotGenerated = needsGroups && scopedGroups.length === 0;
 
           return (
@@ -1138,14 +1170,14 @@ export default function TournamentDetailPage() {
             setRegenerateGroupsAgeGroupId(undefined);
           }
         }}
-        title="Regenerate Groups"
+        title="Start Manual Groups From Zero"
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            This will delete the current groups and clear the existing pot assignments for this age group.
+            This will delete the current groups, clear existing pot assignments, and create empty groups for this age group.
           </p>
           <p className="text-gray-600">
-            After confirmation, you will be redirected to pot management to assign teams to pots again and execute a new draw.
+            After confirmation, the manual group editor opens. Assign all teams once and save; matches are regenerated automatically from the saved groups.
           </p>
           <div className="flex justify-end gap-3 pt-4">
             <Button
@@ -1163,7 +1195,7 @@ export default function TournamentDetailPage() {
               onClick={confirmRegenerateGroups}
               isLoading={regeneratingGroups}
             >
-              Regenerate Groups
+              Start From Zero
             </Button>
           </div>
         </div>
@@ -1179,14 +1211,10 @@ export default function TournamentDetailPage() {
             refreshTournamentData();
           }}
           tournamentId={tournament.id}
-          groups={
-            editGroupsAgeGroupId
-              ? groups.filter((g) => {
-                  const firstTeam = g.teamDetails?.[0];
-                  return firstTeam ? firstTeam.ageGroupId === editGroupsAgeGroupId : true;
-                })
-              : groups
-          }
+          groups={getScopedGroups(editGroupsAgeGroupId)}
+          availableTeams={getScopedRegistrations(editGroupsAgeGroupId)
+            .filter((reg) => reg.status === 'APPROVED')
+            .map(registrationToTeamDetail)}
         />
       )}
     </DashboardLayout>

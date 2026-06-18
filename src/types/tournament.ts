@@ -57,6 +57,7 @@ export interface AgeGroup {
   halfTimePauseMinutes?: number;
   pauseBetweenMatchesMinutes?: number;
   numberOfMatches?: number;
+  leagueLegs?: number;
   notes?: string;
   drawCompleted?: boolean;
   drawSeed?: string;

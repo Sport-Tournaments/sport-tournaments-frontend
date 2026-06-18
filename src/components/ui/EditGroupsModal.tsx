@@ -27,6 +27,7 @@ interface EditGroupsModalProps {
   onSuccess: () => void;
   tournamentId: string;
   groups: GroupWithDetails[];
+  availableTeams?: TeamDetail[];
 }
 
 // Local mutable group state for reordering
@@ -44,29 +45,37 @@ export default function EditGroupsModal({
   onSuccess,
   tournamentId,
   groups,
+  availableTeams = [],
 }: EditGroupsModalProps) {
   // ── Reorder state ──────────────────────────────────────────────
   const [localGroups, setLocalGroups] = useState<LocalGroup[]>([]);
+  const [unassignedTeams, setUnassignedTeams] = useState<TeamDetail[]>([]);
+  const [savingAll, setSavingAll] = useState(false);
 
   // Reset local state whenever the modal opens or groups prop changes
   useEffect(() => {
-    setLocalGroups(
-      [...groups]
-        .sort((a, b) => a.groupLetter.localeCompare(b.groupLetter))
-        .map((g) => ({
-          id: g.id,
-          groupLetter: g.groupLetter,
-          teamDetails: [...g.teamDetails],
-          dirty: false,
-          saving: false,
-        }))
+    const sortedGroups = [...groups]
+      .sort((a, b) => a.groupLetter.localeCompare(b.groupLetter))
+      .map((g) => ({
+        id: g.id,
+        groupLetter: g.groupLetter,
+        teamDetails: [...g.teamDetails],
+        dirty: false,
+        saving: false,
+      }));
+    const assignedIds = new Set(
+      sortedGroups.flatMap((group) => group.teamDetails.map((team) => team.id))
+    );
+    setLocalGroups(sortedGroups);
+    setUnassignedTeams(
+      availableTeams.filter((team) => !assignedIds.has(team.id))
     );
     // Reset swap state too
     setSelectedTeam(null);
     setTargetGroupId('');
     setTargetTeamId('');
     setError(null);
-  }, [groups, isOpen]);
+  }, [groups, availableTeams, isOpen]);
 
   const moveTeam = (groupId: string, fromIdx: number, toIdx: number) => {
     setLocalGroups((prev) =>
@@ -104,6 +113,65 @@ export default function EditGroupsModal({
       setLocalGroups((prev) =>
         prev.map((g) => (g.id === groupId ? { ...g, saving: false } : g))
       );
+    }
+  };
+
+  const addTeamToGroup = (team: TeamDetail, groupId: string) => {
+    if (!groupId) return;
+    setLocalGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, teamDetails: [...g.teamDetails, team], dirty: true }
+          : g
+      )
+    );
+    setUnassignedTeams((prev) => prev.filter((t) => t.id !== team.id));
+    setSelectedTeam(null);
+    setTargetGroupId('');
+    setTargetTeamId('');
+    setError(null);
+  };
+
+  const removeTeamFromGroup = (team: TeamDetail, groupId: string) => {
+    setLocalGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              teamDetails: g.teamDetails.filter((t) => t.id !== team.id),
+              dirty: true,
+            }
+          : g
+      )
+    );
+    setUnassignedTeams((prev) =>
+      prev.some((t) => t.id === team.id) ? prev : [...prev, team]
+    );
+    setSelectedTeam(null);
+    setTargetGroupId('');
+    setTargetTeamId('');
+    setError(null);
+  };
+
+  const saveAll = async () => {
+    const dirtyGroups = localGroups.filter((g) => g.dirty);
+    if (dirtyGroups.length === 0) return;
+    setSavingAll(true);
+    setError(null);
+    try {
+      for (const group of dirtyGroups) {
+        await groupService.updateGroup(tournamentId, group.id, {
+          teams: group.teamDetails.map((t) => t.id),
+        });
+      }
+      setLocalGroups((prev) =>
+        prev.map((g) => ({ ...g, dirty: false, saving: false }))
+      );
+      onSuccess();
+    } catch (err: any) {
+      setError(err?.response?.data?.message ?? err?.message ?? 'Failed to save groups.');
+    } finally {
+      setSavingAll(false);
     }
   };
 
@@ -152,9 +220,9 @@ export default function EditGroupsModal({
   const handleSwap = async () => {
     if (!selectedTeam || !targetGroupId || !targetTeamId) return;
 
-    // Use the original groups prop for swap (server-side teams arrays)
-    const groupA = groups.find((g) => g.id === selectedTeam.groupId);
-    const groupB = groups.find((g) => g.id === targetGroupId);
+    // Use the local mutable groups so unsaved manual changes are preserved.
+    const groupA = localGroups.find((g) => g.id === selectedTeam.groupId);
+    const groupB = localGroups.find((g) => g.id === targetGroupId);
 
     if (!groupA || !groupB) {
       setError('Could not find one or both groups.');
@@ -164,19 +232,37 @@ export default function EditGroupsModal({
     setSwapping(true);
     setError(null);
     try {
-      await groupService.swapGroupTeams(
-        tournamentId,
-        groupA.id,
-        groupA.teams,
-        selectedTeam.registrationId,
-        groupB.id,
-        groupB.teams,
-        targetTeamId
+      const sourceTeam = groupA.teamDetails.find((team) => team.id === selectedTeam.registrationId);
+      const targetTeam = groupB.teamDetails.find((team) => team.id === targetTeamId);
+      if (!sourceTeam || !targetTeam) {
+        throw new Error('Could not find one or both selected teams.');
+      }
+      setLocalGroups((prev) =>
+        prev.map((group) => {
+          if (group.id === groupA.id) {
+            return {
+              ...group,
+              teamDetails: group.teamDetails.map((team) =>
+                team.id === sourceTeam.id ? targetTeam : team
+              ),
+              dirty: true,
+            };
+          }
+          if (group.id === groupB.id) {
+            return {
+              ...group,
+              teamDetails: group.teamDetails.map((team) =>
+                team.id === targetTeam.id ? sourceTeam : team
+              ),
+              dirty: true,
+            };
+          }
+          return group;
+        })
       );
       setSelectedTeam(null);
       setTargetGroupId('');
       setTargetTeamId('');
-      onSuccess();
     } catch (err: any) {
       setError(err?.response?.data?.message ?? err?.message ?? 'Failed to swap teams.');
     } finally {
@@ -185,12 +271,12 @@ export default function EditGroupsModal({
   };
 
   const targetGroupOptions = selectedTeam
-    ? groups
+    ? localGroups
         .filter((g) => g.id !== selectedTeam.groupId)
         .map((g) => ({ value: g.id, label: `Group ${g.groupLetter}` }))
     : [];
 
-  const targetGroup = groups.find((g) => g.id === targetGroupId);
+  const targetGroup = localGroups.find((g) => g.id === targetGroupId);
   const targetTeamOptions = targetGroup
     ? targetGroup.teamDetails.map((reg, idx) => ({
         value: reg.id,
@@ -199,6 +285,7 @@ export default function EditGroupsModal({
     : [];
 
   const canSwap = selectedTeam && targetGroupId && targetTeamId && !swapping;
+  const hasDirtyGroups = localGroups.some((g) => g.dirty);
 
   return (
     <Modal
@@ -212,6 +299,53 @@ export default function EditGroupsModal({
         {error && (
           <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 border border-red-200">
             {error}
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-md border border-blue-100 bg-blue-50 p-3">
+          <div>
+            <p className="text-sm font-medium text-blue-900">
+              Manual groups from zero
+            </p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              Assign every team once, then save. When all teams are assigned, matches are regenerated automatically.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={saveAll}
+            disabled={!hasDirtyGroups || savingAll}
+          >
+            {savingAll ? 'Saving…' : 'Save all & generate matches'}
+          </Button>
+        </div>
+
+        {unassignedTeams.length > 0 && (
+          <div className="border rounded-lg p-3 bg-amber-50 border-amber-200">
+            <p className="text-sm font-semibold text-amber-900 mb-2">
+              Unassigned teams ({unassignedTeams.length})
+            </p>
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {unassignedTeams.map((team, idx) => (
+                <div key={team.id} className="flex flex-col sm:flex-row sm:items-center gap-2 rounded bg-white border border-amber-100 p-2">
+                  <span className="flex-1 text-sm text-gray-800">
+                    {getTeamName(team, idx)}
+                  </span>
+                  <Select
+                    label=""
+                    aria-label="Assign to group"
+                    value=""
+                    placeholder="Assign to group…"
+                    options={localGroups.map((group) => ({
+                      value: group.id,
+                      label: `Group ${group.groupLetter}`,
+                    }))}
+                    onChange={(e) => addTeamToGroup(team, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -291,6 +425,14 @@ export default function EditGroupsModal({
                           {idx + 1}
                         </span>
                         {getTeamName(reg, idx)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeTeamFromGroup(reg, group.id)}
+                        className="px-2 py-1 text-xs text-red-600 hover:text-red-700"
+                        aria-label="Remove from group"
+                      >
+                        Remove
                       </button>
                     </li>
                   );

@@ -51,6 +51,15 @@ export interface CreateGroupDto {
   groupOrder?: number;
 }
 
+export interface ConfigureGroupsDto {
+  numberOfGroups: number;
+  ageGroupId?: string;
+  teamsPerGroup: Array<{
+    groupLetter: string;
+    teamCount: number;
+  }>;
+}
+
 export interface ManualGroupAssignmentDto {
   registrationId: string;
   groupLetter: string;

@@ -911,7 +911,7 @@ export default function TournamentDetailPage() {
                                 className="w-5 h-5 object-contain shrink-0"
                               />
                             )}
-                            <span className="truncate">{teamDetail?.club?.name || `Team ${idx + 1}`}</span>
+                            <span className="truncate">{teamDetail?.team?.name || teamDetail?.club?.name || `Team ${idx + 1}`}</span>
                           </div>
                         ))}
                       </div>
@@ -1090,7 +1090,7 @@ export default function TournamentDetailPage() {
                   )}
 
                   {tournament.status === 'PUBLISHED' ? (
-                    tournament.isRegistrationClosed ? (
+                    tournament.isRegistrationClosed && !(tournament.ageGroups && tournament.ageGroups.length > 0) ? (
                       <Button variant="secondary" fullWidth disabled>
                         {t('tournament.registrationClosed')}
                       </Button>

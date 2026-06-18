@@ -402,6 +402,8 @@ export default function EditTournamentPage() {
               minTeams,
               maxTeams,
               guaranteedMatches,
+              advancementOverride,
+              leagueLegs,
               ...allowed
             } = ag as any;
             return {
@@ -420,9 +422,13 @@ export default function EditTournamentPage() {
             params.id as string,
             sanitizedAgeGroups,
           );
-        } catch (ageGroupErr) {
+        } catch (ageGroupErr: any) {
           console.error("Failed to update age groups:", ageGroupErr);
-          // Don't fail the whole update, just warn
+          throw new Error(
+            ageGroupErr?.response?.data?.message ||
+              ageGroupErr?.message ||
+              "Failed to update age groups",
+          );
         }
       }
 
@@ -452,7 +458,7 @@ export default function EditTournamentPage() {
         router.push(`/dashboard/tournaments/${params.id}`);
       }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update tournament");
+      setError(err.response?.data?.message || err.message || "Failed to update tournament");
     } finally {
       setSaving(false);
     }

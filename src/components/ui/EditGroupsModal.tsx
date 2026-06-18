@@ -9,6 +9,7 @@ import { groupService } from '@/services';
 interface TeamDetail {
   id: string; // registration ID
   ageGroupId?: string;
+  team?: { name: string };
   club?: { name: string };
   coachName?: string;
 }
@@ -119,7 +120,7 @@ export default function EditGroupsModal({
   const [error, setError] = useState<string | null>(null);
 
   const getTeamName = (reg: TeamDetail, idx: number) =>
-    reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`;
+    reg?.team?.name ?? reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`;
 
   const handleTeamClick = (
     registrationId: string,

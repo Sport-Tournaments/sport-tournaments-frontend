@@ -625,16 +625,20 @@ export default function MatchManagement({
 
           const groupPhaseSection = sortedGroups.length > 0 ? (
             sortedGroups.map((group) => {
-              const groupMatches = allMatches.filter(
-                (m) => m.groupLetter === group.groupLetter
-              );
-              // Build a team-names map scoped to this group only
-              // group.teams is string[] of registration IDs at runtime
               const groupTeamIds = new Set<string>(
                 Array.isArray(group.teams)
                   ? group.teams.map((t: any) => (typeof t === 'string' ? t : t?.registrationId ?? t?.id ?? ''))
                   : []
               );
+              const groupMatches = allMatches.filter(
+                (m) =>
+                  m.groupLetter === group.groupLetter &&
+                  (groupTeamIds.size === 0 ||
+                    (!!m.team1Id && groupTeamIds.has(m.team1Id)) ||
+                    (!!m.team2Id && groupTeamIds.has(m.team2Id)))
+              );
+              // Build a team-names map scoped to this group only
+              // group.teams is string[] of registration IDs at runtime
               const groupTeamNames = new Map<string, string>();
               for (const [id, name] of teamNamesMap.entries()) {
                 if (groupTeamIds.has(id)) {

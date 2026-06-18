@@ -16,6 +16,7 @@ import {
 
 interface PotAssignment {
   registrationId: string;
+  teamName?: string;
   clubName: string;
   coachName: string;
 }
@@ -838,7 +839,10 @@ export default function PotManagementPage() {
                               key={team.registrationId}
                               className="text-sm p-2 bg-white border rounded hover:bg-primary/5"
                             >
-                              <p className="font-medium">{team.clubName}</p>
+                              <p className="font-medium">{team.teamName || team.clubName}</p>
+                              {team.teamName && team.teamName !== team.clubName && (
+                                <p className="text-xs text-gray-500">Club: {team.clubName}</p>
+                              )}
                               <p className="text-xs text-gray-600">{team.coachName}</p>
                             </li>
                           ))}

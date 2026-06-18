@@ -803,7 +803,7 @@ export default function TournamentDetailPage() {
                                   {idx + 1}
                                 </span>
                                 <span className="text-sm font-medium text-gray-900 truncate flex-1 min-w-0">
-                                  {reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`}
+                                  {reg?.team?.name ?? reg?.club?.name ?? reg?.coachName ?? `Team ${idx + 1}`}
                                 </span>
                               </li>
                             ))}

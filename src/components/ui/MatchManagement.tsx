@@ -63,6 +63,7 @@ export default function MatchManagement({
   const [bulkScheduling, setBulkScheduling] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedTeamIdsByScope, setSelectedTeamIdsByScope] = useState<Record<string, string[]>>({});
 
   const fetchMatches = useCallback(async (silent = false) => {
     try {
@@ -351,6 +352,42 @@ export default function MatchManagement({
     }
   };
 
+  const getGroupSortValue = (group: Group) =>
+    typeof group.groupOrder === 'number' ? group.groupOrder : Number.MAX_SAFE_INTEGER;
+
+  const sortGroupsForDisplay = (input: Group[]) =>
+    [...input].sort((a, b) => {
+      const byOrder = getGroupSortValue(a) - getGroupSortValue(b);
+      return byOrder !== 0 ? byOrder : a.groupLetter.localeCompare(b.groupLetter);
+    });
+
+  const getSelectedTeamIds = (scope: string, availableTeamIds: string[]) => {
+    const selected = selectedTeamIdsByScope[scope];
+    if (!selected) return availableTeamIds;
+    const available = new Set(availableTeamIds);
+    return selected.filter((teamId) => available.has(teamId));
+  };
+
+  const setSelectedTeamIds = (scope: string, teamIds: string[]) => {
+    setSelectedTeamIdsByScope((previous) => ({
+      ...previous,
+      [scope]: teamIds,
+    }));
+  };
+
+  const filterMatchesBySelectedTeams = (
+    inputMatches: BracketMatch[],
+    selectedTeamIds: string[],
+  ) => {
+    const selected = new Set(selectedTeamIds);
+    if (selected.size === 0) return [];
+    return inputMatches.filter(
+      (match) =>
+        (!!match.team1Id && selected.has(match.team1Id)) ||
+        (!!match.team2Id && selected.has(match.team2Id)),
+    );
+  };
+
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -466,7 +503,7 @@ export default function MatchManagement({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -494,7 +531,7 @@ export default function MatchManagement({
 
       {/* Messages — fixed-position toast to prevent layout shift when notifications disappear */}
       {(error || successMessage) && (
-        <div className="fixed top-4 right-4 z-50 w-80 flex flex-col gap-2">
+        <div className="fixed left-2 right-2 top-4 z-50 flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-80">
           {error && (
             <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm flex items-center shadow-sm">
               <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -560,16 +597,24 @@ export default function MatchManagement({
         // --- ROUND ROBIN: standings + flat match list ---
         if (bracketType === 'ROUND_ROBIN') {
           const allMatches = matchData?.matches ?? [];
+          const availableTeamIds = [...teamNamesMap.keys()];
+          const selectedTeamIds = getSelectedTeamIds('round-robin', availableTeamIds);
+          const visibleMatches = filterMatchesBySelectedTeams(allMatches, selectedTeamIds);
           return (
-            <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Standings</h4>
-                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Match Schedule</h4>
-                <LeagueMatchSchedule
+            <div className="space-y-3 sm:space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Standings</h4>
+                <StandingsTable
                   matches={allMatches}
+                  teamNames={teamNamesMap}
+                  selectedTeamIds={selectedTeamIds}
+                  onSelectedTeamIdsChange={(teamIds) => setSelectedTeamIds('round-robin', teamIds)}
+                />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-0 sm:p-4">
+                <h4 className="px-2 pt-2 text-sm font-semibold text-gray-700 sm:mb-3 sm:px-0 sm:pt-0">Match Schedule</h4>
+                <LeagueMatchSchedule
+                  matches={visibleMatches}
                   teamNames={teamNamesMap}
                   isOrganizer={isOrganizer}
                   onScoreUpdate={handleSingleMatchScoreUpdate}
@@ -592,16 +637,24 @@ export default function MatchManagement({
         // --- LEAGUE: standings + schedule ---
         if (bracketType === 'LEAGUE') {
           const allMatches = matchData?.matches ?? [];
+          const availableTeamIds = [...teamNamesMap.keys()];
+          const selectedTeamIds = getSelectedTeamIds('league', availableTeamIds);
+          const visibleMatches = filterMatchesBySelectedTeams(allMatches, selectedTeamIds);
           return (
-            <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">League Standings</h4>
-                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Match Schedule</h4>
-                <LeagueMatchSchedule
+            <div className="space-y-3 sm:space-y-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">League Standings</h4>
+                <StandingsTable
                   matches={allMatches}
+                  teamNames={teamNamesMap}
+                  selectedTeamIds={selectedTeamIds}
+                  onSelectedTeamIdsChange={(teamIds) => setSelectedTeamIds('league', teamIds)}
+                />
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-0 sm:p-4">
+                <h4 className="px-2 pt-2 text-sm font-semibold text-gray-700 sm:mb-3 sm:px-0 sm:pt-0">Match Schedule</h4>
+                <LeagueMatchSchedule
+                  matches={visibleMatches}
                   teamNames={teamNamesMap}
                   isOrganizer={isOrganizer}
                   onScoreUpdate={handleSingleMatchScoreUpdate}
@@ -627,9 +680,7 @@ export default function MatchManagement({
           const playoffRounds = matchData?.playoffRounds ?? [];
 
           // Build per-group match sections when group assignments are available
-          const sortedGroups = [...groups].sort((a, b) =>
-            a.groupLetter.localeCompare(b.groupLetter)
-          );
+          const sortedGroups = sortGroupsForDisplay(groups);
 
           const groupPhaseSection = sortedGroups.length > 0 ? (
             sortedGroups.map((group) => {
@@ -662,6 +713,10 @@ export default function MatchManagement({
                   groupTeamNames.set(m.team2Id, teamNamesMap.get(m.team2Id) || m.team2Name || m.team2Id.slice(0, 8));
                 }
               }
+              const scopeKey = `group-${group.id}`;
+              const availableTeamIds = [...groupTeamNames.keys()];
+              const selectedTeamIds = getSelectedTeamIds(scopeKey, availableTeamIds);
+              const visibleGroupMatches = filterMatchesBySelectedTeams(groupMatches, selectedTeamIds);
               return (
                 <div key={group.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   {/* Group header */}
@@ -670,7 +725,7 @@ export default function MatchManagement({
                       Group {group.groupLetter}
                     </h4>
                   </div>
-                  <div className="p-4 space-y-4">
+                  <div className="p-2 space-y-3 sm:p-4 sm:space-y-4">
                     {/* Standings table for this group */}
                     <StandingsTable
                       matches={groupMatches}
@@ -679,15 +734,17 @@ export default function MatchManagement({
                       canEdit={isOrganizer}
                       tiebreakOrder={group.tieBreakOrder ?? undefined}
                       onTiebreakerSet={(order) => handleTiebreakerSet(group.id, order)}
+                      selectedTeamIds={selectedTeamIds}
+                      onSelectedTeamIdsChange={(teamIds) => setSelectedTeamIds(scopeKey, teamIds)}
                     />
                     {/* Matches for this group */}
                     {groupMatches.length > 0 && (
-                      <div className="border-t border-gray-100 pt-4">
-                        <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+                      <div className="border-t border-gray-100 pt-2 sm:pt-4">
+                        <h5 className="px-0 text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
                           Matches
                         </h5>
                         <LeagueMatchSchedule
-                          matches={groupMatches}
+                          matches={visibleGroupMatches}
                           teamNames={teamNamesMap}
                           isOrganizer={isOrganizer}
                           onScoreUpdate={handleSingleMatchScoreUpdate}
@@ -711,28 +768,42 @@ export default function MatchManagement({
           ) : (
             // Fallback: combined view when group assignments not yet available
             allMatches.length > 0 && (
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Group Standings</h4>
-                <StandingsTable matches={allMatches} teamNames={teamNamesMap} />
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Group Matches</h5>
-                  <LeagueMatchSchedule
-                    matches={allMatches}
-                    teamNames={teamNamesMap}
-                    isOrganizer={isOrganizer}
-                    onScoreUpdate={handleSingleMatchScoreUpdate}
-                    onSchedule={handleScheduleMatch}
-                    savingMatchId={savingMatchId}
-                    schedulingMatchId={schedulingMatchId}
-                    matchPeriodType={matchPeriodType}
-                    halfDurationMinutes={halfDurationMinutes}
-                    halfTimePauseMinutes={halfTimePauseMinutes}
-                    fieldsCount={fieldsCount}
-                    pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
-                    onBulkSchedule={handleBulkSchedule}
-                    bulkScheduling={bulkScheduling}
-                  />
-                </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Group Standings</h4>
+                {(() => {
+                  const availableTeamIds = [...teamNamesMap.keys()];
+                  const selectedTeamIds = getSelectedTeamIds('groups-fallback', availableTeamIds);
+                  const visibleMatches = filterMatchesBySelectedTeams(allMatches, selectedTeamIds);
+                  return (
+                    <>
+                      <StandingsTable
+                        matches={allMatches}
+                        teamNames={teamNamesMap}
+                        selectedTeamIds={selectedTeamIds}
+                        onSelectedTeamIdsChange={(teamIds) => setSelectedTeamIds('groups-fallback', teamIds)}
+                      />
+                      <div className="mt-3 border-t border-gray-100 pt-2 sm:mt-4 sm:pt-4">
+                        <h5 className="text-xs font-semibold text-gray-500 mb-2 uppercase">Group Matches</h5>
+                        <LeagueMatchSchedule
+                          matches={visibleMatches}
+                          teamNames={teamNamesMap}
+                          isOrganizer={isOrganizer}
+                          onScoreUpdate={handleSingleMatchScoreUpdate}
+                          onSchedule={handleScheduleMatch}
+                          savingMatchId={savingMatchId}
+                          schedulingMatchId={schedulingMatchId}
+                          matchPeriodType={matchPeriodType}
+                          halfDurationMinutes={halfDurationMinutes}
+                          halfTimePauseMinutes={halfTimePauseMinutes}
+                          fieldsCount={fieldsCount}
+                          pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                          onBulkSchedule={handleBulkSchedule}
+                          bulkScheduling={bulkScheduling}
+                        />
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )
           );
@@ -745,15 +816,15 @@ export default function MatchManagement({
           ).length;
 
           return (
-            <div className="space-y-6">
+            <div className="space-y-3 sm:space-y-6">
               {/* Group phase — one card per group */}
               {groupPhaseSection}
               {/* Knockout stage */}
               {bracketType === 'GROUPS_PLUS_KNOCKOUT' && (
                 <>
                   {playoffRounds.length > 0 ? (
-                    <div className="bg-white border border-gray-200 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Knockout Stage</h4>
+                    <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Knockout Stage</h4>
                       <DoubleEliminationBracket
                         playoffRounds={playoffRounds}
                         teamNames={teamNamesMap}

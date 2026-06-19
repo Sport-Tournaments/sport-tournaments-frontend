@@ -58,9 +58,9 @@ export default function RegisterPage() {
   // Auto-scroll to error message when error is set
   useEffect(() => {
     if (error && errorRef.current) {
-      errorRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
+      errorRef.current.scrollIntoView?.({
+        behavior: 'smooth',
+        block: 'center',
       });
       // Focus on the error message for accessibility
       errorRef.current.focus();

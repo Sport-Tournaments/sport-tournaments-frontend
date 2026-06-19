@@ -44,12 +44,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="flex">
+    <div className="min-h-screen overflow-x-hidden bg-white">
+      <div className="flex min-w-0">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+        <div className="flex min-w-0 flex-1 flex-col min-h-screen overflow-x-hidden lg:ml-0">
           <DashboardHeader />
-          <main className="flex-1 p-4 lg:p-8">{children}</main>
+          <main className="min-w-0 flex-1 overflow-x-hidden p-2 sm:p-4 lg:p-8">{children}</main>
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { BracketMatch } from '@/types';
 import { formatDateTime } from '@/utils/date';
-import { sortMatchesForDisplay } from './matchSorting';
+import { sortMatchesForDisplay, type MatchSortMode } from './matchSorting';
 
 export interface LeagueMatchScheduleProps {
   matches: BracketMatch[];
@@ -84,9 +84,9 @@ function groupByRound(matches: BracketMatch[]): Map<number, BracketMatch[]> {
 
 const GRID_COLS_CLASS: Record<number, string> = {
   1: 'divide-y divide-gray-100',
-  2: 'grid grid-cols-2 gap-3 p-3',
-  3: 'grid grid-cols-3 gap-3 p-3',
-  4: 'grid grid-cols-4 gap-3 p-3',
+  2: 'grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-0 sm:p-3',
+  3: 'grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 p-0 sm:p-3',
+  4: 'grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-3 p-0 sm:p-3',
 };
 
 function GridIcon({ cols, active }: { cols: number; active: boolean }) {
@@ -164,31 +164,16 @@ export default function LeagueMatchSchedule({
   const [autoHH, setAutoHH] = useState('10');
   const [autoMM, setAutoMM] = useState('00');
   const [cols, setCols] = useState(1);
+  const [sortMode, setSortMode] = useState<MatchSortMode>('datetime');
 
-  // Responsive default: 1 col on mobile, 4 cols on desktop; updates on resize
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px)');
-    const onChange = (e: MediaQueryListEvent) => setCols(e.matches ? 2 : 1);
-    setCols(mq.matches ? 2 : 1);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
 
-  const displaySections = matches.some((match) => match.scheduledAt)
-    ? [
-        {
-          key: 'scheduled-matches',
-          title: 'Match Schedule',
-          matches: sortMatchesForDisplay(matches),
-        },
-      ]
-    : [...groupByRound(matches).entries()]
-        .sort(([roundA], [roundB]) => roundA - roundB)
-        .map(([round, roundMatches]) => ({
-          key: `round-${round}`,
-          title: `Round ${round}`,
-          matches: roundMatches,
-        }));
+  const displaySections = [
+    {
+      key: 'match-schedule',
+      title: 'Match Schedule',
+      matches: sortMatchesForDisplay(matches, sortMode),
+    },
+  ];
 
   function openScoreModal(match: BracketMatch, t1: string, t2: string) {
     setScoreModal({
@@ -310,8 +295,8 @@ export default function LeagueMatchSchedule({
   return (
     <>
       {/* Toolbar: Auto Schedule + column selector */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-3">
+        <div className="flex flex-wrap items-center gap-2">
           {isOrganizer && onBulkSchedule && (
             <button
               onClick={openAutoSchedule}
@@ -336,8 +321,32 @@ export default function LeagueMatchSchedule({
               )}
             </button>
           )}
+          <div className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setSortMode('datetime')}
+              className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                sortMode === 'datetime'
+                  ? 'bg-white text-[#1e3a5f] shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Date & time
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortMode('field')}
+              className={`rounded-md px-2.5 py-1 font-medium transition-colors ${
+                sortMode === 'field'
+                  ? 'bg-white text-[#1e3a5f] shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Pitch A–Z
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
+        <div className="hidden w-fit items-center gap-0.5 bg-gray-100 rounded-lg p-1 sm:flex">
           {[1, 2, 3, 4].map((c) => (
             <button
               key={c}
@@ -354,12 +363,12 @@ export default function LeagueMatchSchedule({
           ))}
         </div>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-3 sm:space-y-6">
         {displaySections.map((section) => {
           const roundMatches = section.matches;
           return (
             <div key={section.key} className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+              <div className="bg-gray-50 px-2 py-1.5 sm:px-4 sm:py-2 border-b border-gray-200">
                 <span className="text-xs font-semibold uppercase tracking-wide text-gray-600">
                   {section.title}
                 </span>
@@ -374,112 +383,31 @@ export default function LeagueMatchSchedule({
                   const hasScore =
                     match.team1Score != null && match.team2Score != null;
 
-                  if (cols === 1) {
-                    // ── List layout (single column) ──
-                    return (
-                      <div key={match.id} className="px-4 py-3 bg-white hover:bg-gray-50">
-                        <div className="flex items-center justify-between gap-3">
-                          {/* Teams + Score */}
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className="font-medium text-gray-900 truncate text-right flex-1">{t1}</span>
-                            <div className="flex items-center gap-1 flex-shrink-0">
-                              {hasScore ? (
-                                <div className="flex flex-col items-center">
-                                  <span className="text-sm font-bold text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
-                                    {match.team1Score} – {match.team2Score}
-                                  </span>
-                                  {match.hasPenalties && match.penaltyTeam1Score != null && match.penaltyTeam2Score != null && (
-                                    <span className="text-xs text-amber-700 font-medium mt-0.5">
-                                      (pen. {match.penaltyTeam1Score}–{match.penaltyTeam2Score})
-                                    </span>
-                                  )}
-                                </div>
-                              ) : (
-                                <span className="text-sm text-gray-400 px-2">vs</span>
-                              )}
-                            </div>
-                            <span className="font-medium text-gray-900 truncate flex-1">{t2}</span>
-                          </div>
-                          {/* Status + meta */}
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}>
-                              {status.label}
-                            </span>
-                            {match.scheduledAt && (
-                              <span className="text-xs text-gray-400">
-                                {formatDateTime(match.scheduledAt)}
-                                {(() => {
-                                  const end = computeMatchEndTime(match.scheduledAt, matchPeriodType, halfDurationMinutes, halfTimePauseMinutes);
-                                  return end ? <span className="text-gray-300"> → {end}</span> : null;
-                                })()}
-                              </span>
-                            )}
-                            {match.fieldName && (
-                              <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium">
-                                {formatFieldDisplay(match.fieldName)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {isOrganizer && onScoreUpdate && match.status !== 'COMPLETED' && (
-                          <div className="mt-2 flex items-center gap-1.5">
-                            <button
-                              disabled={isSaving}
-                              onClick={() => openScoreModal(match, t1, t2)}
-                              className="text-xs font-medium px-2.5 py-1 rounded bg-[#1e3a5f] text-white hover:bg-[#152a45] disabled:opacity-50 transition-colors"
-                            >
-                              {isSaving ? 'Saving…' : 'Score'}
-                            </button>
-                            {onSchedule && (
-                              <button
-                                disabled={isScheduling}
-                                onClick={() => openDetailsModal(match, t1, t2)}
-                                className="text-xs font-medium px-2.5 py-1 rounded bg-[#e0f7ff] text-[#0090c7] hover:bg-[#dbeafe] disabled:opacity-50 transition-colors"
-                              >
-                                {isScheduling ? 'Scheduling…' : 'Details'}
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
+                  const containerClass = cols === 1
+                    ? 'px-2 py-2 sm:px-4 sm:py-3 bg-white hover:bg-gray-50'
+                    : 'bg-white border border-gray-200 rounded-lg p-2.5 sm:p-3 flex flex-col gap-2 hover:shadow-sm transition-shadow';
+                  const scoreClass = cols === 1
+                    ? 'rounded bg-gray-100 px-2 py-0.5 text-sm font-bold tabular-nums text-gray-800'
+                    : 'rounded bg-gray-100 px-1.5 py-0.5 text-xs font-bold tabular-nums text-gray-800';
 
-                  // ── Card layout (2 / 3 / 4 columns) ──
                   return (
-                    <div key={match.id} className="bg-white border border-gray-200 rounded-lg p-3 flex flex-col gap-2 hover:shadow-sm transition-shadow">
-                      {/* Header: status only */}
-                      <div className="flex items-center gap-1">
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${status.cls}`}>
-                          {status.label}
-                        </span>
-                      </div>
-                      {/* Teams + score */}
-                      <div className="flex items-center gap-1 min-w-0">
-                        <span className="font-medium text-gray-900 text-xs truncate flex-1 text-right">{t1}</span>
-                        <div className="flex-shrink-0 px-1">
-                          {hasScore ? (
-                            <div className="flex flex-col items-center">
-                              <span className="text-xs font-bold text-gray-800 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                {match.team1Score}–{match.team2Score}
-                              </span>
-                              {match.hasPenalties && match.penaltyTeam1Score != null && match.penaltyTeam2Score != null && (
-                                <span className="text-xs text-amber-700 font-medium mt-0.5 whitespace-nowrap">
-                                  pen. {match.penaltyTeam1Score}–{match.penaltyTeam2Score}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-gray-400">vs</span>
-                          )}
+                    <div key={match.id} className={containerClass}>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t1}</span>
+                          <span className={scoreClass}>{hasScore ? match.team1Score : '—'}</span>
                         </div>
-                        <span className="font-medium text-gray-900 text-xs truncate flex-1">{t2}</span>
-                      </div>
-                      {/* Date + Field on same row */}
-                      {(match.scheduledAt || match.fieldName) && (
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t2}</span>
+                          <span className={scoreClass}>{hasScore ? match.team2Score : '—'}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+                          <span className={`px-2 py-0.5 rounded-full font-medium ${status.cls}`}>
+                            {status.label}
+                          </span>
+                          <span className="text-gray-400">Match #{match.matchNumber}</span>
                           {match.scheduledAt && (
-                            <span className="text-xs text-gray-400 truncate">
+                            <span>
                               {formatDateTime(match.scheduledAt)}
                               {(() => {
                                 const end = computeMatchEndTime(match.scheduledAt, matchPeriodType, halfDurationMinutes, halfTimePauseMinutes);
@@ -488,19 +416,23 @@ export default function LeagueMatchSchedule({
                             </span>
                           )}
                           {match.fieldName && (
-                            <span className="text-xs bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium flex-shrink-0">
+                            <span className="bg-[#e0f7ff] text-[#0090c7] px-1.5 py-0.5 rounded font-medium">
                               {formatFieldDisplay(match.fieldName)}
                             </span>
                           )}
+                          {match.hasPenalties && match.penaltyTeam1Score != null && match.penaltyTeam2Score != null && (
+                            <span className="text-amber-700 font-medium">
+                              pen. {match.penaltyTeam1Score}–{match.penaltyTeam2Score}
+                            </span>
+                          )}
                         </div>
-                      )}
-                      {/* Organizer actions */}
+                      </div>
                       {isOrganizer && onScoreUpdate && match.status !== 'COMPLETED' && (
-                        <div className="flex items-center gap-1.5 pt-1 border-t border-gray-100">
+                        <div className="mt-2 flex items-center gap-1.5 border-t border-gray-100 pt-2">
                           <button
                             disabled={isSaving}
                             onClick={() => openScoreModal(match, t1, t2)}
-                            className="flex-1 text-xs font-medium px-2 py-1 rounded bg-[#1e3a5f] text-white hover:bg-[#152a45] disabled:opacity-50 transition-colors"
+                            className="flex-1 text-xs font-medium px-2.5 py-1 rounded bg-[#1e3a5f] text-white hover:bg-[#152a45] disabled:opacity-50 transition-colors"
                           >
                             {isSaving ? 'Saving…' : 'Score'}
                           </button>
@@ -508,9 +440,9 @@ export default function LeagueMatchSchedule({
                             <button
                               disabled={isScheduling}
                               onClick={() => openDetailsModal(match, t1, t2)}
-                              className="flex-1 text-xs font-medium px-2 py-1 rounded bg-[#e0f7ff] text-[#0090c7] hover:bg-[#dbeafe] disabled:opacity-50 transition-colors"
+                              className="flex-1 text-xs font-medium px-2.5 py-1 rounded bg-[#e0f7ff] text-[#0090c7] hover:bg-[#dbeafe] disabled:opacity-50 transition-colors"
                             >
-                              {isScheduling ? '…' : 'Details'}
+                              {isScheduling ? 'Scheduling…' : 'Details'}
                             </button>
                           )}
                         </div>

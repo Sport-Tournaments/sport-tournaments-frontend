@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/utils/helpers';
 
 export interface Tab {
@@ -18,6 +18,7 @@ export interface TabsProps {
   onChange?: (tabId: string) => void;
   className?: string;
   variant?: 'underline' | 'pills' | 'pills-gray';
+  queryParam?: string;
 }
 
 export default function Tabs({
@@ -26,11 +27,30 @@ export default function Tabs({
   onChange,
   className,
   variant = 'underline',
+  queryParam,
 }: TabsProps) {
+  const tabIds = tabs.map((tab) => tab.id).join('|');
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+
+  useEffect(() => {
+    const nextTab = defaultTab && tabs.some((tab) => tab.id === defaultTab)
+      ? defaultTab
+      : tabs[0]?.id;
+    if (nextTab) setActiveTab(nextTab);
+  }, [defaultTab, tabIds]);
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
+    if (queryParam && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      params.set(queryParam, tabId);
+      const queryString = params.toString();
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${queryString ? `?${queryString}` : ''}`,
+      );
+    }
     onChange?.(tabId);
   };
 
@@ -44,7 +64,7 @@ export default function Tabs({
 
   const variantTabStyles = {
     underline: {
-      base: 'border-b-2 px-1 pb-2 text-sm font-medium whitespace-nowrap text-[#0b2b5b]/80',
+      base: 'border-b-2 px-1 pb-2 text-sm font-medium sm:whitespace-nowrap text-[#0b2b5b]/80',
       active: 'border-[#0b2b5b] text-white bg-[var(--uefa-blue)] rounded-md px-3 py-1',
       inactive: 'border-transparent text-[#0b2b5b]/70 hover:text-[#0b2b5b]',
     },
@@ -64,27 +84,8 @@ export default function Tabs({
 
   return (
     <div className={className}>
-      {/* Mobile dropdown for small screens */}
-      <div className="sm:hidden">
-        <label htmlFor="tabs" className="sr-only">Select a tab</label>
-        <select
-          id="tabs"
-          name="tabs"
-          value={activeTab}
-          onChange={(e) => handleTabChange(e.target.value)}
-          className="block w-full rounded-lg bg-[var(--uefa-blue)] py-2 pl-3 pr-10 text-white focus:ring-2 focus:ring-white/80"
-        >
-          {tabs.map((tab) => (
-            <option key={tab.id} value={tab.id} disabled={tab.disabled}>
-              {tab.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Desktop tabs */}
-      <div className={cn('hidden sm:block', variantContainerStyles[variant])}>
-        <nav className={cn(variant === 'underline' ? '-mb-px flex gap-x-6' : 'flex gap-x-2')} role="tablist">
+      <div className={cn('overflow-x-hidden', variantContainerStyles[variant])}>
+        <nav className={cn(variant === 'underline' ? '-mb-px flex flex-wrap gap-2 sm:gap-x-6' : 'flex flex-wrap gap-2')} role="tablist">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -92,6 +93,7 @@ export default function Tabs({
               disabled={tab.disabled}
               className={cn(
                 styles.base,
+                'max-w-full break-words',
                 activeTab === tab.id ? styles.active : styles.inactive,
                 tab.disabled && 'opacity-50 cursor-not-allowed'
               )}

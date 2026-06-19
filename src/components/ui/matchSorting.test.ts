@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BracketMatch } from '@/types';
 import { sortMatchesForDisplay } from './matchSorting';
 
-function match(id: string, scheduledAt?: string): BracketMatch {
+function match(id: string, scheduledAt?: string, fieldName?: string): BracketMatch {
   return {
     id,
     round: 1,
@@ -10,6 +10,7 @@ function match(id: string, scheduledAt?: string): BracketMatch {
     team1Id: `${id}-team-1`,
     team2Id: `${id}-team-2`,
     scheduledAt,
+    fieldName,
     status: 'PENDING',
   } as BracketMatch;
 }
@@ -38,6 +39,22 @@ describe('sortMatchesForDisplay', () => {
       'm3',
       'm1',
       'm2',
+    ]);
+  });
+
+  it('sorts by pitch name alphabetically with numeric pitch order', () => {
+    const input = [
+      match('m3', '2026-06-20T09:30:00.000Z', 'Pitch 10'),
+      match('m1', '2026-06-20T09:00:00.000Z', 'Pitch 2'),
+      match('m4', '2026-06-20T08:00:00.000Z'),
+      match('m2', '2026-06-20T10:00:00.000Z', 'Alpha'),
+    ];
+
+    expect(sortMatchesForDisplay(input, 'field').map((m) => m.id)).toEqual([
+      'm2',
+      'm1',
+      'm3',
+      'm4',
     ]);
   });
 });

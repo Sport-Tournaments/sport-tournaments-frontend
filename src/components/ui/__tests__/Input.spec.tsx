@@ -33,6 +33,20 @@ describe('Input Component', () => {
       const input = document.querySelector('input[type="password"]');
       expect(input).toBeInTheDocument();
     });
+
+    it('should toggle password visibility from the in-input button', async () => {
+      const user = userEvent.setup();
+      render(<Input type="password" />);
+
+      const input = document.querySelector('input') as HTMLInputElement;
+      expect(input.type).toBe('password');
+
+      await user.click(screen.getByRole('button', { name: /show/i }));
+      expect(input.type).toBe('text');
+
+      await user.click(screen.getByRole('button', { name: /hide/i }));
+      expect(input.type).toBe('password');
+    });
   });
 
   describe('Icons', () => {

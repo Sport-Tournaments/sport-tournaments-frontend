@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { BracketMatch } from '@/types';
 
 interface StandingRow {
@@ -17,20 +17,15 @@ interface StandingRow {
 }
 
 export interface StandingsTableProps {
-  /** All completed/in-progress matches for this group or tournament */
   matches: BracketMatch[];
-  /** Map from teamId → display name */
   teamNames?: Map<string, string> | Record<string, string>;
-  /** Optional header label e.g. "Group A" */
   groupLabel?: string;
-  /** Highlight the top N rows (promotion spots) */
   highlightTopN?: number;
-  /** If true, show tiebreak controls when a tie is detected and all matches are done */
   canEdit?: boolean;
-  /** Current persisted tiebreak order (teamIds in rank order, 1st first) */
   tiebreakOrder?: string[];
-  /** Called with the new ordered teamIds when organizer resolves a tie */
   onTiebreakerSet?: (order: string[]) => void;
+  selectedTeamIds?: string[];
+  onSelectedTeamIdsChange?: (teamIds: string[]) => void;
 }
 
 function resolveTeamName(
@@ -66,7 +61,6 @@ function computeStandings(
     return rows.get(id)!;
   };
 
-  // Pre-seed all known teams from teamNames so teams with no matches yet still appear
   if (teamNames) {
     if (teamNames instanceof Map) {
       for (const id of teamNames.keys()) ensure(id);
@@ -75,7 +69,6 @@ function computeStandings(
     }
   }
 
-  // Also ensure all teams that appear in any match (even pending ones) are present
   for (const match of matches) {
     if (match.team1Id) ensure(match.team1Id);
     if (match.team2Id) ensure(match.team2Id);
@@ -85,7 +78,6 @@ function computeStandings(
     const t1 = match.team1Id;
     const t2 = match.team2Id;
     if (!t1 || !t2) continue;
-    // Only count matches that have scores
     if (match.team1Score == null || match.team2Score == null) continue;
 
     const r1 = ensure(t1);
@@ -116,14 +108,11 @@ function computeStandings(
     }
   }
 
-  // Re-compute GD
   for (const row of rows.values()) {
     row.goalDifference = row.goalsFor - row.goalsAgainst;
-    // Refresh team name in case it wasn't seeded yet
     row.teamName = resolveTeamName(row.teamId, teamNames);
   }
 
-  // Sort: Pts → GD → GF → Team name
   return [...rows.values()].sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
     if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
@@ -132,25 +121,20 @@ function computeStandings(
   });
 }
 
-/** Returns groups of consecutive rows that are exactly equal on pts/GD/GF */
-function findTiedGroups(rows: StandingRow[]): StandingRow[][] {
-  const groups: StandingRow[][] = [];
-  let i = 0;
-  while (i < rows.length) {
-    const cur = rows[i];
-    let j = i + 1;
-    while (
-      j < rows.length &&
-      rows[j].points === cur.points &&
-      rows[j].goalDifference === cur.goalDifference &&
-      rows[j].goalsFor === cur.goalsFor
-    ) {
-      j++;
-    }
-    if (j - i > 1) groups.push(rows.slice(i, j));
-    i = j;
-  }
-  return groups;
+function applyTiebreakOrder(
+  rows: StandingRow[],
+  tiebreakOrder?: string[]
+): StandingRow[] {
+  if (!tiebreakOrder || tiebreakOrder.length === 0) return rows;
+
+  const orderMap = new Map(tiebreakOrder.map((id, i) => [id, i]));
+  const hasAll = rows.every((r) => orderMap.has(r.teamId));
+
+  if (!hasAll) return rows;
+
+  return [...rows].sort((a, b) => {
+    return (orderMap.get(a.teamId) ?? 999) - (orderMap.get(b.teamId) ?? 999);
+  });
 }
 
 export default function StandingsTable({
@@ -161,59 +145,110 @@ export default function StandingsTable({
   canEdit = false,
   tiebreakOrder,
   onTiebreakerSet,
+  selectedTeamIds,
+  onSelectedTeamIdsChange,
 }: StandingsTableProps) {
   const [saving, setSaving] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
-  const rows = computeStandings(matches, teamNames);
+  const computedRows = computeStandings(matches, teamNames);
+  const orderedRows = applyTiebreakOrder(computedRows, tiebreakOrder);
+  const selectedTeams = new Set(selectedTeamIds ?? orderedRows.map((row) => row.teamId));
+  const isSelectable = !!onSelectedTeamIdsChange;
+  const allSelected =
+    orderedRows.length > 0 &&
+    orderedRows.every((row) => selectedTeams.has(row.teamId));
 
-  // Only show tiebreak UI when all matches in the group have been played
-  const allMatchesDone =
-    matches.length > 0 &&
-    matches.every(
-      (m) => m.status === 'COMPLETED' || (m.team1Score != null && m.team2Score != null)
-    );
+  const hasActiveOverride =
+    tiebreakOrder != null &&
+    tiebreakOrder.length > 0 &&
+    tiebreakOrder.length === computedRows.length;
 
-  // Find tied groups that overlap with advancing spots (or affect seeding within them)
-  const tiedGroups = allMatchesDone ? findTiedGroups(rows) : [];
-  // Only care about ties that touch the highlightTopN boundary or are within advancing spots
-  const relevantTiedGroups =
-    highlightTopN != null
-      ? tiedGroups.filter((g) => {
-          const startIdx = rows.indexOf(g[0]);
-          const endIdx = rows.indexOf(g[g.length - 1]);
-          // Tie overlaps the boundary or is fully within advancing spots
-          return startIdx < highlightTopN;
-        })
-      : tiedGroups;
+  const buildCascadedOrder = useCallback(
+    (teamId: string, newPosition: number) => {
+      const currentIndex = orderedRows.findIndex((r) => r.teamId === teamId);
+      const targetIndex = newPosition - 1;
 
-  const hasTie = canEdit && relevantTiedGroups.length > 0;
+      if (currentIndex === targetIndex) return null;
 
-  const handlePickWinner = async (tiedTeamIds: string[], pickedFirst: string) => {
+      const newOrder = orderedRows.map((r) => r.teamId);
+      newOrder.splice(currentIndex, 1);
+      newOrder.splice(targetIndex, 0, teamId);
+      return newOrder;
+    },
+    [orderedRows]
+  );
+
+  const handlePositionChange = async (teamId: string, newPosition: number) => {
     if (!onTiebreakerSet) return;
-    // Build full order: put pickedFirst at the top, then the rest in their current order
-    const rest = tiedTeamIds.filter((id) => id !== pickedFirst);
-    // Compose the full tiebreak array: for all rows, place tied ones in new order
-    const fullOrder: string[] = [];
-    for (const row of rows) {
-      if (tiedTeamIds.includes(row.teamId)) {
-        if (row.teamId === pickedFirst && !fullOrder.includes(pickedFirst)) {
-          fullOrder.push(pickedFirst);
-          rest.forEach((id) => fullOrder.push(id));
-        }
-        // skip — already pushed via the block above
-      } else {
-        fullOrder.push(row.teamId);
-      }
-    }
+
+    const newOrder = buildCascadedOrder(teamId, newPosition);
+    if (!newOrder) return;
+
     setSaving(true);
     try {
-      await onTiebreakerSet(fullOrder);
+      await onTiebreakerSet(newOrder);
     } finally {
       setSaving(false);
     }
   };
 
-  if (rows.length === 0) {
+  const handleMoveUp = async (teamId: string) => {
+    if (!onTiebreakerSet) return;
+    const currentIndex = orderedRows.findIndex((r) => r.teamId === teamId);
+    if (currentIndex <= 0) return;
+    const newOrder = buildCascadedOrder(teamId, currentIndex);
+    if (!newOrder) return;
+    setSaving(true);
+    try {
+      await onTiebreakerSet(newOrder);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleMoveDown = async (teamId: string) => {
+    if (!onTiebreakerSet) return;
+    const currentIndex = orderedRows.findIndex((r) => r.teamId === teamId);
+    if (currentIndex >= orderedRows.length - 1) return;
+    const newOrder = buildCascadedOrder(teamId, currentIndex + 2);
+    if (!newOrder) return;
+    setSaving(true);
+    try {
+      await onTiebreakerSet(newOrder);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!onTiebreakerSet) return;
+    setSaving(true);
+    try {
+      await onTiebreakerSet([]);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setAllSelected = (selectAll: boolean) => {
+    onSelectedTeamIdsChange?.(selectAll ? orderedRows.map((row) => row.teamId) : []);
+  };
+
+  const toggleTeamSelection = (teamId: string) => {
+    if (!onSelectedTeamIdsChange) return;
+
+    const next = new Set(selectedTeams);
+    if (next.has(teamId)) {
+      next.delete(teamId);
+    } else {
+      next.add(teamId);
+    }
+
+    onSelectedTeamIdsChange([...next]);
+  };
+
+  if (computedRows.length === 0) {
     return (
       <div className="text-center py-6 text-gray-400 text-sm">
         No standings data yet — results will appear here as matches are played.
@@ -222,16 +257,105 @@ export default function StandingsTable({
   }
 
   return (
-    <div className="overflow-x-auto space-y-3">
+    <div className="w-full max-w-full space-y-3">
       {groupLabel && (
         <h4 className="text-sm font-semibold text-gray-700 mb-2 px-1">
           {groupLabel}
         </h4>
       )}
-      <table className="min-w-full text-sm">
+
+      {isSelectable && (
+        <div className="flex flex-wrap items-center gap-2 px-1">
+          <button
+            type="button"
+            onClick={() => setAllSelected(!allSelected)}
+            className="inline-flex items-center gap-1.5 rounded bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            <span
+              className={`flex h-3.5 w-3.5 items-center justify-center rounded border ${
+                allSelected
+                  ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white'
+                  : 'border-gray-300 bg-white'
+              }`}
+              aria-hidden="true"
+            >
+              {allSelected && (
+                <svg className="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.415 0l-3.5-3.5a1.004 1.004 0 011.42-1.42l2.79 2.795 6.795-6.795a1 1 0 011.41 0z" clipRule="evenodd" />
+                </svg>
+              )}
+            </span>
+            {allSelected ? 'Clear teams' : 'Select all teams'}
+          </button>
+          <span className="text-xs text-gray-400">
+            {selectedTeams.size} / {orderedRows.length} teams selected
+          </span>
+        </div>
+      )}
+
+      {canEdit && onTiebreakerSet && (
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setEditMode(!editMode)}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                editMode
+                  ? 'bg-[#1e3a5f] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+              data-testid="toggle-edit-mode"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path d="M2.695 14.762l-1.262 4.202a.5.5 0 00.603.603l4.202-1.262a2.75 2.75 0 001.943-1.136l7.293-8.394a2 2 0 00-.05-2.655l-.78-.78a2 2 0 00-2.655-.05L4.396 12.82a2.75 2.75 0 00-1.136 1.943zM14.128 2.83a1 1 0 011.414 0l.78.78a1 1 0 010 1.414l-7.293 8.394a1.75 1.75 0 01-1.237.723l-2.975.893.893-2.975a1.75 1.75 0 01.723-1.237L14.128 2.83z" />
+              </svg>
+              {editMode ? 'Editing Positions' : 'Edit Positions'}
+            </button>
+            {hasActiveOverride && (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                title="Manual position override is active"
+                data-testid="override-badge"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                  <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 00-6 0V9h6z" clipRule="evenodd" />
+                </svg>
+                Manual override
+              </span>
+            )}
+          </div>
+          {editMode && hasActiveOverride && (
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={saving}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50"
+              data-testid="reset-override"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
+                <path fillRule="evenodd" d="M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375 0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0 01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z" clipRule="evenodd" />
+              </svg>
+              Reset to default
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="w-full max-w-full overflow-x-auto overscroll-x-contain">
+        <table className="min-w-[720px] w-full text-sm">
         <thead>
           <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
-            <th className="px-3 py-2 text-center w-8">#</th>
+            {isSelectable && (
+              <th className="px-2 py-2 text-center w-10">
+                <span className="sr-only">Filter</span>
+              </th>
+            )}
+            <th className="px-3 py-2 text-center w-12">#</th>
+            {canEdit && onTiebreakerSet && editMode && (
+              <th className="px-1 py-2 text-center w-16" data-testid="actions-col-header">
+                <span className="sr-only">Actions</span>
+              </th>
+            )}
             <th className="px-3 py-2 text-left">Team</th>
             <th className="px-3 py-2 text-center w-10" title="Played">P</th>
             <th className="px-3 py-2 text-center w-10" title="Won">W</th>
@@ -244,46 +368,106 @@ export default function StandingsTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {rows.map((row, idx) => {
+          {orderedRows.map((row, idx) => {
             const rank = idx + 1;
             const isPromoted = highlightTopN != null && rank <= highlightTopN;
-            // Is this row part of a relevant tie?
-            const isTied = relevantTiedGroups.some((g) =>
-              g.some((r) => r.teamId === row.teamId)
-            );
-            // Is this team picked first in the current tiebreakOrder?
-            const isTiebreakWinner =
-              tiebreakOrder && tiebreakOrder.length > 0
-                ? tiebreakOrder[0] === row.teamId
-                : false;
+            const isFirst = idx === 0;
+            const isLast = idx === orderedRows.length - 1;
             return (
               <tr
                 key={row.teamId}
                 className={
                   isPromoted
-                    ? 'bg-green-50 hover:bg-green-100'
-                    : 'bg-white hover:bg-gray-50'
+                    ? 'bg-green-50 hover:bg-green-100 transition-colors'
+                    : 'bg-white hover:bg-gray-50 transition-colors'
                 }
               >
-                <td className="px-3 py-2 text-center text-gray-400 font-medium relative">
-                  {rank}
-                  {isTied && !isTiebreakWinner && (
-                    <span className="absolute top-1 right-0.5 text-amber-400 text-xs" title="Tie">
-                      ⚠
+                {isSelectable && (
+                  <td className="px-2 py-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedTeams.has(row.teamId)}
+                      onChange={() => toggleTeamSelection(row.teamId)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]"
+                      aria-label={`Show matches for ${row.teamName}`}
+                    />
+                  </td>
+                )}
+                <td className="px-3 py-2 text-center text-gray-400 font-medium">
+                  {canEdit && onTiebreakerSet && editMode ? (
+                    <select
+                      value={rank}
+                      disabled={saving}
+                      onChange={(e) => handlePositionChange(row.teamId, parseInt(e.target.value))}
+                      className="text-xs font-medium rounded border border-gray-200 bg-white px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] disabled:opacity-50 cursor-pointer"
+                      style={{ minWidth: '2rem' }}
+                      data-testid={`position-select-${rank}`}
+                    >
+                      {orderedRows.map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                        isPromoted
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {rank}
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2 font-medium text-gray-900 flex items-center gap-2">
+                {canEdit && onTiebreakerSet && editMode && (
+                  <td className="px-1 py-2 text-center">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(row.teamId)}
+                        disabled={isFirst || saving}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-gray-500 transition-colors"
+                        title={`Move ${row.teamName} up`}
+                        data-testid={`move-up-${rank}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                          <path fillRule="evenodd" d="M9.47 6.47a.75.75 0 011.06 0l4.25 4.25a.75.75 0 11-1.06 1.06L10 8.06l-3.72 3.72a.75.75 0 01-1.06-1.06l4.25-4.25z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(row.teamId)}
+                        disabled={isLast || saving}
+                        className="inline-flex items-center justify-center w-5 h-5 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed text-gray-500 transition-colors"
+                        title={`Move ${row.teamName} down`}
+                        data-testid={`move-down-${rank}`}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                )}
+                <td className="px-3 py-2 font-medium text-gray-900">
+                  <button
+                    type="button"
+                    onClick={() => toggleTeamSelection(row.teamId)}
+                    disabled={!isSelectable}
+                    className={`flex items-center gap-2 text-left ${
+                      isSelectable ? 'hover:text-[#1e3a5f]' : ''
+                    }`}
+                  >
                   {isPromoted && (
                     <span
                       className="inline-block w-2 h-2 rounded-full bg-green-500 flex-shrink-0"
-                      title="Promotion spot"
+                      title="Advancing spot"
                     />
                   )}
-                  {row.teamName}
-                  {isTiebreakWinner && (
-                    <span className="text-xs text-amber-600 font-normal">(tiebreak winner)</span>
-                  )}
+                    {row.teamName}
+                  </button>
                 </td>
                 <td className="px-3 py-2 text-center text-gray-600">{row.played}</td>
                 <td className="px-3 py-2 text-center text-gray-600">{row.won}</td>
@@ -309,56 +493,19 @@ export default function StandingsTable({
             );
           })}
         </tbody>
-      </table>
+        </table>
+      </div>
 
-      {highlightTopN != null && rows.length > highlightTopN && (
+      {highlightTopN != null && computedRows.length > highlightTopN && (
         <p className="text-xs text-gray-400 mt-1 px-1">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />
           Top {highlightTopN} advance
         </p>
       )}
 
-      {/* Tiebreak picker — shown to organizer when teams are perfectly tied */}
-      {hasTie &&
-        relevantTiedGroups.map((tiedGroup, gi) => {
-          const tiedIds = tiedGroup.map((r) => r.teamId);
-          const startRank = rows.indexOf(tiedGroup[0]) + 1;
-          return (
-            <div
-              key={gi}
-              className="rounded-lg border border-amber-300 bg-amber-50 p-3"
-            >
-              <p className="text-xs font-semibold text-amber-800 mb-2">
-                ⚠ Teams tied at position {startRank}
-                {tiedGroup.length > 1 ? `–${startRank + tiedGroup.length - 1}` : ''} — select who finishes 1st:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {tiedGroup.map((row) => {
-                  const isCurrentWinner =
-                    tiebreakOrder && tiebreakOrder[0] === row.teamId;
-                  return (
-                    <button
-                      key={row.teamId}
-                      disabled={saving}
-                      onClick={() => handlePickWinner(tiedIds, row.teamId)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ${
-                        isCurrentWinner
-                          ? 'bg-[#1e3a5f] text-white ring-2 ring-[#1e3a5f]'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-amber-400'
-                      }`}
-                    >
-                      {row.teamName}
-                      {isCurrentWinner && ' ✓'}
-                    </button>
-                  );
-                })}
-              </div>
-              {saving && (
-                <p className="text-xs text-amber-600 mt-2">Saving tiebreak…</p>
-              )}
-            </div>
-          );
-        })}
+      {saving && (
+        <p className="text-xs text-amber-600 px-1">Saving positions…</p>
+      )}
     </div>
   );
 }

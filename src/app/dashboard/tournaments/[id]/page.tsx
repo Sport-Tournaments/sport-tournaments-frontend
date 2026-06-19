@@ -370,6 +370,14 @@ export default function TournamentDetailPage() {
     });
   };
 
+  const sortGroupsForDisplay = (input: any[]) =>
+    [...input].sort((a, b) => {
+      const aOrder = typeof a.groupOrder === 'number' ? a.groupOrder : Number.MAX_SAFE_INTEGER;
+      const bOrder = typeof b.groupOrder === 'number' ? b.groupOrder : Number.MAX_SAFE_INTEGER;
+      const byOrder = aOrder - bOrder;
+      return byOrder !== 0 ? byOrder : String(a.groupLetter).localeCompare(String(b.groupLetter));
+    });
+
   const statsByAgeGroupId = new Map(
     (statistics?.byAgeGroup || []).map((stat) => [stat.ageGroupId, stat])
   );
@@ -398,8 +406,70 @@ export default function TournamentDetailPage() {
   );
 
   const renderRegistrationsTable = (items: Registration[]) => (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="space-y-2 md:overflow-x-auto">
+      <div className="space-y-2 md:hidden">
+        {items.map((registration) => (
+          <div key={registration.id} className="rounded-lg border border-gray-200 bg-white p-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="truncate font-medium text-gray-900">
+                  {registration.team?.name || 'Not specified'}
+                </div>
+                <div className="truncate text-sm text-gray-500">
+                  {registration.club?.name || '-'}
+                </div>
+              </div>
+              <Badge variant={getRegistrationStatusBadge(registration.status)}>
+                {t(`registration.status.${registration.status}`)}
+              </Badge>
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              {formatDateTime(registration.createdAt)}
+            </div>
+            {(registration.coachName || registration.team?.coach) && (
+              <div className="mt-1 text-xs text-gray-500">
+                Coach: {registration.coachName || registration.team?.coach}
+                {(registration.coachPhone || registration.team?.coachPhone) && (
+                  <span className="ml-1 text-gray-400">
+                    · {registration.coachPhone || registration.team?.coachPhone}
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="mt-2 flex flex-wrap gap-1.5 border-t border-gray-100 pt-2">
+              {registration.status === 'PENDING' && (
+                <>
+                  <Button size="sm" variant="paid" onClick={() => handleApproveRegistrationWithPayment(registration.id)}>
+                    {t('registration.approveWithPayment', 'Approve (Paid)')}
+                  </Button>
+                  <Button size="sm" variant="unpaid" onClick={() => handleApproveRegistrationWithoutPayment(registration.id)}>
+                    {t('registration.approveWithoutPayment', 'Approve (Unpaid)')}
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={() => handleRejectRegistration(registration.id)}>
+                    {t('registration.reject')}
+                  </Button>
+                </>
+              )}
+              {registration.status === 'PENDING_PAYMENT' && (
+                <>
+                  {registration.priceAmount != null && Number(registration.priceAmount) > 0 && (
+                    <span className="rounded bg-amber-50 px-2 py-1 text-sm font-medium text-amber-700">
+                      {registration.priceCurrency || 'EUR'} {Number(registration.priceAmount).toFixed(2)}
+                    </span>
+                  )}
+                  <Button size="sm" variant="paid" onClick={() => handleMarkAsPaid(registration.id)}>
+                    {t('registration.markAsPaid', 'Mark as Paid')}
+                  </Button>
+                </>
+              )}
+              <Link href={`/dashboard/registrations/${registration.id}`}>
+                <Button size="sm" variant="view">{t('common.view')}</Button>
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+      <table className="hidden min-w-full divide-y divide-gray-200 md:table">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -833,7 +903,7 @@ export default function TournamentDetailPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {[...scopedGroups].sort((a, b) => a.groupLetter.localeCompare(b.groupLetter)).map((group) => {
+                  {sortGroupsForDisplay(scopedGroups).map((group) => {
                     const teamDetails: any[] = group.teamDetails || [];
                     return (
                       <Card key={group.id} className="overflow-hidden">
@@ -910,7 +980,7 @@ export default function TournamentDetailPage() {
 
           return (
             <Card>
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="p-0 sm:p-6">
                 {groupsNotGenerated && (
                   <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex items-start gap-3 flex-1">
@@ -991,7 +1061,7 @@ export default function TournamentDetailPage() {
 
   const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
     ? tournament.ageGroups.map((ageGroup, index) => ({
-        id: `age-group-${ageGroup.id ?? index}`,
+        id: ageGroup.id ?? `age-group-${index}`,
         label: getAgeGroupLabel(ageGroup),
         count: getPendingBadgeCount(ageGroup.id),
         content: (
@@ -1032,6 +1102,7 @@ export default function TournamentDetailPage() {
               tabs={buildTabsForAgeGroup(ageGroup)}
               defaultTab={searchParams.get('tab') ?? 'overview'}
               variant="pills-gray"
+              queryParam="tab"
             />
           </div>
         ),
@@ -1040,14 +1111,14 @@ export default function TournamentDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-4 overflow-x-hidden sm:space-y-6">
         {error && <Alert variant="error">{error}</Alert>}
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">
+        <div className="flex min-w-0 flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="min-w-0">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
+              <h1 className="min-w-0 break-words text-xl font-bold text-gray-900 sm:text-2xl">
                 {tournament.name}
               </h1>
               <Badge variant={getStatusBadge(tournament.status)}>
@@ -1062,11 +1133,11 @@ export default function TournamentDetailPage() {
                 </Badge>
               )}
             </div>
-            <p className="text-gray-600 mt-1">
+            <p className="mt-1 break-words text-gray-600">
               {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href={`${getTournamentPublicPath(tournament)}?preview=true`}>
               <Button variant="view">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1119,7 +1190,12 @@ export default function TournamentDetailPage() {
             // When no age groups, tabs ARE the inner (overview/groups/matches) tabs — respect ?tab= param
             (!tournament.ageGroups || tournament.ageGroups.length === 0)
               ? (searchParams.get('tab') ?? ageGroupTabs[0]?.id)
-              : ageGroupTabs[0]?.id
+              : (searchParams.get('ageGroup') ?? ageGroupTabs[0]?.id)
+          }
+          queryParam={
+            (!tournament.ageGroups || tournament.ageGroups.length === 0)
+              ? 'tab'
+              : 'ageGroup'
           }
         />
       </div>

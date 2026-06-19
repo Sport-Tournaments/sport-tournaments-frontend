@@ -1,6 +1,7 @@
 'use client';
 
-import { InputHTMLAttributes, forwardRef, useCallback } from 'react';
+import { InputHTMLAttributes, forwardRef, useCallback, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/utils/helpers';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -35,6 +36,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   ) => {
     const inputId = id || props.name;
     const helpText = helperText || hint;
+    const isPassword = type === 'password';
+    const [showPassword, setShowPassword] = useState(false);
+    const inputType = isPassword && showPassword ? 'text' : type;
 
     // Handler to open date/time picker when clicking the field (Issue #28)
     const handleClick = useCallback(
@@ -45,7 +49,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         }
         
         // For date/time inputs, programmatically open the picker
-        if (type === 'datetime-local' || type === 'date' || type === 'time') {
+        if (inputType === 'datetime-local' || inputType === 'date' || inputType === 'time') {
           const input = e.currentTarget;
           // Use showPicker API if available (modern browsers)
           if (input && typeof (input as any).showPicker === 'function') {
@@ -58,7 +62,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           }
         }
       },
-      [onClick, type]
+      [onClick, inputType]
     );
 
     // Handler to auto-close datetime picker after selection (Issue #29)
@@ -68,19 +72,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           onChange(e);
         }
         // Auto-close datetime picker after value selection
-        if ((type === 'datetime-local' || type === 'date' || type === 'time') && e.target.value) {
+        if ((inputType === 'datetime-local' || inputType === 'date' || inputType === 'time') && e.target.value) {
           // Trigger blur to close the picker after a small delay
           setTimeout(() => {
             e.target.blur();
           }, 100);
         }
       },
-      [onChange, type]
+      [onChange, inputType]
     );
 
     const baseInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f] sm:text-sm transition-colors';
     
-    const errorInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-red-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors';
+    const errorInputStyles = 'block w-full rounded-lg bg-white px-3.5 py-2 text-base text-slate-900 border border-red-300 outline-red-300 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors';
 
     return (
       <div className={cn('space-y-1.5', containerClassName)}>
@@ -104,13 +108,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             id={inputId}
-            type={type}
+            type={inputType}
             onClick={handleClick}
             onChange={handleChange}
             className={cn(
               error ? errorInputStyles : baseInputStyles,
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
+              isPassword && !rightIcon && 'pr-14',
               className
             )}
             aria-invalid={error ? 'true' : 'false'}
@@ -123,6 +128,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
               {rightIcon}
             </div>
+          )}
+          {isPassword && !rightIcon && (
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-xs font-medium text-[#1e3a5f] hover:text-[#152a45] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#1e3a5f]"
+              aria-label={showPassword ? 'Hide' : 'Show'}
+              title={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
           )}
         </div>
         {error && (

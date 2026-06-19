@@ -195,8 +195,8 @@ describe('Register Page', () => {
       await user.type(screen.getByLabelText(/email/i), 'john@example.com');
       await user.type(screen.getByLabelText(/phone/i), '+40123456789');
       await user.type(screen.getByLabelText(/country/i), 'Romania');
-      await user.type(screen.getByLabelText(/^password$/i), 'password123');
-      await user.type(screen.getByLabelText(/confirm password/i), 'password123');
+      await user.type(screen.getByLabelText(/^password$/i), 'Password1!');
+      await user.type(screen.getByLabelText(/confirm password/i), 'Password1!');
       // Accept terms checkbox
       const checkbox = screen.getByRole('checkbox');
       await user.click(checkbox);
@@ -218,7 +218,7 @@ describe('Register Page', () => {
           lastName: 'Doe',
           email: 'john@example.com',
           phone: '+40123456789',
-          password: 'password123',
+          password: 'Password1!',
         }));
       });
     });

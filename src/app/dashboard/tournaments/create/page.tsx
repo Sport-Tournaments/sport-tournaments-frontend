@@ -323,6 +323,7 @@ export default function CreateTournamentPage() {
         halfDurationMinutes: ag.halfDurationMinutes ?? undefined,
         halfTimePauseMinutes: ag.halfTimePauseMinutes ?? undefined,
         pauseBetweenMatchesMinutes: ag.pauseBetweenMatchesMinutes ?? undefined,
+        ...(ag.format === 'LEAGUE' && ag.leagueLegs ? { leagueLegs: ag.leagueLegs } : {}),
         locationId: ag.locationId || undefined,
         locationAddress: ag.locationAddress || undefined,
         notes: ag.notes || undefined,

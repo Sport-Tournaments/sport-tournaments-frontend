@@ -391,8 +391,7 @@ export default function LeagueMatchSchedule({
                           <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t2}</span>
                           <span className={scoreClass}>{hasScore ? match.team2Score : '—'}</span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
-                          <span className="text-gray-400">Match #{match.matchNumber}</span>
+                        <div className="flex flex-col items-start gap-1 text-xs text-gray-500">
                           {match.scheduledAt && (
                             <span>
                               {formatDateTime(match.scheduledAt)}

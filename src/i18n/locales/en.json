@@ -416,6 +416,12 @@
     "withdrawTitle": "Withdraw Registration",
     "withdrawConfirm": "Are you sure you want to withdraw this registration? This action cannot be undone.",
     "withdrawSuccess": "Registration withdrawn successfully",
+    "removeApproved": "Remove",
+    "removeApprovedTitle": "Remove Approved Registration",
+    "removeApprovedConfirm": "Are you sure you want to remove this approved registration? This action cannot be undone.",
+    "removeApprovedResetRequired": "This approved registration is already included in groups or matches. Removing it will reset the affected draw and matches, and you will need to regenerate them.",
+    "removeAndResetDraw": "Remove and reset draw",
+    "removeApprovedError": "Failed to remove registration",
     "status": {
       "title": "Your Applications",
       "notRegisteredDesc": "You haven't registered for this tournament yet.",

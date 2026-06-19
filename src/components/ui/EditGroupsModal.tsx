@@ -18,7 +18,7 @@ interface GroupWithDetails {
   id: string;
   groupLetter: string;
   teams: string[]; // registration IDs
-  teamDetails: TeamDetail[];
+  teamDetails: Array<TeamDetail | null>;
 }
 
 interface EditGroupsModalProps {
@@ -59,7 +59,7 @@ export default function EditGroupsModal({
       .map((g) => ({
         id: g.id,
         groupLetter: g.groupLetter,
-        teamDetails: [...g.teamDetails],
+        teamDetails: g.teamDetails.filter((team): team is TeamDetail => Boolean(team?.id)),
         dirty: false,
         saving: false,
       }));

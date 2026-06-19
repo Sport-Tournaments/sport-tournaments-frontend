@@ -388,30 +388,6 @@ export default function MatchManagement({
     );
   };
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return 'bg-green-100 text-green-800';
-      case 'IN_PROGRESS':
-        return 'bg-blue-100 text-blue-800';
-      case 'PENDING':
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'COMPLETED':
-        return t('matches.status.completed', 'Completed');
-      case 'IN_PROGRESS':
-        return t('matches.status.inProgress', 'In Progress');
-      case 'PENDING':
-      default:
-        return t('matches.status.pending', 'Pending');
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -684,10 +660,13 @@ export default function MatchManagement({
 
           const groupPhaseSection = sortedGroups.length > 0 ? (
             sortedGroups.map((group) => {
+              const groupTeamOrder = Array.isArray(group.teams)
+                ? group.teams
+                    .map((t: any) => (typeof t === 'string' ? t : t?.registrationId ?? t?.id ?? ''))
+                    .filter(Boolean)
+                : [];
               const groupTeamIds = new Set<string>(
-                Array.isArray(group.teams)
-                  ? group.teams.map((t: any) => (typeof t === 'string' ? t : t?.registrationId ?? t?.id ?? ''))
-                  : []
+                groupTeamOrder
               );
               const groupMatches = allMatches.filter(
                 (m) =>
@@ -699,8 +678,9 @@ export default function MatchManagement({
               // Build a team-names map scoped to this group only
               // group.teams is string[] of registration IDs at runtime
               const groupTeamNames = new Map<string, string>();
-              for (const [id, name] of teamNamesMap.entries()) {
-                if (groupTeamIds.has(id)) {
+              for (const id of groupTeamOrder) {
+                const name = teamNamesMap.get(id);
+                if (name) {
                   groupTeamNames.set(id, name);
                 }
               }
@@ -733,6 +713,7 @@ export default function MatchManagement({
                       highlightTopN={matchData?.advancingTeamsPerGroup ?? 2}
                       canEdit={isOrganizer}
                       tiebreakOrder={group.tieBreakOrder ?? undefined}
+                      teamOrder={groupTeamOrder}
                       onTiebreakerSet={(order) => handleTiebreakerSet(group.id, order)}
                       selectedTeamIds={selectedTeamIds}
                       onSelectedTeamIdsChange={(teamIds) => setSelectedTeamIds(scopeKey, teamIds)}
@@ -1173,20 +1154,6 @@ function MatchCard({
     await onAdvance(match.id, teamId);
   };
 
-  const statusBadgeClass =
-    match.status === 'COMPLETED'
-      ? 'bg-green-100 text-green-800'
-      : match.status === 'IN_PROGRESS'
-      ? 'bg-blue-100 text-blue-800'
-      : 'bg-gray-100 text-gray-800';
-
-  const statusLabel =
-    match.status === 'COMPLETED'
-      ? t('matches.status.completed', 'Completed')
-      : match.status === 'IN_PROGRESS'
-      ? t('matches.status.inProgress', 'In Progress')
-      : t('matches.status.pending', 'Pending');
-
   return (
     <div
       className={`bg-white rounded-xl border-2 transition-all ${
@@ -1211,11 +1178,6 @@ function MatchCard({
               {t('matches.manualOverride', 'Manual')}
             </span>
           )}
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusBadgeClass}`}
-          >
-            {statusLabel}
-          </span>
         </div>
       </div>
 

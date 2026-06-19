@@ -118,15 +118,6 @@ function formatFieldDisplay(fieldName: string): string {
   return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
 }
 
-const STATUS_CONFIG: Record<
-  BracketMatch['status'],
-  { label: string; cls: string }
-> = {
-  PENDING: { label: 'Pending', cls: 'bg-gray-100 text-gray-600' },
-  IN_PROGRESS: { label: 'Live', cls: 'bg-yellow-100 text-yellow-700' },
-  COMPLETED: { label: 'Final', cls: 'bg-green-100 text-green-700' },
-};
-
 function computeMatchEndTime(
   scheduledAt: string | undefined | null,
   matchPeriodType: 'ONE_HALF' | 'TWO_HALVES' | undefined,
@@ -377,7 +368,6 @@ export default function LeagueMatchSchedule({
                 {roundMatches.map((match) => {
                   const t1 = resolveTeamName(match.team1Id, teamNames);
                   const t2 = resolveTeamName(match.team2Id, teamNames);
-                  const status = STATUS_CONFIG[match.status];
                   const isSaving = savingMatchId === match.id;
                   const isScheduling = schedulingMatchId === match.id;
                   const hasScore =
@@ -402,9 +392,6 @@ export default function LeagueMatchSchedule({
                           <span className={scoreClass}>{hasScore ? match.team2Score : '—'}</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
-                          <span className={`px-2 py-0.5 rounded-full font-medium ${status.cls}`}>
-                            {status.label}
-                          </span>
                           <span className="text-gray-400">Match #{match.matchNumber}</span>
                           {match.scheduledAt && (
                             <span>

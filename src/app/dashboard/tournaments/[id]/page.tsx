@@ -34,6 +34,11 @@ export default function TournamentDetailPage() {
   const [rejectingRegistrationId, setRejectingRegistrationId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [removingRegistration, setRemovingRegistration] = useState<Registration | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [removeRequiresDrawReset, setRemoveRequiresDrawReset] = useState(false);
+  const [removeImpactMessage, setRemoveImpactMessage] = useState<string | null>(null);
 
   // Edit Groups modal state
   const [editGroupsModalOpen, setEditGroupsModalOpen] = useState(false);
@@ -244,6 +249,61 @@ export default function TournamentDetailPage() {
       setError('Failed to reject registration');
     } finally {
       setRejecting(false);
+    }
+  };
+
+  const handleRemoveApprovedRegistration = (registration: Registration) => {
+    setRemovingRegistration(registration);
+    setRemoveRequiresDrawReset(false);
+    setRemoveImpactMessage(null);
+    setRemoveModalOpen(true);
+  };
+
+  const closeRemoveRegistrationModal = () => {
+    if (removing) return;
+    setRemoveModalOpen(false);
+    setRemovingRegistration(null);
+    setRemoveRequiresDrawReset(false);
+    setRemoveImpactMessage(null);
+  };
+
+  const confirmRemoveApprovedRegistration = async () => {
+    if (!removingRegistration || removingRegistration.status !== 'APPROVED') return;
+
+    setRemoving(true);
+    setError(null);
+    try {
+      await registrationService.deleteRegistration(removingRegistration.id, {
+        resetDraw: removeRequiresDrawReset,
+      });
+      setRegistrations((previous) =>
+        previous.filter((registration) => registration.id !== removingRegistration.id),
+      );
+      setRemoveModalOpen(false);
+      setRemovingRegistration(null);
+      setRemoveRequiresDrawReset(false);
+      setRemoveImpactMessage(null);
+      await refreshTournamentData();
+    } catch (err: any) {
+      const errorCode = err.response?.data?.error?.code;
+      if (err.response?.status === 409 && errorCode === 'REGISTRATION_DRAW_RESET_REQUIRED') {
+        setRemoveRequiresDrawReset(true);
+        setRemoveImpactMessage(
+          t(
+            'registration.removeApprovedResetRequired',
+            'This approved registration is already included in groups or matches. Removing it will reset the affected draw and matches, and you will need to regenerate them.',
+          ),
+        );
+        return;
+      }
+
+      setError(
+        err.response?.data?.error?.message ||
+          err.response?.data?.message ||
+          t('registration.removeApprovedError', 'Failed to remove registration'),
+      );
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -462,6 +522,11 @@ export default function TournamentDetailPage() {
                   </Button>
                 </>
               )}
+              {registration.status === 'APPROVED' && (
+                <Button size="sm" variant="danger" onClick={() => handleRemoveApprovedRegistration(registration)}>
+                  {t('registration.removeApproved', 'Remove')}
+                </Button>
+              )}
               <Link href={`/dashboard/registrations/${registration.id}`}>
                 <Button size="sm" variant="view">{t('common.view')}</Button>
               </Link>
@@ -561,6 +626,15 @@ export default function TournamentDetailPage() {
                       {t('registration.markAsPaid', 'Mark as Paid')}
                     </Button>
                   </>
+                )}
+                {registration.status === 'APPROVED' && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleRemoveApprovedRegistration(registration)}
+                  >
+                    {t('registration.removeApproved', 'Remove')}
+                  </Button>
                 )}
                 <Link href={`/dashboard/registrations/${registration.id}`}>
                   <Button size="sm" variant="view">{t('common.view')}</Button>
@@ -1244,6 +1318,57 @@ export default function TournamentDetailPage() {
               disabled={!rejectionReason.trim()}
             >
               {t('registration.reject')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={removeModalOpen}
+        onClose={closeRemoveRegistrationModal}
+        title={t('registration.removeApprovedTitle', 'Remove Approved Registration')}
+      >
+        <div className="space-y-4">
+          {removeRequiresDrawReset ? (
+            <Alert variant="warning">
+              {removeImpactMessage ||
+                t(
+                  'registration.removeApprovedResetRequired',
+                  'This approved registration is already included in groups or matches. Removing it will reset the affected draw and matches, and you will need to regenerate them.',
+                )}
+            </Alert>
+          ) : (
+            <p className="text-gray-600">
+              {t(
+                'registration.removeApprovedConfirm',
+                'Are you sure you want to remove this approved registration? This action cannot be undone.',
+              )}
+            </p>
+          )}
+          {removingRegistration && (
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+              <p className="font-medium text-gray-900">
+                {removingRegistration.team?.name || t('common.team', 'Team')}
+              </p>
+              <p>{removingRegistration.club?.name || '-'}</p>
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={closeRemoveRegistrationModal}
+              disabled={removing}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmRemoveApprovedRegistration}
+              isLoading={removing}
+            >
+              {removeRequiresDrawReset
+                ? t('registration.removeAndResetDraw', 'Remove and reset draw')
+                : t('common.delete')}
             </Button>
           </div>
         </div>

@@ -23,6 +23,7 @@ export interface StandingsTableProps {
   highlightTopN?: number;
   canEdit?: boolean;
   tiebreakOrder?: string[];
+  teamOrder?: string[];
   onTiebreakerSet?: (order: string[]) => void;
   selectedTeamIds?: string[];
   onSelectedTeamIdsChange?: (teamIds: string[]) => void;
@@ -137,6 +138,22 @@ function applyTiebreakOrder(
   });
 }
 
+function applyTeamOrder(rows: StandingRow[], teamOrder?: string[]): StandingRow[] {
+  if (!teamOrder || teamOrder.length === 0) return rows;
+
+  const orderMap = new Map(teamOrder.map((id, index) => [id, index]));
+  return [...rows].sort((a, b) => {
+    const aOrder = orderMap.get(a.teamId);
+    const bOrder = orderMap.get(b.teamId);
+
+    if (aOrder != null && bOrder != null) return aOrder - bOrder;
+    if (aOrder != null) return -1;
+    if (bOrder != null) return 1;
+
+    return rows.indexOf(a) - rows.indexOf(b);
+  });
+}
+
 export default function StandingsTable({
   matches,
   teamNames,
@@ -144,6 +161,7 @@ export default function StandingsTable({
   highlightTopN,
   canEdit = false,
   tiebreakOrder,
+  teamOrder,
   onTiebreakerSet,
   selectedTeamIds,
   onSelectedTeamIdsChange,
@@ -152,7 +170,8 @@ export default function StandingsTable({
   const [editMode, setEditMode] = useState(false);
 
   const computedRows = computeStandings(matches, teamNames);
-  const orderedRows = applyTiebreakOrder(computedRows, tiebreakOrder);
+  const groupOrderedRows = applyTeamOrder(computedRows, teamOrder);
+  const orderedRows = applyTiebreakOrder(groupOrderedRows, tiebreakOrder);
   const selectedTeams = new Set(selectedTeamIds ?? orderedRows.map((row) => row.teamId));
   const isSelectable = !!onSelectedTeamIdsChange;
   const allSelected =

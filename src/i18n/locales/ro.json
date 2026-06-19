@@ -447,6 +447,12 @@
     "withdrawTitle": "Retrage Înregistrarea",
     "withdrawConfirm": "Sunteți sigur că doriți să retrageți această înregistrare? Această acțiune nu poate fi anulată.",
     "withdrawSuccess": "Înregistrarea a fost retrasă cu succes",
+    "removeApproved": "Elimină",
+    "removeApprovedTitle": "Elimină înregistrarea aprobată",
+    "removeApprovedConfirm": "Ești sigur că vrei să elimini această înregistrare aprobată? Această acțiune nu poate fi anulată.",
+    "removeApprovedResetRequired": "Această înregistrare aprobată este deja inclusă în grupe sau meciuri. Eliminarea ei va reseta tragerea la sorți și meciurile afectate, iar acestea vor trebui regenerate.",
+    "removeAndResetDraw": "Elimină și resetează tragerea",
+    "removeApprovedError": "Nu am putut elimina înregistrarea",
     "status": {
       "title": "Aplicațiile tale",
       "notRegisteredDesc": "Nu te-ai înregistrat încă la acest turneu.",

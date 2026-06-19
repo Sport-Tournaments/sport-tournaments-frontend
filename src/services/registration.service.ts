@@ -109,8 +109,12 @@ export async function adminUpdateRegistration(
 }
 
 // Delete registration
-export async function deleteRegistration(id: string): Promise<ApiResponse<void>> {
-  return apiDelete<ApiResponse<void>>(`/v1/registrations/${id}`);
+export async function deleteRegistration(
+  id: string,
+  options?: { resetDraw?: boolean }
+): Promise<ApiResponse<void>> {
+  const query = options?.resetDraw ? '?resetDraw=true' : '';
+  return apiDelete<ApiResponse<void>>(`/v1/registrations/${id}${query}`);
 }
 
 // Approve registration

@@ -125,7 +125,7 @@ export async function generateBracket(
   );
 }
 
-// Generate knockout bracket after all group matches are completed
+// Generate a provisional knockout bracket, or seed it after group matches complete
 export async function generateKnockoutBracket(
   tournamentId: string,
   ageGroupId?: string

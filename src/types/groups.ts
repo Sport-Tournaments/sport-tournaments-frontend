@@ -126,6 +126,8 @@ export interface BracketMatch {
   nextMatchId?: string;
   loserNextMatchId?: string;
   groupLetter?: string; // set for group-phase matches in GROUPS_PLUS_KNOCKOUT / GROUPS_ONLY
+  team1SourceSlot?: string;
+  team2SourceSlot?: string;
 }
 
 export interface PlayoffRound {
@@ -135,10 +137,23 @@ export interface PlayoffRound {
   matches: BracketMatch[];
 }
 
+export interface PlacementBracket {
+  key: string;
+  label: string;
+  rangeStart: number;
+  rangeEnd: number;
+  playoffRounds: PlayoffRound[];
+  children?: {
+    winners?: PlacementBracket;
+    losers?: PlacementBracket;
+  };
+}
+
 export interface MatchesResponse {
   matches: BracketMatch[];
   bracketType?: string;
   playoffRounds?: PlayoffRound[];
+  placementBrackets?: PlacementBracket[];
   teams: { id: string; name: string; clubName?: string }[];
   advancingTeamsPerGroup?: number;
 }

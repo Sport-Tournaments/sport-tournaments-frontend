@@ -7,6 +7,7 @@ import {
   type Node,
   type Edge,
   type NodeProps,
+  type ReactFlowInstance,
   Handle,
   Position,
 } from '@xyflow/react';
@@ -48,6 +49,8 @@ export interface DoubleEliminationBracketProps {
   playoffRounds: PlayoffRound[];
   teamNames?: Map<string, string> | Record<string, string>;
   isOrganizer?: boolean;
+  /** First place represented by a one-match finals bracket. Defaults to 1. */
+  placementStart?: number;
   /** Whether matches use two-legged ties (DE only). Defaults to false = single-score modal. */
   twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
@@ -67,6 +70,21 @@ function resolveName(
   if (!teamNames) return id.slice(0, 8);
   if (teamNames instanceof Map) return teamNames.get(id) ?? id.slice(0, 8);
   return (teamNames as Record<string, string>)[id] ?? id.slice(0, 8);
+}
+
+function formatOrdinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  switch (n % 10) {
+    case 1:
+      return `${n}st`;
+    case 2:
+      return `${n}nd`;
+    case 3:
+      return `${n}rd`;
+    default:
+      return `${n}th`;
+  }
 }
 
 /* ─── Node data type ─────────────────────────────────────────────────────── */
@@ -100,8 +118,12 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   } = data;
 
   const { cardLabel, featured } = data;
-  const t1Name = resolveName(match.team1Id, teamNames);
-  const t2Name = resolveName(match.team2Id, teamNames);
+  const t1Name = match.team1Id
+    ? resolveName(match.team1Id, teamNames)
+    : match.team1Name ?? match.team1SourceSlot ?? 'TBD';
+  const t2Name = match.team2Id
+    ? resolveName(match.team2Id, teamNames)
+    : match.team2Name ?? match.team2SourceSlot ?? 'TBD';
   const isCompleted = match.status === 'COMPLETED';
   const isT1Win     = isCompleted && match.winnerId === match.team1Id;
   const isT2Win     = isCompleted && match.winnerId === match.team2Id;
@@ -475,15 +497,18 @@ interface BracketSectionProps {
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
+  placementStart?: number;
 }
 
 function BracketSection({
   rounds, label, accentColor, edgeColor,
   teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
+  placementStart = 1,
 }: BracketSectionProps) {
   const sorted = useMemo(() => [...rounds].sort((a, b) => a.roundNumber - b.roundNumber), [rounds]);
   const numRounds = sorted.length;
   const totalW = 2 * PAD + numRounds * CARD_W + Math.max(0, numRounds - 1) * H_GAP;
+  const [flowInstance, setFlowInstance] = useState<ReactFlowInstance | null>(null);
 
   const sharedData = useMemo(() => ({
     teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
@@ -505,8 +530,10 @@ function BracketSection({
     const built: Node[] = sorted.flatMap((round, ri) => {
       const sh = slotH(slotIdxByRound[ri]);
       const isFeatured = round.roundNumber === 9000;
-      const cardLabel  = round.roundNumber === 9000 ? '1st vs 2nd'
-                       : round.roundNumber === 9001 ? '3rd vs 4th'
+      const cardLabel  = round.roundNumber === 9000
+                       ? `${formatOrdinal(placementStart)} vs ${formatOrdinal(placementStart + 1)}`
+                       : round.roundNumber === 9001
+                       ? `${formatOrdinal(placementStart + 2)} vs ${formatOrdinal(placementStart + 3)}`
                        : undefined;
       const nodeH = isFeatured ? FEATURED_NODE_H
                   : cardLabel  ? LABELED_NODE_H
@@ -597,6 +624,43 @@ function BracketSection({
         </div>
       )}
 
+      <div className="mb-2 flex justify-end">
+        <div className="inline-flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+          <button
+            type="button"
+            aria-label="Zoom in"
+            title="Zoom in"
+            disabled={!flowInstance}
+            onClick={() => flowInstance?.zoomIn({ duration: 180 })}
+            className="flex h-8 w-8 items-center justify-center border-r border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            aria-label="Zoom out"
+            title="Zoom out"
+            disabled={!flowInstance}
+            onClick={() => flowInstance?.zoomOut({ duration: 180 })}
+            className="flex h-8 w-8 items-center justify-center border-r border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            aria-label="Fit view"
+            title="Fit view"
+            disabled={!flowInstance}
+            onClick={() => flowInstance?.fitView({ padding: 0.12, duration: 180 })}
+            className="flex h-8 w-8 items-center justify-center text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
       {/* x-scroll wrapper; explicit height prevents y-scrollbar */}
       <div style={{ overflowX: 'auto', overflowY: 'hidden', width: '100%' }}>
         {/* Round-name header row (same width as canvas, stays in sync on scroll) */}
@@ -617,16 +681,19 @@ function BracketSection({
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            onInit={setFlowInstance}
             nodesDraggable={false}
             nodesConnectable={false}
             elementsSelectable={false}
             panOnDrag={false}
             panOnScroll={false}
-            zoomOnScroll={false}
-            zoomOnPinch={false}
-            zoomOnDoubleClick={false}
+            zoomOnScroll
+            zoomOnPinch
+            zoomOnDoubleClick
             preventScrolling={false}
             defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+            fitView
+            fitViewOptions={{ padding: 0.12 }}
             proOptions={{ hideAttribution: true }}
             style={{ background: 'transparent' }}
           />
@@ -639,7 +706,7 @@ function BracketSection({
 /* ─── Main export ────────────────────────────────────────────────────────── */
 
 export default function DoubleEliminationBracket({
-  playoffRounds, teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule,
+  playoffRounds, teamNames, isOrganizer, placementStart = 1, twoLegged, onAdvance, onScoreUpdate, onSchedule,
   savingMatchId, schedulingMatchId,
 }: DoubleEliminationBracketProps) {
   const winnersRounds    = playoffRounds.filter(r => r.bracket === 'winners');
@@ -696,8 +763,18 @@ export default function DoubleEliminationBracket({
 
   const combinedRounds: PlayoffRound[] = [
     ...wrRoundsForDisplay,
-    ...(resolvedGfMatch  ? [{ roundNumber: 9000, roundName: '1st / 2nd Place', matches: [resolvedGfMatch],  bracket: 'winners' as const }] : []),
-    ...(losersFinalMatch ? [{ roundNumber: 9001, roundName: '3rd / 4th Place', matches: [losersFinalMatch], bracket: 'winners' as const }] : []),
+    ...(resolvedGfMatch  ? [{
+      roundNumber: 9000,
+      roundName: `${formatOrdinal(placementStart)} / ${formatOrdinal(placementStart + 1)} Place`,
+      matches: [resolvedGfMatch],
+      bracket: 'winners' as const,
+    }] : []),
+    ...(losersFinalMatch ? [{
+      roundNumber: 9001,
+      roundName: `${formatOrdinal(placementStart + 2)} / ${formatOrdinal(placementStart + 3)} Place`,
+      matches: [losersFinalMatch],
+      bracket: 'winners' as const,
+    }] : []),
   ];
 
   return (
@@ -707,6 +784,7 @@ export default function DoubleEliminationBracket({
         accentColor="text-[#1e3a5f]"
         edgeColor="#60a5fa"
         {...sharedProps}
+        placementStart={placementStart}
       />
     </div>
   );

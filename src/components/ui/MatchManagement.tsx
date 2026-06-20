@@ -8,7 +8,14 @@ import { formatDateTime } from '@/utils/date';
 function formatFieldDisplay(fieldName: string): string {
   return /^\d+$/.test(fieldName.trim()) ? `Pitch ${fieldName.trim()}` : fieldName;
 }
-import type { BracketMatch, PlayoffRound, MatchesResponse, Group, TournamentFormat } from '@/types';
+import type {
+  BracketMatch,
+  PlayoffRound,
+  PlacementBracket,
+  MatchesResponse,
+  Group,
+  TournamentFormat,
+} from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
 import DoubleEliminationBracket from './DoubleEliminationBracket';
@@ -403,7 +410,8 @@ export default function MatchManagement({
   const hasMatches =
     !!matchData &&
     (matchData.matches?.length > 0 ||
-      (matchData.playoffRounds && matchData.playoffRounds.length > 0));
+      (matchData.playoffRounds && matchData.playoffRounds.length > 0) ||
+      (matchData.placementBrackets && matchData.placementBrackets.length > 0));
   const requiresCompletedDrawBeforeGeneration =
     ageGroupFormat === 'GROUPS_PLUS_KNOCKOUT' || ageGroupFormat == null;
 
@@ -654,6 +662,7 @@ export default function MatchManagement({
         if (bracketType === 'GROUPS_PLUS_KNOCKOUT' || bracketType === 'GROUPS_ONLY') {
           const allMatches = matchData?.matches ?? [];
           const playoffRounds = matchData?.playoffRounds ?? [];
+          const placementBrackets = matchData?.placementBrackets ?? [];
 
           // Build per-group match sections when group assignments are available
           const sortedGroups = sortGroupsForDisplay(groups);
@@ -795,6 +804,9 @@ export default function MatchManagement({
           const completedCount = allMatches.filter(
             (m) => m.status === 'COMPLETED'
           ).length;
+          const isKnockoutProvisional =
+            (playoffRounds.length > 0 || placementBrackets.length > 0) &&
+            !allGroupMatchesCompleted;
 
           return (
             <div className="space-y-3 sm:space-y-6">
@@ -803,9 +815,70 @@ export default function MatchManagement({
               {/* Knockout stage */}
               {bracketType === 'GROUPS_PLUS_KNOCKOUT' && (
                 <>
-                  {playoffRounds.length > 0 ? (
+                  {placementBrackets.length > 0 ? (
                     <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-3">Knockout Stage</h4>
+                      <div className="mb-2 flex flex-col gap-2 sm:mb-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">Knockout Stage</h4>
+                          {isKnockoutProvisional && (
+                            <p className="mt-1 text-xs text-gray-500">
+                              Provisional bracket — teams will be filled automatically after the group stage.
+                            </p>
+                          )}
+                        </div>
+                        {isKnockoutProvisional && (
+                          <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                            {completedCount} / {allMatches.length} group matches completed
+                          </span>
+                        )}
+                      </div>
+                      <PlacementBracketTabs
+                        brackets={placementBrackets}
+                        teamNames={teamNamesMap}
+                        isOrganizer={isOrganizer}
+                        onAdvance={handleAdvancement}
+                        onScoreUpdate={handleScoreUpdate}
+                        onSchedule={handleScheduleMatch}
+                        savingMatchId={savingMatchId}
+                        schedulingMatchId={schedulingMatchId}
+                        matchPeriodType={matchPeriodType}
+                        halfDurationMinutes={halfDurationMinutes}
+                        halfTimePauseMinutes={halfTimePauseMinutes}
+                        pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                        fieldsCount={fieldsCount}
+                        onBulkSchedule={handleBulkSchedule}
+                        bulkScheduling={bulkScheduling}
+                        t={t}
+                      />
+                    </div>
+                  ) : playoffRounds.length > 0 ? (
+                    <div className="bg-white border border-gray-200 rounded-lg p-2 sm:p-4">
+                      <div className="mb-2 flex flex-col gap-2 sm:mb-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700">Knockout Stage</h4>
+                          {isKnockoutProvisional && (
+                            <p className="mt-1 text-xs text-gray-500">
+                              Provisional bracket — teams will be filled automatically after the group stage.
+                            </p>
+                          )}
+                        </div>
+                        {isKnockoutProvisional && (
+                          <span className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+                            {completedCount} / {allMatches.length} group matches completed
+                          </span>
+                        )}
+                      </div>
+                      <AutoSchedulePanel
+                        playoffRounds={playoffRounds}
+                        matchPeriodType={matchPeriodType}
+                        halfDurationMinutes={halfDurationMinutes}
+                        halfTimePauseMinutes={halfTimePauseMinutes}
+                        pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+                        fieldsCount={fieldsCount}
+                        isOrganizer={isOrganizer}
+                        onBulkSchedule={handleBulkSchedule}
+                        bulkScheduling={bulkScheduling}
+                      />
                       <DoubleEliminationBracket
                         playoffRounds={playoffRounds}
                         teamNames={teamNamesMap}
@@ -843,7 +916,7 @@ export default function MatchManagement({
                         </p>
                       ) : !allGroupMatchesCompleted ? (
                         <p className="text-sm text-gray-500 mb-4">
-                          Complete all group stage matches before generating the knockout bracket.
+                          Create the provisional knockout bracket now. Teams will be filled automatically after the group stage.
                           <span className="block mt-1 text-xs text-gray-400">
                             {completedCount} / {allMatches.length} matches completed
                           </span>
@@ -856,7 +929,7 @@ export default function MatchManagement({
                       {isOrganizer && allMatches.length > 0 && (
                         <button
                           onClick={handleGenerateKnockout}
-                          disabled={generating || !allGroupMatchesCompleted}
+                          disabled={generating || allMatches.length === 0}
                           className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-[#1e3a5f] hover:bg-[#152a45] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1e3a5f] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {generating ? (
@@ -879,7 +952,9 @@ export default function MatchManagement({
                                   d="M13 10V3L4 14h7v7l9-11h-7z"
                                 />
                               </svg>
-                              Generate Knockout Bracket
+                              {allGroupMatchesCompleted
+                                ? 'Generate Knockout Bracket'
+                                : 'Create Provisional Knockout Bracket'}
                             </>
                           )}
                         </button>
@@ -946,6 +1021,204 @@ export default function MatchManagement({
           </div>
         );
       })()}
+    </div>
+  );
+}
+
+type PlacementBracketTabsProps = {
+  brackets: PlacementBracket[];
+  teamNames: Map<string, string>;
+  isOrganizer: boolean;
+  onAdvance: (matchId: string, teamId: string) => void;
+  onScoreUpdate: (
+    matchId: string,
+    leg1t1: number | null,
+    leg1t2: number | null,
+    leg2t1: number | null,
+    leg2t2: number | null,
+    advancingTeamId?: string,
+  ) => void;
+  onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => void;
+  savingMatchId: string | null;
+  schedulingMatchId: string | null;
+  matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
+  halfDurationMinutes?: number;
+  halfTimePauseMinutes?: number;
+  pauseBetweenMatchesMinutes?: number;
+  fieldsCount?: number;
+  onBulkSchedule: (schedules: Array<{ matchId: string; scheduledAt: string; fieldName?: string }>) => void;
+  bulkScheduling: boolean;
+  t: any;
+};
+
+function PlacementBracketTabs({
+  brackets,
+  ...sharedProps
+}: PlacementBracketTabsProps) {
+  const [selectedKey, setSelectedKey] = useState(brackets[0]?.key ?? '');
+
+  useEffect(() => {
+    if (!brackets.some((bracket) => bracket.key === selectedKey)) {
+      setSelectedKey(brackets[0]?.key ?? '');
+    }
+  }, [brackets, selectedKey]);
+
+  if (brackets.length === 0) return null;
+
+  const selectedBracket =
+    brackets.find((bracket) => bracket.key === selectedKey) ?? brackets[0];
+
+  return (
+    <div className="space-y-3" data-testid="placement-brackets">
+      <div>
+        <h4 className="text-sm font-semibold text-gray-700">Bracket Ranges</h4>
+        <p className="mt-1 text-xs text-gray-500">
+          Choose the placement range to play. Winners continue in the upper
+          range and losers continue in the lower range.
+        </p>
+      </div>
+
+      {brackets.length > 1 && (
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Placement bracket ranges">
+          {brackets.map((bracket) => (
+            <button
+              key={bracket.key}
+              type="button"
+              role="tab"
+              aria-selected={bracket.key === selectedBracket.key}
+              onClick={() => setSelectedKey(bracket.key)}
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                bracket.key === selectedBracket.key
+                  ? 'border-[#1e3a5f] bg-[#1e3a5f] text-white'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f]'
+              }`}
+            >
+              {bracket.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <PlacementBracketPanel bracket={selectedBracket} {...sharedProps} />
+    </div>
+  );
+}
+
+function PlacementBracketPanel({
+  bracket,
+  teamNames,
+  isOrganizer,
+  onAdvance,
+  onScoreUpdate,
+  onSchedule,
+  savingMatchId,
+  schedulingMatchId,
+  matchPeriodType,
+  halfDurationMinutes,
+  halfTimePauseMinutes,
+  pauseBetweenMatchesMinutes,
+  fieldsCount,
+  onBulkSchedule,
+  bulkScheduling,
+  t,
+}: { bracket: PlacementBracket } & Omit<PlacementBracketTabsProps, 'brackets'>) {
+  const childBrackets = [
+    bracket.children?.winners,
+    bracket.children?.losers,
+  ].filter(Boolean) as PlacementBracket[];
+  const [selectedChildKey, setSelectedChildKey] = useState(
+    childBrackets[0]?.key ?? '',
+  );
+
+  useEffect(() => {
+    if (!childBrackets.some((child) => child.key === selectedChildKey)) {
+      setSelectedChildKey(childBrackets[0]?.key ?? '');
+    }
+  }, [childBrackets, selectedChildKey]);
+
+  const selectedChild =
+    childBrackets.find((child) => child.key === selectedChildKey) ??
+    childBrackets[0];
+
+  return (
+    <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50/50 p-2 sm:p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h5 className="text-xs font-bold uppercase tracking-wide text-gray-600">
+            Places {bracket.label}
+          </h5>
+          <p className="text-[11px] text-gray-500">
+            {bracket.playoffRounds[0]?.matches.length ?? 0} match
+            {(bracket.playoffRounds[0]?.matches.length ?? 0) === 1 ? '' : 'es'} in this range
+          </p>
+        </div>
+        <AutoSchedulePanel
+          playoffRounds={bracket.playoffRounds}
+          matchPeriodType={matchPeriodType}
+          halfDurationMinutes={halfDurationMinutes}
+          halfTimePauseMinutes={halfTimePauseMinutes}
+          pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+          fieldsCount={fieldsCount}
+          isOrganizer={isOrganizer}
+          onBulkSchedule={onBulkSchedule}
+          bulkScheduling={bulkScheduling}
+        />
+      </div>
+
+      <DoubleEliminationBracket
+        playoffRounds={bracket.playoffRounds}
+        teamNames={teamNames}
+        isOrganizer={isOrganizer}
+        placementStart={bracket.rangeStart}
+        twoLegged={false}
+        onAdvance={onAdvance}
+        onScoreUpdate={onScoreUpdate}
+        onSchedule={onSchedule}
+        savingMatchId={savingMatchId}
+        schedulingMatchId={schedulingMatchId}
+        t={t}
+      />
+
+      {childBrackets.length > 0 && selectedChild && (
+        <div className="space-y-3 border-t border-gray-200 pt-3">
+          <div className="flex flex-wrap gap-2" role="tablist" aria-label={`Nested placement ranges for ${bracket.label}`}>
+            {childBrackets.map((child) => (
+              <button
+                key={child.key}
+                type="button"
+                role="tab"
+                aria-selected={child.key === selectedChild.key}
+                onClick={() => setSelectedChildKey(child.key)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  child.key === selectedChild.key
+                    ? 'border-[#0090c7] bg-[#e0f7ff] text-[#1e3a5f]'
+                    : 'border-gray-200 bg-white text-gray-600 hover:border-[#0090c7] hover:text-[#1e3a5f]'
+                }`}
+              >
+                {child.label}
+              </button>
+            ))}
+          </div>
+          <PlacementBracketPanel
+            bracket={selectedChild}
+            teamNames={teamNames}
+            isOrganizer={isOrganizer}
+            onAdvance={onAdvance}
+            onScoreUpdate={onScoreUpdate}
+            onSchedule={onSchedule}
+            savingMatchId={savingMatchId}
+            schedulingMatchId={schedulingMatchId}
+            matchPeriodType={matchPeriodType}
+            halfDurationMinutes={halfDurationMinutes}
+            halfTimePauseMinutes={halfTimePauseMinutes}
+            pauseBetweenMatchesMinutes={pauseBetweenMatchesMinutes}
+            fieldsCount={fieldsCount}
+            onBulkSchedule={onBulkSchedule}
+            bulkScheduling={bulkScheduling}
+            t={t}
+          />
+        </div>
+      )}
     </div>
   );
 }

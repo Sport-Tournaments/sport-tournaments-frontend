@@ -12,6 +12,7 @@ import type { TournamentFormat, TournamentLevel } from '@/types';
 
 // Game systems for football based on player count (field players + goalkeeper)
 const GAME_SYSTEMS = [
+  { value: '4+1', label: '4+1 (5-a-side)' },
   { value: '5+1', label: '5+1 (6-a-side)' },
   { value: '6+1', label: '6+1 (7-a-side)' },
   { value: '7+1', label: '7+1 (8-a-side)' },

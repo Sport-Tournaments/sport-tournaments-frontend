@@ -143,6 +143,10 @@ function applyTeamOrder(rows: StandingRow[], teamOrder?: string[]): StandingRow[
 
   const orderMap = new Map(teamOrder.map((id, index) => [id, index]));
   return [...rows].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
+    if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+
     const aOrder = orderMap.get(a.teamId);
     const bOrder = orderMap.get(b.teamId);
 

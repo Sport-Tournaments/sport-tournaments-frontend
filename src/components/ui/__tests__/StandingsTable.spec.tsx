@@ -47,6 +47,62 @@ describe('StandingsTable', () => {
     expect(dataRows[2]).toHaveTextContent('1');
   });
 
+  it('sorts scored group standings by points before the saved group team order', () => {
+    const matches: BracketMatch[] = [
+      mkMatch('constructorul', 0, 'petrolul', 12),
+      mkMatch('iulius', 2, 'fortuna', 6),
+    ];
+    const teamNames = new Map([
+      ['viva', 'VIVA 1'],
+      ['constructorul', 'Constructorul Constanta'],
+      ['iulius', 'Iulius Craiova'],
+      ['fortuna', 'Fortuna Galati'],
+      ['petrolul', 'Petrolul Noua Generatie'],
+    ]);
+
+    render(
+      <StandingsTable
+        matches={matches}
+        teamNames={teamNames}
+        teamOrder={['viva', 'constructorul', 'iulius', 'fortuna', 'petrolul']}
+        canEdit={false}
+      />
+    );
+
+    const rows = screen.getAllByRole('row');
+    const dataRows = rows.slice(1);
+    expect(dataRows[0]).toHaveTextContent('Petrolul Noua Generatie');
+    expect(dataRows[0]).toHaveTextContent('3');
+    expect(dataRows[1]).toHaveTextContent('Fortuna Galati');
+    expect(dataRows[1]).toHaveTextContent('3');
+    expect(dataRows[2]).toHaveTextContent('VIVA 1');
+    expect(dataRows[3]).toHaveTextContent('Iulius Craiova');
+    expect(dataRows[4]).toHaveTextContent('Constructorul Constanta');
+  });
+
+  it('uses the saved group team order when standings stats are tied', () => {
+    const teamNames = new Map([
+      ['alpha', 'Alpha FC'],
+      ['beta', 'Beta Utd'],
+      ['gamma', 'Gamma City'],
+    ]);
+
+    render(
+      <StandingsTable
+        matches={[]}
+        teamNames={teamNames}
+        teamOrder={['gamma', 'alpha', 'beta']}
+        canEdit={false}
+      />
+    );
+
+    const rows = screen.getAllByRole('row');
+    const dataRows = rows.slice(1);
+    expect(dataRows[0]).toHaveTextContent('Gamma City');
+    expect(dataRows[1]).toHaveTextContent('Alpha FC');
+    expect(dataRows[2]).toHaveTextContent('Beta Utd');
+  });
+
   it('reorders teams via cascading shift when a dropdown is changed', async () => {
     const matches: BracketMatch[] = [
       mkMatch('alpha', 3, 'beta', 1),

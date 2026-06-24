@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { BracketMatch } from '@/types';
 
-interface StandingRow {
+export interface StandingRow {
   teamId: string;
   teamName: string;
   played: number;
@@ -38,7 +38,7 @@ function resolveTeamName(
   return (teamNames as Record<string, string>)[id] ?? id.slice(0, 8);
 }
 
-function computeStandings(
+export function computeStandings(
   matches: BracketMatch[],
   teamNames?: Map<string, string> | Record<string, string>
 ): StandingRow[] {
@@ -122,7 +122,7 @@ function computeStandings(
   });
 }
 
-function applyTiebreakOrder(
+export function applyTiebreakOrder(
   rows: StandingRow[],
   tiebreakOrder?: string[]
 ): StandingRow[] {
@@ -138,7 +138,7 @@ function applyTiebreakOrder(
   });
 }
 
-function applyTeamOrder(rows: StandingRow[], teamOrder?: string[]): StandingRow[] {
+export function applyTeamOrder(rows: StandingRow[], teamOrder?: string[]): StandingRow[] {
   if (!teamOrder || teamOrder.length === 0) return rows;
 
   const orderMap = new Map(teamOrder.map((id, index) => [id, index]));

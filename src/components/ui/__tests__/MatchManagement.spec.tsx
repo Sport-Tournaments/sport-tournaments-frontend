@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import MatchManagement from "../MatchManagement";
 import { groupService } from "@/services";
@@ -307,6 +307,80 @@ describe("MatchManagement", () => {
     expect(screen.getAllByRole("button", { name: "Zoom in" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Zoom out" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Fit view" })).toHaveLength(2);
+  });
+
+  it("shows final group standings after all group scores are entered", async () => {
+    vi.mocked(groupService.getMatches).mockResolvedValue({
+      success: true,
+      data: {
+        bracketType: "GROUPS_ONLY",
+        teams: [
+          { id: "reg-1", name: "Alpha" },
+          { id: "reg-2", name: "Bravo" },
+          { id: "reg-3", name: "Charlie" },
+          { id: "reg-4", name: "Delta" },
+        ],
+        matches: [
+          {
+            id: "grp_A_1",
+            round: 1,
+            matchNumber: 1,
+            groupLetter: "A",
+            team1Id: "reg-1",
+            team2Id: "reg-2",
+            team1Score: 3,
+            team2Score: 0,
+            status: "COMPLETED",
+          },
+          {
+            id: "grp_B_1",
+            round: 1,
+            matchNumber: 1,
+            groupLetter: "B",
+            team1Id: "reg-3",
+            team2Id: "reg-4",
+            team1Score: 1,
+            team2Score: 1,
+            status: "COMPLETED",
+          },
+        ],
+      },
+    } as any);
+    vi.mocked(groupService.getGroups).mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: "group-a",
+          tournamentId: "tournament-1",
+          groupLetter: "A",
+          teams: ["reg-1", "reg-2"],
+        },
+        {
+          id: "group-b",
+          tournamentId: "tournament-1",
+          groupLetter: "B",
+          teams: ["reg-3", "reg-4"],
+        },
+      ],
+    } as any);
+
+    render(
+      <MatchManagement
+        tournamentId="tournament-1"
+        isOrganizer
+      />,
+    );
+
+    const finalStandings = await screen.findByRole("region", {
+      name: /Final group standings/i,
+    });
+
+    expect(within(finalStandings).getByText("Final Group Standings")).toBeTruthy();
+    expect(within(finalStandings).getByText("Alpha")).toBeTruthy();
+    expect(within(finalStandings).getAllByText("Group A").length).toBeGreaterThan(0);
+    expect(within(finalStandings).getByText("Charlie")).toBeTruthy();
+    expect(within(finalStandings).getAllByText("Group B").length).toBeGreaterThan(0);
+    expect(within(finalStandings).getByText(/All 2 group matches are completed/i)).toBeTruthy();
   });
 
   it("lets organizers swap provisional source slots before group matches finish", async () => {

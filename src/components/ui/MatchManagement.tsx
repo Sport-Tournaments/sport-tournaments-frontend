@@ -16,7 +16,12 @@ import type {
   Group,
   TournamentFormat,
 } from '@/types';
-import StandingsTable from './StandingsTable';
+import StandingsTable, {
+  applyTeamOrder,
+  applyTiebreakOrder,
+  computeStandings,
+  type StandingRow,
+} from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
 import DoubleEliminationBracket, { type MatchTeamSwapSlot } from './DoubleEliminationBracket';
 
@@ -44,6 +49,97 @@ type MatchWithTeamNames = BracketMatch & {
   team1DisplayName?: string;
   team2DisplayName?: string;
 };
+
+type FinalGroupStandingRow = StandingRow & {
+  groupLetter: string;
+  groupPosition: number;
+};
+
+function FinalGroupStandings({
+  rows,
+  completedMatchesCount,
+}: {
+  rows: FinalGroupStandingRow[];
+  completedMatchesCount: number;
+}) {
+  if (rows.length === 0) return null;
+
+  return (
+    <section
+      aria-label="Final group standings"
+      className="overflow-hidden rounded-lg border border-emerald-200 bg-white"
+    >
+      <div className="border-b border-emerald-100 bg-emerald-50 px-4 py-3">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 className="text-sm font-bold text-emerald-900">
+              Final Group Standings
+            </h4>
+            <p className="text-xs text-emerald-700">
+              All {completedMatchesCount} group matches are completed.
+            </p>
+          </div>
+          <span className="inline-flex w-fit items-center rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            Final
+          </span>
+        </div>
+      </div>
+
+      <div className="w-full overflow-x-auto">
+        <table className="min-w-[760px] w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+              <th className="w-12 px-3 py-2 text-center">#</th>
+              <th className="px-3 py-2 text-left">Team</th>
+              <th className="px-3 py-2 text-center">Group</th>
+              <th className="px-3 py-2 text-center">Group Pos</th>
+              <th className="px-3 py-2 text-center" title="Played">P</th>
+              <th className="px-3 py-2 text-center" title="Won">W</th>
+              <th className="px-3 py-2 text-center" title="Drawn">D</th>
+              <th className="px-3 py-2 text-center" title="Lost">L</th>
+              <th className="px-3 py-2 text-center" title="Goals For">GF</th>
+              <th className="px-3 py-2 text-center" title="Goals Against">GA</th>
+              <th className="px-3 py-2 text-center" title="Goal Difference">GD</th>
+              <th className="px-3 py-2 text-center font-bold text-gray-700">Pts</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {rows.map((row, index) => (
+              <tr key={`${row.groupLetter}-${row.teamId}`} className="bg-white hover:bg-gray-50">
+                <td className="px-3 py-2 text-center">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                    {index + 1}
+                  </span>
+                </td>
+                <td className="px-3 py-2 font-medium text-gray-900">{row.teamName}</td>
+                <td className="px-3 py-2 text-center text-gray-600">Group {row.groupLetter}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.groupPosition}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.played}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.won}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.drawn}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.lost}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.goalsFor}</td>
+                <td className="px-3 py-2 text-center text-gray-600">{row.goalsAgainst}</td>
+                <td
+                  className={`px-3 py-2 text-center font-medium ${
+                    row.goalDifference > 0
+                      ? 'text-green-600'
+                      : row.goalDifference < 0
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                  }`}
+                >
+                  {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
+                </td>
+                <td className="px-3 py-2 text-center font-bold text-gray-900">{row.points}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
 
 export default function MatchManagement({
   tournamentId,
@@ -864,17 +960,100 @@ export default function MatchManagement({
           const allGroupMatchesCompleted =
             allMatches.length > 0 &&
             allMatches.every((m) => m.status === 'COMPLETED');
+          const allGroupScoresEntered =
+            allMatches.length > 0 &&
+            allMatches.every(
+              (m) =>
+                m.status === 'COMPLETED' &&
+                typeof m.team1Score === 'number' &&
+                typeof m.team2Score === 'number',
+            );
           const completedCount = allMatches.filter(
             (m) => m.status === 'COMPLETED'
           ).length;
           const isKnockoutProvisional =
             (playoffRounds.length > 0 || placementBrackets.length > 0) &&
             !allGroupMatchesCompleted;
+          const finalGroupStandingsRows: FinalGroupStandingRow[] =
+            allGroupScoresEntered
+              ? sortedGroups.flatMap((group) => {
+                  const groupTeamOrder = Array.isArray(group.teams)
+                    ? group.teams
+                        .map((team: any) =>
+                          typeof team === 'string'
+                            ? team
+                            : team?.registrationId ?? team?.id ?? '',
+                        )
+                        .filter(Boolean)
+                    : [];
+                  const groupTeamIds = new Set<string>(groupTeamOrder);
+                  const groupMatches = allMatches.filter(
+                    (match) =>
+                      match.groupLetter === group.groupLetter &&
+                      (groupTeamIds.size === 0 ||
+                        (!!match.team1Id && groupTeamIds.has(match.team1Id)) ||
+                        (!!match.team2Id && groupTeamIds.has(match.team2Id))),
+                  );
+                  const groupTeamNames = new Map<string, string>();
+                  for (const id of groupTeamOrder) {
+                    const name = teamNamesMap.get(id);
+                    if (name) groupTeamNames.set(id, name);
+                  }
+                  for (const match of groupMatches) {
+                    if (match.team1Id && !groupTeamNames.has(match.team1Id)) {
+                      groupTeamNames.set(
+                        match.team1Id,
+                        teamNamesMap.get(match.team1Id) ||
+                          match.team1Name ||
+                          match.team1Id.slice(0, 8),
+                      );
+                    }
+                    if (match.team2Id && !groupTeamNames.has(match.team2Id)) {
+                      groupTeamNames.set(
+                        match.team2Id,
+                        teamNamesMap.get(match.team2Id) ||
+                          match.team2Name ||
+                          match.team2Id.slice(0, 8),
+                      );
+                    }
+                  }
+
+                  const rows = applyTiebreakOrder(
+                    applyTeamOrder(
+                      computeStandings(groupMatches, groupTeamNames),
+                      groupTeamOrder,
+                    ),
+                    group.tieBreakOrder ?? undefined,
+                  );
+
+                  return rows.map((row, index) => ({
+                    ...row,
+                    groupLetter: group.groupLetter,
+                    groupPosition: index + 1,
+                  }));
+                }).sort((a, b) => {
+                  if (a.groupPosition !== b.groupPosition) {
+                    return a.groupPosition - b.groupPosition;
+                  }
+                  if (b.points !== a.points) return b.points - a.points;
+                  if (b.goalDifference !== a.goalDifference) {
+                    return b.goalDifference - a.goalDifference;
+                  }
+                  if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+                  return a.teamName.localeCompare(b.teamName);
+                })
+              : [];
 
           return (
             <div className="space-y-3 sm:space-y-6">
               {/* Group phase — one card per group */}
               {groupPhaseSection}
+              {finalGroupStandingsRows.length > 0 && (
+                <FinalGroupStandings
+                  rows={finalGroupStandingsRows}
+                  completedMatchesCount={completedCount}
+                />
+              )}
               {/* Knockout stage */}
               {bracketType === 'GROUPS_PLUS_KNOCKOUT' && (
                 <>

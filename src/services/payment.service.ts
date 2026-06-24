@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiDelete, apiUpload } from './api';
-import type { FileRecord, Payment, PaymentIntentResponse, PaymentFilters, ApiResponse, PaginatedResponse } from '@/types';
+import type { FileRecord, Payment, PaymentIntentResponse, ApiResponse } from '@/types';
 
 // Payments
 const PAYMENTS_BASE = '/v1/payments';

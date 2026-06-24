@@ -26,7 +26,7 @@ You are building a **production-ready frontend** for the Football Tournament Pla
 * **UI Library:** React 18
 * **Styling:** Tailwind CSS
 * **State Management:** React Context API or Zustand
-* **HTTP Client:** Axios with interceptors
+* **HTTP Client:** Fetch with interceptors
 * **Form Handling:** React Hook Form + Zod validation
 * **Maps:** Google Maps API (react-google-maps)
 * **i18n:** next-i18n-router
@@ -895,13 +895,13 @@ Create Zod schemas  **derived from API request body specifications** .
 
 ---
 
-## Axios Instance with Interceptors
+## Fetch Client with Token Handling
 
 <pre class="not-prose w-full rounded font-mono text-sm font-extralight"><div class="codeWrapper text-light selection:text-super selection:bg-super/10 my-md relative flex flex-col rounded-lg font-mono text-sm font-normal bg-subtler"><div class="translate-y-xs -translate-x-xs bottom-xl mb-xl flex h-0 items-start justify-end sm:sticky sm:top-xs"><div class="overflow-hidden rounded-full border-subtlest ring-subtlest divide-subtlest bg-base"><div class="border-subtlest ring-subtlest divide-subtlest bg-subtler"></div></div></div><div class="-mt-xl"><div><div data-testid="code-language-indicator" class="text-quiet bg-subtle py-xs px-sm inline-block rounded-br rounded-tl-lg text-xs font-thin">typescript</div></div><div><span><code><span><span class="token token">// src/services/api.ts</span><span>
-</span></span><span><span></span><span class="token token">import</span><span> axios </span><span class="token token">from</span><span></span><span class="token token">'axios'</span><span class="token token punctuation">;</span><span>
+</span></span><span><span></span><span class="token token">import</span><span> fetchClient </span><span class="token token">from</span><span></span><span class="token token">'fetchClient'</span><span class="token token punctuation">;</span><span>
 </span></span><span><span></span><span class="token token">import</span><span></span><span class="token token punctuation">{</span><span> getTokenFromCookie</span><span class="token token punctuation">,</span><span> setTokenCookie</span><span class="token token punctuation">,</span><span> removeTokenCookie </span><span class="token token punctuation">}</span><span></span><span class="token token">from</span><span></span><span class="token token">'@/utils/auth'</span><span class="token token punctuation">;</span><span>
 </span></span><span>
-</span><span><span></span><span class="token token">export</span><span></span><span class="token token">const</span><span> api </span><span class="token token operator">=</span><span> axios</span><span class="token token punctuation">.</span><span class="token token">create</span><span class="token token punctuation">(</span><span class="token token punctuation">{</span><span>
+</span><span><span></span><span class="token token">export</span><span></span><span class="token token">const</span><span> api </span><span class="token token operator">=</span><span> fetchClient</span><span class="token token punctuation">.</span><span class="token token">create</span><span class="token token punctuation">(</span><span class="token token punctuation">{</span><span>
 </span></span><span><span>  baseURL</span><span class="token token operator">:</span><span> process</span><span class="token token punctuation">.</span><span>env</span><span class="token token punctuation">.</span><span class="token token constant">NEXT_PUBLIC_API_URL</span><span></span><span class="token token operator">||</span><span></span><span class="token token">'http://localhost:3001/api'</span><span class="token token punctuation">,</span><span>
 </span></span><span><span>  withCredentials</span><span class="token token operator">:</span><span></span><span class="token token boolean">true</span><span class="token token punctuation">,</span><span>
 </span></span><span><span></span><span class="token token punctuation">}</span><span class="token token punctuation">)</span><span class="token token punctuation">;</span><span>
@@ -973,7 +973,7 @@ All API responses follow this format (extract from Swagger):
 </span></span><span><span></span><span class="token token">const</span><span> result </span><span class="token token operator">=</span><span></span><span class="token token">await</span><span> api</span><span class="token token punctuation">.</span><span class="token token">post</span><span class="token token punctuation">(</span><span class="token token">'/tournaments'</span><span class="token token punctuation">,</span><span> data</span><span class="token token punctuation">)</span><span class="token token punctuation">;</span><span>
 </span></span><span><span></span><span class="token token">// Handle success: response.data.success === true</span><span>
 </span></span><span><span></span><span class="token token punctuation">}</span><span></span><span class="token token">catch</span><span></span><span class="token token punctuation">(</span><span>error</span><span class="token token punctuation">)</span><span></span><span class="token token punctuation">{</span><span>
-</span></span><span><span></span><span class="token token">if</span><span></span><span class="token token punctuation">(</span><span>axios</span><span class="token token punctuation">.</span><span class="token token">isAxiosError</span><span class="token token punctuation">(</span><span>error</span><span class="token token punctuation">)</span><span class="token token punctuation">)</span><span></span><span class="token token punctuation">{</span><span>
+</span></span><span><span></span><span class="token token">if</span><span></span><span class="token token punctuation">(</span><span>fetchClient</span><span class="token token punctuation">.</span><span class="token token">isHttpError</span><span class="token token punctuation">(</span><span>error</span><span class="token token punctuation">)</span><span class="token token punctuation">)</span><span></span><span class="token token punctuation">{</span><span>
 </span></span><span><span></span><span class="token token">const</span><span> apiError </span><span class="token token operator">=</span><span> error</span><span class="token token punctuation">.</span><span>response</span><span class="token token operator">?.</span><span>data </span><span class="token token">as</span><span> ApiErrorResponse</span><span class="token token punctuation">;</span><span>
 </span></span><span><span></span><span class="token token">// Display apiError.error.message to user</span><span>
 </span></span><span><span></span><span class="token token">// Handle specific error codes: INVALID_INPUT, DUPLICATE_EMAIL, etc.</span><span>
@@ -1160,7 +1160,7 @@ Before implementing each page, verify:
 **Phase 1 (Week 1-2): Auth & Core Infra**
 
 * Extract API spec and document
-* Setup project (Next.js, Tailwind, Axios)
+* Setup project (Next.js, Tailwind, Fetch)
 * Create API service layer from spec
 * Implement auth pages (login, register, verify)
 * Setup auth context and middleware

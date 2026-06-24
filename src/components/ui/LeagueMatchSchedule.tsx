@@ -413,22 +413,28 @@ export default function LeagueMatchSchedule({
                           )}
                         </div>
                       </div>
-                      {isOrganizer && onScoreUpdate && match.status !== 'COMPLETED' && (
+                      {isOrganizer && (onScoreUpdate || onSchedule) && (
                         <div className="mt-2 flex items-center gap-1.5 border-t border-gray-100 pt-2">
-                          <button
-                            disabled={isSaving}
-                            onClick={() => openScoreModal(match, t1, t2)}
-                            className="flex-1 text-xs font-medium px-2.5 py-1 rounded bg-[#1e3a5f] text-white hover:bg-[#152a45] disabled:opacity-50 transition-colors"
-                          >
-                            {isSaving ? 'Saving…' : 'Score'}
-                          </button>
+                          {onScoreUpdate && (
+                            <button
+                              disabled={isSaving}
+                              onClick={() => openScoreModal(match, t1, t2)}
+                              className="flex-1 text-xs font-medium px-2.5 py-1 rounded bg-[#1e3a5f] text-white hover:bg-[#152a45] disabled:opacity-50 transition-colors"
+                            >
+                              {isSaving ? 'Saving…' : hasScore ? 'Edit Score' : 'Score'}
+                            </button>
+                          )}
                           {onSchedule && (
                             <button
                               disabled={isScheduling}
                               onClick={() => openDetailsModal(match, t1, t2)}
                               className="flex-1 text-xs font-medium px-2.5 py-1 rounded bg-[#e0f7ff] text-[#0090c7] hover:bg-[#dbeafe] disabled:opacity-50 transition-colors"
                             >
-                              {isScheduling ? 'Scheduling…' : 'Details'}
+                              {isScheduling
+                                ? 'Scheduling…'
+                                : match.scheduledAt || match.fieldName
+                                  ? 'Edit Details'
+                                  : 'Details'}
                             </button>
                           )}
                         </div>

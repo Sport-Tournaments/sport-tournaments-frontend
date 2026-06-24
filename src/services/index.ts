@@ -39,3 +39,6 @@ export * from './player.service';
 
 export { potDrawService } from './pot-draw.service';
 export * from './pot-draw.service';
+
+export { default as dashboardService } from './dashboard.service';
+export * from './dashboard.service';

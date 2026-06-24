@@ -243,8 +243,8 @@ export default function EditClubPage() {
         router.push(`/dashboard/clubs/${params.id}`);
       }, 1500);
     } catch (err: unknown) {
-      const axiosError = err as { response?: { data?: { message?: string } }; message?: string };
-      const errorMessage = axiosError?.response?.data?.message || axiosError?.message || 'Failed to update club';
+      const apiError = err as { response?: { data?: { message?: string } }; message?: string };
+      const errorMessage = apiError?.response?.data?.message || apiError?.message || 'Failed to update club';
       setError(errorMessage);
     } finally {
       setSaving(false);

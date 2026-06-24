@@ -243,10 +243,10 @@ export function formatFileSize(bytes: number): string {
 
 // Extract error message from API error response
 export function getApiErrorMessage(error: unknown, fallbackMessage = 'An error occurred'): string {
-  // Handle Axios errors with response data
+  // Handle API client errors with response data
   if (error && typeof error === 'object' && 'response' in error) {
-    const axiosError = error as { response?: { data?: { error?: { message?: string; details?: Record<string, string[]> } } } };
-    const errorData = axiosError.response?.data?.error;
+    const apiError = error as { response?: { data?: { error?: { message?: string; details?: Record<string, string[]> } } } };
+    const errorData = apiError.response?.data?.error;
     
     if (errorData) {
       // If there are validation details, extract the first error message

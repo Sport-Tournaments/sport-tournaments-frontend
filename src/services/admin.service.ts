@@ -1,5 +1,5 @@
 import api from './api';
-import { User, Tournament, Club, PaginatedResponse, QueryParams, PlatformStatistics } from '@/types';
+import { User, Tournament, PaginatedResponse, QueryParams, PlatformStatistics } from '@/types';
 
 export interface DashboardStats {
   totalUsers: number;
@@ -17,34 +17,34 @@ const ADMIN_BASE = '/v1/admin';
 export const adminService = {
   // Platform Statistics
   getPlatformStatistics: async (): Promise<PlatformStatistics> => {
-    const response = await api.get(`${ADMIN_BASE}/statistics`);
+    const response = await api.get<PlatformStatistics>(`${ADMIN_BASE}/statistics`);
     return response.data;
   },
 
   // Dashboard (alias for backward compatibility)
   getDashboardStats: async (): Promise<DashboardStats> => {
-    const response = await api.get(`${ADMIN_BASE}/statistics`);
+    const response = await api.get<DashboardStats>(`${ADMIN_BASE}/statistics`);
     return response.data;
   },
 
   // Users
   getUsers: async (params?: QueryParams): Promise<PaginatedResponse<User>> => {
-    const response = await api.get(`${ADMIN_BASE}/users`, { params });
+    const response = await api.get<PaginatedResponse<User>>(`${ADMIN_BASE}/users`, { params });
     return response.data;
   },
 
   getUser: async (id: string): Promise<User> => {
-    const response = await api.get(`${ADMIN_BASE}/users/${id}`);
+    const response = await api.get<User>(`${ADMIN_BASE}/users/${id}`);
     return response.data;
   },
 
   updateUserRole: async (id: string, role: string): Promise<User> => {
-    const response = await api.put(`${ADMIN_BASE}/users/${id}/role`, { role });
+    const response = await api.put<User>(`${ADMIN_BASE}/users/${id}/role`, { role });
     return response.data;
   },
 
   updateUserStatus: async (id: string, data: { isActive?: boolean; isVerified?: boolean }): Promise<User> => {
-    const response = await api.put(`${ADMIN_BASE}/users/${id}/status`, data);
+    const response = await api.put<User>(`${ADMIN_BASE}/users/${id}/status`, data);
     return response.data;
   },
 
@@ -54,28 +54,28 @@ export const adminService = {
 
   // Tournaments
   getTournaments: async (params?: QueryParams): Promise<PaginatedResponse<Tournament>> => {
-    const response = await api.get(`${ADMIN_BASE}/tournaments`, { params });
+    const response = await api.get<PaginatedResponse<Tournament>>(`${ADMIN_BASE}/tournaments`, { params });
     return response.data;
   },
 
   forceCancelTournament: async (id: string, reason?: string): Promise<Tournament> => {
-    const response = await api.post(`${ADMIN_BASE}/tournaments/${id}/cancel`, { reason });
+    const response = await api.post<Tournament>(`${ADMIN_BASE}/tournaments/${id}/cancel`, { reason });
     return response.data;
   },
 
   featureTournament: async (id: string, featured: boolean): Promise<Tournament> => {
-    const response = await api.put(`${ADMIN_BASE}/tournaments/${id}/feature`, { featured });
+    const response = await api.put<Tournament>(`${ADMIN_BASE}/tournaments/${id}/feature`, { featured });
     return response.data;
   },
 
   // Payments
-  getPayments: async (params?: QueryParams): Promise<PaginatedResponse<any>> => {
-    const response = await api.get(`${ADMIN_BASE}/payments`, { params });
+  getPayments: async (params?: QueryParams): Promise<PaginatedResponse<unknown>> => {
+    const response = await api.get<PaginatedResponse<unknown>>(`${ADMIN_BASE}/payments`, { params });
     return response.data;
   },
 
-  getPaymentReport: async (startDate: string, endDate: string): Promise<any> => {
-    const response = await api.get(`${ADMIN_BASE}/payments/report`, {
+  getPaymentReport: async (startDate: string, endDate: string): Promise<unknown> => {
+    const response = await api.get<unknown>(`${ADMIN_BASE}/payments/report`, {
       params: { startDate, endDate }
     });
     return response.data;
@@ -87,14 +87,14 @@ export const adminService = {
   },
 
   // Audit logs
-  getAuditLog: async (page?: number, limit?: number): Promise<PaginatedResponse<any>> => {
-    const response = await api.get(`${ADMIN_BASE}/audit-log`, { params: { page, limit } });
+  getAuditLog: async (page?: number, limit?: number): Promise<PaginatedResponse<unknown>> => {
+    const response = await api.get<PaginatedResponse<unknown>>(`${ADMIN_BASE}/audit-log`, { params: { page, limit } });
     return response.data;
   },
 
   // Settings (stub - not yet implemented in backend)
   /** @todo Implement settings endpoint in backend */
-  updateSettings: async (settings: Record<string, any>): Promise<void> => {
+  updateSettings: async (_settings: object): Promise<void> => {
     console.warn('adminService.updateSettings is not yet implemented in backend');
     // When implemented, uncomment:
     // await api.put(`${ADMIN_BASE}/settings`, settings);
@@ -104,7 +104,7 @@ export const adminService = {
   /** @deprecated Use updateUserRole instead */
   updateUser: async (id: string, data: Partial<User>): Promise<User> => {
     console.warn('adminService.updateUser is deprecated, use updateUserRole or updateUserStatus');
-    const response = await api.put(`${ADMIN_BASE}/users/${id}/status`, data);
+    const response = await api.put<User>(`${ADMIN_BASE}/users/${id}/status`, data);
     return response.data;
   },
 };

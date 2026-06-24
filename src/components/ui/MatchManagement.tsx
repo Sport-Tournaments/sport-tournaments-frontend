@@ -18,7 +18,7 @@ import type {
 } from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
-import DoubleEliminationBracket from './DoubleEliminationBracket';
+import DoubleEliminationBracket, { type MatchTeamSwapSlot } from './DoubleEliminationBracket';
 
 interface TeamInfo {
   id: string;
@@ -71,6 +71,8 @@ export default function MatchManagement({
   const [groups, setGroups] = useState<Group[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTeamIdsByScope, setSelectedTeamIdsByScope] = useState<Record<string, string[]>>({});
+  const [selectedTeamSwapSlot, setSelectedTeamSwapSlot] = useState<MatchTeamSwapSlot | null>(null);
+  const [teamSwapBusy, setTeamSwapBusy] = useState(false);
 
   const fetchMatches = useCallback(async (silent = false) => {
     try {
@@ -154,6 +156,62 @@ export default function MatchManagement({
       );
     } finally {
       setSavingMatchId(null);
+    }
+  };
+
+  const handleTeamSwap = async (
+    source: MatchTeamSwapSlot,
+    target: MatchTeamSwapSlot,
+  ) => {
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      await groupService.swapMatchTeams(
+        tournamentId,
+        {
+          sourceMatchId: source.matchId,
+          sourceSlot: source.slot,
+          targetMatchId: target.matchId,
+          targetSlot: target.slot,
+        },
+        ageGroupId,
+      );
+      setSuccessMessage(
+        t('matches.teamsSwapped', 'Teams swapped successfully!'),
+      );
+      await fetchMatches(true);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Failed to swap match teams:', err);
+      setError(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          t('matches.swapError', 'Failed to swap teams.'),
+      );
+      throw err;
+    }
+  };
+
+  const handleTeamSwapSlot = async (slot: MatchTeamSwapSlot) => {
+    if (teamSwapBusy) return;
+    if (!selectedTeamSwapSlot) {
+      setSelectedTeamSwapSlot(slot);
+      return;
+    }
+    if (
+      selectedTeamSwapSlot.matchId === slot.matchId &&
+      selectedTeamSwapSlot.slot === slot.slot
+    ) {
+      setSelectedTeamSwapSlot(null);
+      return;
+    }
+
+    setTeamSwapBusy(true);
+    try {
+      await handleTeamSwap(selectedTeamSwapSlot, slot);
+      setSelectedTeamSwapSlot(null);
+    } finally {
+      setTeamSwapBusy(false);
     }
   };
 
@@ -570,6 +628,11 @@ export default function MatchManagement({
                 onAdvance={handleAdvancement}
                 onScoreUpdate={handleScoreUpdate}
                 onSchedule={handleScheduleMatch}
+                onSwapTeams={handleTeamSwap}
+                onSwapTeamSlot={handleTeamSwapSlot}
+                onCancelSwap={() => setSelectedTeamSwapSlot(null)}
+                selectedSwapSlot={selectedTeamSwapSlot}
+                swapBusy={teamSwapBusy}
                 savingMatchId={savingMatchId}
                 schedulingMatchId={schedulingMatchId}
                 t={t}
@@ -839,6 +902,11 @@ export default function MatchManagement({
                         onAdvance={handleAdvancement}
                         onScoreUpdate={handleScoreUpdate}
                         onSchedule={handleScheduleMatch}
+                        onSwapTeams={handleTeamSwap}
+                        onSwapTeamSlot={handleTeamSwapSlot}
+                        onCancelSwap={() => setSelectedTeamSwapSlot(null)}
+                        selectedSwapSlot={selectedTeamSwapSlot}
+                        swapBusy={teamSwapBusy}
                         savingMatchId={savingMatchId}
                         schedulingMatchId={schedulingMatchId}
                         matchPeriodType={matchPeriodType}
@@ -887,6 +955,11 @@ export default function MatchManagement({
                         onAdvance={handleAdvancement}
                         onScoreUpdate={handleScoreUpdate}
                         onSchedule={handleScheduleMatch}
+                        onSwapTeams={handleTeamSwap}
+                        onSwapTeamSlot={handleTeamSwapSlot}
+                        onCancelSwap={() => setSelectedTeamSwapSlot(null)}
+                        selectedSwapSlot={selectedTeamSwapSlot}
+                        swapBusy={teamSwapBusy}
                         savingMatchId={savingMatchId}
                         schedulingMatchId={schedulingMatchId}
                         t={t}
@@ -990,6 +1063,11 @@ export default function MatchManagement({
                 onAdvance={handleAdvancement}
                 onScoreUpdate={handleScoreUpdate}
                 onSchedule={handleScheduleMatch}
+                onSwapTeams={handleTeamSwap}
+                onSwapTeamSlot={handleTeamSwapSlot}
+                onCancelSwap={() => setSelectedTeamSwapSlot(null)}
+                selectedSwapSlot={selectedTeamSwapSlot}
+                swapBusy={teamSwapBusy}
                 savingMatchId={savingMatchId}
                 schedulingMatchId={schedulingMatchId}
                 t={t}
@@ -1039,6 +1117,11 @@ type PlacementBracketTabsProps = {
     advancingTeamId?: string,
   ) => void;
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => void;
+  onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;
+  onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
+  onCancelSwap?: () => void;
+  selectedSwapSlot?: MatchTeamSwapSlot | null;
+  swapBusy?: boolean;
   savingMatchId: string | null;
   schedulingMatchId: string | null;
   matchPeriodType?: 'ONE_HALF' | 'TWO_HALVES';
@@ -1111,6 +1194,11 @@ function PlacementBracketPanel({
   onAdvance,
   onScoreUpdate,
   onSchedule,
+  onSwapTeams,
+  onSwapTeamSlot,
+  onCancelSwap,
+  selectedSwapSlot,
+  swapBusy,
   savingMatchId,
   schedulingMatchId,
   matchPeriodType,
@@ -1174,6 +1262,11 @@ function PlacementBracketPanel({
         onAdvance={onAdvance}
         onScoreUpdate={onScoreUpdate}
         onSchedule={onSchedule}
+        onSwapTeams={onSwapTeams}
+        onSwapTeamSlot={onSwapTeamSlot}
+        onCancelSwap={onCancelSwap}
+        selectedSwapSlot={selectedSwapSlot}
+        swapBusy={swapBusy}
         savingMatchId={savingMatchId}
         schedulingMatchId={schedulingMatchId}
         t={t}
@@ -1206,6 +1299,11 @@ function PlacementBracketPanel({
             onAdvance={onAdvance}
             onScoreUpdate={onScoreUpdate}
             onSchedule={onSchedule}
+            onSwapTeams={onSwapTeams}
+            onSwapTeamSlot={onSwapTeamSlot}
+            onCancelSwap={onCancelSwap}
+            selectedSwapSlot={selectedSwapSlot}
+            swapBusy={swapBusy}
             savingMatchId={savingMatchId}
             schedulingMatchId={schedulingMatchId}
             matchPeriodType={matchPeriodType}

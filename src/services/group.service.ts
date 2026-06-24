@@ -8,6 +8,7 @@ import type {
   UpdateBracketDto,
   MatchesResponse,
   UpdateMatchAdvancementDto,
+  SwapMatchTeamsDto,
   UpdateMatchScoreDto,
   BracketMatch,
   ApiResponse,
@@ -82,6 +83,19 @@ export async function getMatches(
   const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
   return apiGet<ApiResponse<MatchesResponse>>(
     `/v1/tournaments/${tournamentId}/matches${params}`
+  );
+}
+
+// Swap two teams between two pending knockout match slots
+export async function swapMatchTeams(
+  tournamentId: string,
+  data: SwapMatchTeamsDto,
+  ageGroupId?: string,
+): Promise<ApiResponse<{ sourceMatch: BracketMatch; targetMatch: BracketMatch; bracketUpdated: boolean }>> {
+  const params = ageGroupId ? `?ageGroupId=${ageGroupId}` : '';
+  return apiPatch<ApiResponse<{ sourceMatch: BracketMatch; targetMatch: BracketMatch; bracketUpdated: boolean }>>(
+    `/v1/tournaments/${tournamentId}/matches/swap-teams${params}`,
+    data,
   );
 }
 
@@ -202,6 +216,7 @@ export const groupService = {
   getBracket,
   updateBracket,
   getMatches,
+  swapMatchTeams,
   setMatchAdvancement,
   updateMatchScore,
   generateBracket,

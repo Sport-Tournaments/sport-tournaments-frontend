@@ -15,7 +15,7 @@ import { formatCurrency, getTournamentPublicPath } from '@/utils/helpers';
 
 
 export default function TournamentDetailPage() {
-  const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 200;
+  const TOURNAMENT_REGISTRATIONS_PAGE_SIZE = 50;
 
   const { t } = useTranslation();
   const params = useParams();
@@ -28,6 +28,13 @@ export default function TournamentDetailPage() {
   const [updatingRegistrations, setUpdatingRegistrations] = useState(false);
   const [updatingAgeGroupRegistrations, setUpdatingAgeGroupRegistrations] = useState<string | null>(null);
   const [groups, setGroups] = useState<any[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [registrationsEnabled, setRegistrationsEnabled] = useState(
+    searchParams.get('tab') === 'registrations',
+  );
+  const [groupsEnabled, setGroupsEnabled] = useState(
+    ['groups', 'matches'].includes(searchParams.get('tab') ?? ''),
+  );
 
   // Rejection modal state
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
@@ -46,6 +53,7 @@ export default function TournamentDetailPage() {
   const [regenerateGroupsModalOpen, setRegenerateGroupsModalOpen] = useState(false);
   const [regenerateGroupsAgeGroupId, setRegenerateGroupsAgeGroupId] = useState<string | undefined>(undefined);
   const [regeneratingGroups, setRegeneratingGroups] = useState(false);
+  const [loadingRegistrationsForGroups, setLoadingRegistrationsForGroups] = useState(false);
 
   // Infinite scroll for registrations
   const fetchRegistrationsPage = useCallback(async (page: number) => {
@@ -69,6 +77,7 @@ export default function TournamentDetailPage() {
     setItems: setRegistrations,
   } = useInfiniteScroll<Registration>({
     fetchData: fetchRegistrationsPage,
+    enabled: registrationsEnabled,
     dependencies: [params.id],
   });
 
@@ -98,33 +107,99 @@ export default function TournamentDetailPage() {
     fetchData();
   }, [params.id]);
 
+  useEffect(() => {
+    if (!groupsEnabled || !tournament) return;
+    fetchGroups();
+  }, [groupsEnabled, params.id, tournament?.id]);
+
+  const handleInnerTabChange = (tabId: string) => {
+    if (tabId === 'registrations') {
+      setRegistrationsEnabled(true);
+    }
+    if (tabId === 'groups' || tabId === 'matches') {
+      setGroupsEnabled(true);
+    }
+    if (tabId === 'groups') {
+      setRegistrationsEnabled(true);
+    }
+  };
+
   const fetchData = async () => {
     try {
-      const tournamentData = await tournamentService.getTournamentById(params.id as string);
+      const tournamentId = params.id as string;
+      const [tournamentResult, statsResult] = await Promise.allSettled([
+        tournamentService.getTournamentById(tournamentId),
+        registrationService.getRegistrationStatisticsByAgeGroup(tournamentId),
+      ]);
+
+      if (tournamentResult.status === 'rejected') {
+        throw tournamentResult.reason;
+      }
+
+      const tournamentData = tournamentResult.value;
       setTournament(tournamentData.data);
 
-      // Fetch registration statistics by age group
-      try {
-        const statsData = await registrationService.getRegistrationStatisticsByAgeGroup(params.id as string);
+      if (statsResult.status === 'fulfilled') {
+        const statsData = statsResult.value;
         if (statsData.data) {
           setStatistics(statsData.data);
         }
-      } catch (statsErr) {
-        console.error('Failed to load registration statistics:', statsErr);
+      } else {
+        console.error('Failed to load registration statistics:', statsResult.reason);
         setStatistics(null);
       }
 
-      // Fetch groups (populated after draw is executed)
-      try {
-        const groupsData = await groupService.getGroups(params.id as string);
-        setGroups(groupsData.data || []);
-      } catch {
-        setGroups([]);
-      }
     } catch (err: any) {
       setError('Failed to load tournament');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchGroups = async () => {
+    setGroupsLoading(true);
+    try {
+      const groupsData = await groupService.getGroups(params.id as string);
+      setGroups(groupsData.data || []);
+    } catch {
+      setGroups([]);
+    } finally {
+      setGroupsLoading(false);
+    }
+  };
+
+  const fetchAllRegistrations = async () => {
+    setRegistrationsEnabled(true);
+    const allRegistrations: Registration[] = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const result = await fetchRegistrationsPage(page);
+      allRegistrations.push(...result.items);
+      hasMore = result.hasMore;
+      page += 1;
+    }
+
+    setRegistrations(allRegistrations);
+    return allRegistrations;
+  };
+
+  const ensureRegistrationsForGroups = async () => {
+    if (
+      registrationsEnabled &&
+      !registrationsLoading &&
+      !hasMoreRegistrations &&
+      registrations.length > 0
+    ) {
+      return registrations;
+    }
+
+    setLoadingRegistrationsForGroups(true);
+    try {
+      return await fetchAllRegistrations();
+    } finally {
+      setLoadingRegistrationsForGroups(false);
     }
   };
 
@@ -315,23 +390,25 @@ export default function TournamentDetailPage() {
   const confirmRegenerateGroups = async () => {
     if (!tournament) return;
 
-    const targetAgeGroup = regenerateGroupsAgeGroupId
-      ? tournament.ageGroups?.find((ag) => ag.id === regenerateGroupsAgeGroupId)
-      : undefined;
-    const approvedRegistrations = getScopedRegistrations(regenerateGroupsAgeGroupId).filter(
-      (reg) => reg.status === 'APPROVED',
-    );
-    const teamCount = approvedRegistrations.length;
-    const configuredGroupCount =
-      targetAgeGroup?.groupsCount ||
-      (targetAgeGroup?.teamsPerGroup
-        ? Math.ceil(teamCount / targetAgeGroup.teamsPerGroup)
-        : 2);
-    const numberOfGroups = Math.max(1, Math.min(configuredGroupCount, teamCount || configuredGroupCount));
-
     setRegeneratingGroups(true);
     setError(null);
     try {
+      const registrationSource = await ensureRegistrationsForGroups();
+      const targetAgeGroup = regenerateGroupsAgeGroupId
+        ? tournament.ageGroups?.find((ag) => ag.id === regenerateGroupsAgeGroupId)
+        : undefined;
+      const approvedRegistrations = getScopedRegistrationsFrom(
+        registrationSource,
+        regenerateGroupsAgeGroupId,
+      ).filter((reg) => reg.status === 'APPROVED');
+      const teamCount = approvedRegistrations.length;
+      const configuredGroupCount =
+        targetAgeGroup?.groupsCount ||
+        (targetAgeGroup?.teamsPerGroup
+          ? Math.ceil(teamCount / targetAgeGroup.teamsPerGroup)
+          : 2);
+      const numberOfGroups = Math.max(1, Math.min(configuredGroupCount, teamCount || configuredGroupCount));
+
       await groupService.resetDraw(tournament.id, regenerateGroupsAgeGroupId);
       await potDrawService.clearPotAssignments(tournament.id, regenerateGroupsAgeGroupId);
 
@@ -353,6 +430,8 @@ export default function TournamentDetailPage() {
       setRegenerateGroupsModalOpen(false);
       setEditGroupsAgeGroupId(regenerateGroupsAgeGroupId);
       await fetchData();
+      setGroupsEnabled(true);
+      await fetchGroups();
       setEditGroupsModalOpen(true);
     } catch (err: any) {
       console.error('Failed to regenerate groups:', err);
@@ -406,12 +485,18 @@ export default function TournamentDetailPage() {
     return undefined;
   };
 
-  const getScopedRegistrations = (ageGroupId?: string) => {
-    if (!ageGroupId) return registrations;
-    return registrations.filter(
+  const getScopedRegistrationsFrom = (
+    sourceRegistrations: Registration[],
+    ageGroupId?: string,
+  ) => {
+    if (!ageGroupId) return sourceRegistrations;
+    return sourceRegistrations.filter(
       (reg) => inferRegistrationAgeGroupId(reg) === ageGroupId,
     );
   };
+
+  const getScopedRegistrations = (ageGroupId?: string) =>
+    getScopedRegistrationsFrom(registrations, ageGroupId);
 
   const registrationToTeamDetail = (reg: Registration) => ({
     id: reg.id,
@@ -938,6 +1023,16 @@ export default function TournamentDetailPage() {
           const scopedGroups = getScopedGroups(ageGroupId);
           const canRegenerateGroups = ageGroup?.format === 'GROUPS_PLUS_KNOCKOUT';
 
+          if (groupsLoading && scopedGroups.length === 0) {
+            return (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <Loading size="md" />
+                </CardContent>
+              </Card>
+            );
+          }
+
           if (scopedGroups.length > 0) {
             return (
               <div className="space-y-4">
@@ -958,10 +1053,12 @@ export default function TournamentDetailPage() {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => {
+                      onClick={async () => {
                         setEditGroupsAgeGroupId(ageGroupId);
+                        await ensureRegistrationsForGroups();
                         setEditGroupsModalOpen(true);
                       }}
+                      isLoading={loadingRegistrationsForGroups}
                     >
                       Edit Groups
                     </Button>
@@ -1055,7 +1152,12 @@ export default function TournamentDetailPage() {
           return (
             <Card>
               <CardContent className="p-0 sm:p-6">
-                {groupsNotGenerated && (
+                {groupsLoading && (
+                  <div className="flex items-center justify-center py-12">
+                    <Loading size="md" />
+                  </div>
+                )}
+                {!groupsLoading && groupsNotGenerated && (
                   <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex items-start gap-3 flex-1">
                       <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1076,7 +1178,7 @@ export default function TournamentDetailPage() {
                     </Link>
                   </div>
                 )}
-                {!groupsNotGenerated && (
+                {!groupsLoading && !groupsNotGenerated && (
                   <MatchManagement
                     tournamentId={tournament.id}
                     isOrganizer={true}
@@ -1177,6 +1279,7 @@ export default function TournamentDetailPage() {
               defaultTab={searchParams.get('tab') ?? 'overview'}
               variant="pills-gray"
               queryParam="tab"
+              onChange={handleInnerTabChange}
             />
           </div>
         ),
@@ -1270,6 +1373,11 @@ export default function TournamentDetailPage() {
             (!tournament.ageGroups || tournament.ageGroups.length === 0)
               ? 'tab'
               : 'ageGroup'
+          }
+          onChange={
+            (!tournament.ageGroups || tournament.ageGroups.length === 0)
+              ? handleInnerTabChange
+              : undefined
           }
         />
       </div>

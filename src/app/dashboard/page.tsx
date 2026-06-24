@@ -1,196 +1,48 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Badge, Loading } from '@/components/ui';
 import { useAuthStore } from '@/store';
-import { tournamentService, clubService, registrationService } from '@/services';
-import { Tournament, Club, Registration } from '@/types';
+import { dashboardService } from '@/services';
 import { formatDate } from '@/utils/date';
 import { getTournamentPublicPath } from '@/utils/helpers';
+
+const EMPTY_STATS = {
+  tournaments: 0,
+  clubs: 0,
+  registrations: 0,
+  approved: 0,
+  pending: 0,
+};
 
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    tournaments: 0,
-    clubs: 0,
-    registrations: 0,
-    approved: 0,
-    pending: 0,
+  const { data: summaryResponse, isLoading } = useQuery({
+    queryKey: ['dashboard', 'summary'],
+    queryFn: dashboardService.getDashboardSummary,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
-  const [recentTournaments, setRecentTournaments] = useState<Tournament[]>([]);
-  const [recentClubs, setRecentClubs] = useState<Club[]>([]);
-  const [recentRegistrations, setRecentRegistrations] = useState<Registration[]>([]);
+
+  const summary = summaryResponse?.data;
+  const stats = summary?.stats ?? EMPTY_STATS;
+  const recentTournaments = summary?.recentTournaments ?? [];
+  const recentRegistrations = summary?.recentRegistrations ?? [];
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [tournamentsRes, clubsRes] = await Promise.all([
-        tournamentService.getMyTournaments(),
-        clubService.getMyClubs(),
-      ]);
-
-      const tData = (tournamentsRes as any)?.data;
-      const tournamentData: Tournament[] = Array.isArray(tData) ? tData : [];
-      const tournamentTotal = tournamentData.length;
-
-      const cData = (clubsRes as any)?.data;
-      let clubData: Club[] = [];
-      if (Array.isArray(cData)) {
-        clubData = cData;
-      } else if (cData?.data?.items && Array.isArray(cData.data.items)) {
-        clubData = cData.data.items;
-      } else if (cData?.items && Array.isArray(cData.items)) {
-        clubData = cData.items;
-      } else if (cData?.data && Array.isArray(cData.data)) {
-        clubData = cData.data;
-      }
-      const clubTotal = clubData.length;
-
-      if (clubTotal > 0 && tournamentTotal === 0) {
-        router.replace('/dashboard/tournaments');
-        return;
-      }
-
-      const tournamentById = new Map(tournamentData.map((tournament) => [tournament.id, tournament]));
-
-      let registrationData: Registration[] = [];
-      let approvedCount = 0;
-      let pendingCount = 0;
-      let totalApplied = 0;
-      if (user?.role === 'ORGANIZER') {
-        const [registrationsResults, statisticsResults] = await Promise.all([
-          Promise.allSettled(
-            tournamentData.map((tournament) =>
-              registrationService.getTournamentRegistrations(tournament.id, {
-                page: 1,
-                pageSize: 5,
-              })
-            )
-          ),
-          Promise.allSettled(
-            tournamentData.map(async (tournament) => {
-              const hasAgeGroups = !!(tournament.ageGroups && tournament.ageGroups.length > 0);
-
-              if (hasAgeGroups) {
-                const ageGroupStatsRes = await registrationService.getRegistrationStatisticsByAgeGroup(tournament.id);
-                const byAgeGroup = ageGroupStatsRes?.data?.byAgeGroup || [];
-
-                return byAgeGroup.reduce(
-                  (acc, group) => {
-                    acc.total += group.total || 0;
-                    acc.approved += group.approved || 0;
-                    acc.pending += group.pending || 0;
-                    return acc;
-                  },
-                  { total: 0, approved: 0, pending: 0 }
-                );
-              }
-
-              const statsRes = await registrationService.getRegistrationStatistics(tournament.id);
-              const stats = statsRes?.data;
-
-              return {
-                total: stats?.total || 0,
-                approved: stats?.approved || 0,
-                pending: stats?.pending || 0,
-              };
-            })
-          ),
-        ]);
-
-        registrationData = registrationsResults.flatMap((result) => {
-          if (result.status !== 'fulfilled') return [];
-          return result.value?.data?.items || [];
-        });
-
-        const aggregated = statisticsResults.reduce(
-          (acc, result) => {
-            if (result.status !== 'fulfilled') return acc;
-            const statsData = result.value;
-            if (!statsData) return acc;
-            acc.total += statsData.total || 0;
-            acc.approved += statsData.approved || 0;
-            acc.pending += statsData.pending || 0;
-            return acc;
-          },
-          { total: 0, approved: 0, pending: 0 }
-        );
-
-        totalApplied = aggregated.total;
-        approvedCount = aggregated.approved;
-        pendingCount = aggregated.pending;
-      } else {
-        const registrationsRes = await registrationService.getMyRegistrations();
-        const rData = registrationsRes.data as any;
-        if (Array.isArray(rData)) {
-          registrationData = rData;
-        } else if (rData?.data && Array.isArray(rData.data)) {
-          registrationData = rData.data;
-        } else if (rData?.items && Array.isArray(rData.items)) {
-          registrationData = rData.items;
-        }
-
-        totalApplied = registrationData.length;
-        approvedCount = registrationData.filter((r) => r.status === ('APPROVED' as any)).length;
-        pendingCount = registrationData.filter((r) => r.status === ('PENDING' as any)).length;
-      }
-
-      const normalizedRegistrations = registrationData.map((registration) => {
-        if (registration.tournament) return registration;
-        const tournament = tournamentById.get(registration.tournamentId);
-        if (!tournament) return registration;
-
-        return {
-          ...registration,
-          tournament: {
-            id: tournament.id,
-            name: tournament.name,
-            startDate: tournament.startDate,
-            endDate: tournament.endDate,
-            location: tournament.location,
-            status: tournament.status,
-            participationFee: tournament.participationFee,
-          },
-        };
-      });
-
-      const sortedRegistrations = normalizedRegistrations
-        .slice()
-        .sort((a, b) => {
-          const aDate = new Date(a.createdAt || a.updatedAt).getTime();
-          const bDate = new Date(b.createdAt || b.updatedAt).getTime();
-          return bDate - aDate;
-        });
-
-      setRecentTournaments(tournamentData.slice(0, 5));
-      setRecentClubs(clubData.slice(0, 5));
-      setRecentRegistrations(sortedRegistrations.slice(0, 5));
-
-      setStats({
-        tournaments: tournamentTotal,
-        clubs: clubTotal,
-        registrations: totalApplied || normalizedRegistrations.length,
-        approved: approvedCount,
-        pending: pendingCount,
-      });
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-    } finally {
-      setLoading(false);
+    if (summary && stats.clubs > 0 && stats.tournaments === 0) {
+      router.replace('/dashboard/tournaments');
     }
-  };
+  }, [router, stats.clubs, stats.tournaments, summary]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">

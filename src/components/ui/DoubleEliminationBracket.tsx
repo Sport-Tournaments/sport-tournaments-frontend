@@ -45,6 +45,13 @@ const MM_OPTIONS = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 
+export type MatchTeamSwapSlot = {
+  matchId: string;
+  slot: 'team1' | 'team2';
+  teamId?: string;
+  label: string;
+};
+
 export interface DoubleEliminationBracketProps {
   playoffRounds: PlayoffRound[];
   teamNames?: Map<string, string> | Record<string, string>;
@@ -56,6 +63,11 @@ export interface DoubleEliminationBracketProps {
   onAdvance?: (matchId: string, teamId: string) => void;
   onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
+  onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;
+  onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
+  onCancelSwap?: () => void;
+  selectedSwapSlot?: MatchTeamSwapSlot | null;
+  swapBusy?: boolean;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +109,9 @@ interface MatchNodeData extends Record<string, unknown> {
   onAdvance?: (matchId: string, teamId: string) => void;
   onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
+  onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
+  selectedSwapSlot?: MatchTeamSwapSlot | null;
+  swapBusy?: boolean;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
   /** Label shown above the card in finals rounds (e.g. "1st vs 2nd") */
@@ -112,7 +127,8 @@ type MatchFlowNode = Node<MatchNodeData, 'match'>;
 function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const {
     match, teamNames, isOrganizer,
-    onAdvance, onScoreUpdate, onSchedule,
+    onAdvance, onScoreUpdate, onSchedule, onSwapTeamSlot,
+    selectedSwapSlot, swapBusy,
     savingMatchId, schedulingMatchId,
     twoLegged,
   } = data;
@@ -129,6 +145,43 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const isT2Win     = isCompleted && match.winnerId === match.team2Id;
   const hasScore    = match.team1Score != null && match.team2Score != null;
   const hasBothTeams = !!match.team1Id && !!match.team2Id;
+  const hasAnyScoreOrWinner =
+    hasScore ||
+    match.leg1Team1Score != null ||
+    match.leg1Team2Score != null ||
+    match.leg2Team1Score != null ||
+    match.leg2Team2Score != null ||
+    !!match.winnerId ||
+    !!match.loserId ||
+    !!match.manualWinnerId ||
+    match.hasPenalties === true;
+  const canSwapTeamSlots =
+    !!onSwapTeamSlot &&
+    !!isOrganizer &&
+    match.status === 'PENDING' &&
+    !hasAnyScoreOrWinner &&
+    !swapBusy;
+  const isSelectedSwapSlot = (slot: 'team1' | 'team2') =>
+    selectedSwapSlot?.matchId === match.id && selectedSwapSlot.slot === slot;
+  const getSwapButtonLabel = (slot: 'team1' | 'team2') => {
+    if (isSelectedSwapSlot(slot)) return 'Selected';
+    return selectedSwapSlot ? 'Place here' : 'Swap';
+  };
+  const canSwapDisplaySlot = (
+    slotTeamId?: string,
+    slotName?: string,
+    sourceSlot?: string,
+  ) => !!slotTeamId || !!sourceSlot || (!!slotName && slotName !== 'TBD');
+  const handleSwapClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    slot: 'team1' | 'team2',
+    label: string,
+    teamId?: string,
+  ) => {
+    event.stopPropagation();
+    if (!canSwapTeamSlots) return;
+    onSwapTeamSlot?.({ matchId: match.id, slot, teamId, label });
+  };
   // Two-legged tie support
   const hasLeg1 = match.leg1Team1Score != null && match.leg1Team2Score != null;
   const hasLeg2 = match.leg2Team1Score != null && match.leg2Team2Score != null;
@@ -245,7 +298,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
           style={{ height: ROW_H }}
           onClick={() => { if (canAdvanceManually && match.team1Id) onAdvance!(match.id, match.team1Id!); }}
           className={`flex items-center gap-1.5 px-2.5 transition-colors ${
-            isT1Win
+            isSelectedSwapSlot('team1')
+              ? 'bg-amber-50 text-amber-900 ring-2 ring-inset ring-amber-400'
+              : isT1Win
               ? 'bg-[#1e3a5f] text-white font-semibold cursor-default'
               : canAdvanceManually
               ? 'bg-white text-gray-700 hover:bg-amber-50 hover:border-amber-200 cursor-pointer'
@@ -258,6 +313,24 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
             </svg>
           )}
           <span className="flex-1 text-[11px] font-medium truncate leading-none">{t1Name}</span>
+          {canSwapTeamSlots && canSwapDisplaySlot(match.team1Id, match.team1Name, match.team1SourceSlot) && (
+            <button
+              type="button"
+              aria-label={`Swap ${t1Name}`}
+              onPointerDown={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => handleSwapClick(e, 'team1', t1Name, match.team1Id)}
+              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                isSelectedSwapSlot('team1')
+                  ? 'bg-amber-500 text-white'
+                  : selectedSwapSlot
+                  ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {getSwapButtonLabel('team1')}
+            </button>
+          )}
           {(twoLegged && hasAnyLeg) ? (
             <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT1Win ? 'text-white' : 'text-gray-800'}`}>
               {match.leg1Team1Score ?? '—'}
@@ -278,7 +351,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
           style={{ height: ROW_H }}
           onClick={() => { if (canAdvanceManually && match.team2Id) onAdvance!(match.id, match.team2Id!); }}
           className={`flex items-center gap-1.5 px-2.5 transition-colors ${
-            isT2Win
+            isSelectedSwapSlot('team2')
+              ? 'bg-amber-50 text-amber-900 ring-2 ring-inset ring-amber-400'
+              : isT2Win
               ? 'bg-[#1e3a5f] text-white font-semibold cursor-default'
               : canAdvanceManually
               ? 'bg-white text-gray-700 hover:bg-amber-50 hover:border-amber-200 cursor-pointer'
@@ -291,6 +366,24 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
             </svg>
           )}
           <span className="flex-1 text-[11px] font-medium truncate leading-none">{t2Name}</span>
+          {canSwapTeamSlots && canSwapDisplaySlot(match.team2Id, match.team2Name, match.team2SourceSlot) && (
+            <button
+              type="button"
+              aria-label={`Swap ${t2Name}`}
+              onPointerDown={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => handleSwapClick(e, 'team2', t2Name, match.team2Id)}
+              className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                isSelectedSwapSlot('team2')
+                  ? 'bg-amber-500 text-white'
+                  : selectedSwapSlot
+                  ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {getSwapButtonLabel('team2')}
+            </button>
+          )}
           {(twoLegged && hasAnyLeg) ? (
             <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT2Win ? 'text-white' : 'text-gray-800'}`}>
               {match.leg1Team2Score ?? '—'}
@@ -307,7 +400,7 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
 
       {/* ── Action bar (organizer only) ── */}
       {/* Score button: always shown for organizer when both teams are placed (allows editing even after completion) */}
-      {/* Details button: always shown for organizer on non-completed matches */}
+      {/* Details button: visible after completion too, so schedules/fields can be corrected */}
       {isOrganizer && (hasBothTeams || !isCompleted) && (
         <div
           className="nopan nodrag flex flex-col gap-1 mt-1.5"
@@ -338,8 +431,7 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
                 {isSaving ? '…' : isCompleted ? 'Edit Score' : 'Score'}
               </button>
             )}
-            {/* Details button: only on non-completed matches */}
-            {onSchedule && !isCompleted && (
+            {onSchedule && (
               <button
                 disabled={isScheduling}
                 onPointerDown={e => e.stopPropagation()}
@@ -348,7 +440,7 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
                 className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-[#e0f7ff] text-[#0090c7] hover:bg-[#c0edf9] disabled:opacity-50 transition-colors border border-[#00a8e8]/30"
               >
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                {isScheduling ? '…' : 'Details'}
+                {isScheduling ? '…' : match.scheduledAt || match.fieldName ? 'Edit Details' : 'Details'}
               </button>
             )}
           </div>
@@ -495,6 +587,11 @@ interface BracketSectionProps {
   onAdvance?: (matchId: string, teamId: string) => void;
   onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
+  onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;
+  onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
+  onCancelSwap?: () => void;
+  selectedSwapSlot?: MatchTeamSwapSlot | null;
+  swapBusy?: boolean;
   savingMatchId?: string | null;
   schedulingMatchId?: string | null;
   placementStart?: number;
@@ -502,17 +599,71 @@ interface BracketSectionProps {
 
 function BracketSection({
   rounds, label, accentColor, edgeColor,
-  teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
+  teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, onSwapTeams,
+  onSwapTeamSlot, onCancelSwap, selectedSwapSlot: controlledSelectedSwapSlot,
+  swapBusy: controlledSwapBusy, savingMatchId, schedulingMatchId,
   placementStart = 1,
 }: BracketSectionProps) {
   const sorted = useMemo(() => [...rounds].sort((a, b) => a.roundNumber - b.roundNumber), [rounds]);
   const numRounds = sorted.length;
   const totalW = 2 * PAD + numRounds * CARD_W + Math.max(0, numRounds - 1) * H_GAP;
   const [flowInstance, setFlowInstance] = useState<ReactFlowInstance | null>(null);
+  const [localSelectedSwapSlot, setLocalSelectedSwapSlot] = useState<MatchTeamSwapSlot | null>(null);
+  const [localSwapBusy, setLocalSwapBusy] = useState(false);
+  const selectedSwapSlot = controlledSelectedSwapSlot !== undefined
+    ? controlledSelectedSwapSlot
+    : localSelectedSwapSlot;
+  const swapBusy = controlledSwapBusy !== undefined
+    ? controlledSwapBusy
+    : localSwapBusy;
+  const canSwapTeams = !!onSwapTeamSlot || !!onSwapTeams;
+
+  const handleSwapSlot = async (slot: MatchTeamSwapSlot) => {
+    if (onSwapTeamSlot) {
+      onSwapTeamSlot(slot);
+      return;
+    }
+    if (!onSwapTeams || swapBusy) return;
+    if (!selectedSwapSlot) {
+      setLocalSelectedSwapSlot(slot);
+      return;
+    }
+    if (selectedSwapSlot.matchId === slot.matchId && selectedSwapSlot.slot === slot.slot) {
+      setLocalSelectedSwapSlot(null);
+      return;
+    }
+
+    setLocalSwapBusy(true);
+    try {
+      await onSwapTeams(selectedSwapSlot, slot);
+      setLocalSelectedSwapSlot(null);
+    } finally {
+      setLocalSwapBusy(false);
+    }
+  };
 
   const sharedData = useMemo(() => ({
-    teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId,
-  }), [teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId]);
+    teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule,
+    onSwapTeamSlot: canSwapTeams ? handleSwapSlot : undefined,
+    selectedSwapSlot,
+    swapBusy,
+    savingMatchId,
+    schedulingMatchId,
+  }), [
+    teamNames,
+    isOrganizer,
+    twoLegged,
+    onAdvance,
+    onScoreUpdate,
+    onSchedule,
+    onSwapTeams,
+    onSwapTeamSlot,
+    canSwapTeams,
+    selectedSwapSlot,
+    swapBusy,
+    savingMatchId,
+    schedulingMatchId,
+  ]);
 
   // Build nodes; the slot index (used for vertical spacing) increments only when
   // match count decreases — consecutive same-count rounds (e.g. WR Final → GF →
@@ -624,6 +775,34 @@ function BracketSection({
         </div>
       )}
 
+      {canSwapTeams && isOrganizer && (
+        <div className={`mb-2 flex flex-col gap-2 rounded-lg border px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between ${
+          selectedSwapSlot
+            ? 'border-amber-200 bg-amber-50 text-amber-800'
+            : 'border-gray-200 bg-white text-gray-500'
+        }`}>
+          <span>
+            {swapBusy
+              ? 'Swapping teams…'
+              : selectedSwapSlot
+              ? 'Now click “Place here” on the destination team.'
+              : 'Need to change the bracket? Click “Swap” on one team, then choose the destination.'}
+          </span>
+          {selectedSwapSlot && !swapBusy && (
+            <button
+              type="button"
+              onClick={() => {
+                if (onCancelSwap) onCancelSwap();
+                else setLocalSelectedSwapSlot(null);
+              }}
+              className="self-start rounded-md border border-amber-300 bg-white px-2 py-1 font-semibold text-amber-700 hover:bg-amber-100 sm:self-auto"
+            >
+              Cancel swap
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="mb-2 flex justify-end">
         <div className="inline-flex overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <button
@@ -707,6 +886,7 @@ function BracketSection({
 
 export default function DoubleEliminationBracket({
   playoffRounds, teamNames, isOrganizer, placementStart = 1, twoLegged, onAdvance, onScoreUpdate, onSchedule,
+  onSwapTeams, onSwapTeamSlot, onCancelSwap, selectedSwapSlot, swapBusy,
   savingMatchId, schedulingMatchId,
 }: DoubleEliminationBracketProps) {
   const winnersRounds    = playoffRounds.filter(r => r.bracket === 'winners');
@@ -714,7 +894,11 @@ export default function DoubleEliminationBracket({
   const grandFinalRounds = playoffRounds.filter(r => r.bracket === 'grand_final');
   const untaggedRounds   = playoffRounds.filter(r => !r.bracket);
 
-  const sharedProps = { teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule, savingMatchId, schedulingMatchId };
+  const sharedProps = {
+    teamNames, isOrganizer, twoLegged, onAdvance, onScoreUpdate, onSchedule,
+    onSwapTeams, onSwapTeamSlot, onCancelSwap, selectedSwapSlot, swapBusy,
+    savingMatchId, schedulingMatchId,
+  };
 
   // Build the single combined round list:
   //   [WR rounds…] + [1st/2nd Place] + [3rd/4th Place]

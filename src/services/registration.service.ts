@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { apiGet, apiPost, apiPatch, apiDelete, apiUpload } from './api';
 import { buildQueryString } from '@/utils/helpers';
 import type {
   Registration,
@@ -15,7 +15,6 @@ import type {
   ApiResponse,
   PaginatedResponse,
   RegistrationDocument,
-  UploadDocumentDto,
   ConfirmFitnessDto,
   FitnessStatus,
   RegistrationWithDetails,
@@ -221,33 +220,14 @@ export async function uploadDocument(
   file: File,
   notes?: string
 ): Promise<ApiResponse<RegistrationDocument>> {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('documentType', documentType);
-  if (notes) {
-    formData.append('notes', notes);
-  }
-  
-  // Use fetch directly for multipart/form-data
-  // Import the cookie helper to get the token
-  const { getTokenFromCookie } = await import('@/utils/cookies');
-  const token = getTokenFromCookie('accessToken');
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3010/api';
-  
-  const response = await fetch(`${apiUrl}/v1/registrations/${registrationId}/documents`, {
-    method: 'POST',
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  return apiUpload<ApiResponse<RegistrationDocument>>(
+    `/v1/registrations/${registrationId}/documents`,
+    file,
+    {
+      documentType,
+      ...(notes ? { notes } : {}),
     },
-    body: formData,
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Failed to upload document');
-  }
-  
-  return response.json();
+  );
 }
 
 export async function getDocuments(registrationId: string): Promise<ApiResponse<RegistrationDocument[]>> {

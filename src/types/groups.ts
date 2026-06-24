@@ -158,6 +158,13 @@ export interface MatchesResponse {
   advancingTeamsPerGroup?: number;
 }
 
+export interface SwapMatchTeamsDto {
+  sourceMatchId: string;
+  sourceSlot: 'team1' | 'team2';
+  targetMatchId: string;
+  targetSlot: 'team1' | 'team2';
+}
+
 export interface UpdateMatchAdvancementDto {
   advancingTeamId: string;
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import MatchManagement from "../MatchManagement";
 import { groupService } from "@/services";
 
@@ -16,8 +16,14 @@ vi.mock("react-i18next", () => ({
 }));
 
 vi.mock("@xyflow/react", () => ({
-  ReactFlow: ({ children }: { children?: React.ReactNode }) => (
-    <div data-testid="react-flow">{children}</div>
+  ReactFlow: ({ children, nodes = [], nodeTypes = {} }: { children?: React.ReactNode; nodes?: any[]; nodeTypes?: Record<string, React.ComponentType<any>> }) => (
+    <div data-testid="react-flow">
+      {nodes.map((node) => {
+        const NodeComponent = nodeTypes[node.type];
+        return NodeComponent ? <NodeComponent key={node.id} data={node.data} /> : null;
+      })}
+      {children}
+    </div>
   ),
   Handle: () => null,
   Controls: () => <div data-testid="react-flow-controls" />,
@@ -28,10 +34,15 @@ vi.mock("@/services", () => ({
   groupService: {
     getMatches: vi.fn(),
     getGroups: vi.fn(),
+    swapMatchTeams: vi.fn(),
   },
 }));
 
 describe("MatchManagement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("lets organizers create the provisional knockout shell before groups finish", async () => {
     vi.mocked(groupService.getMatches).mockResolvedValue({
       success: true,
@@ -297,4 +308,264 @@ describe("MatchManagement", () => {
     expect(screen.getAllByRole("button", { name: "Zoom out" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Fit view" })).toHaveLength(2);
   });
+
+  it("lets organizers swap provisional source slots before group matches finish", async () => {
+    vi.mocked(groupService.getMatches).mockResolvedValue({
+      success: true,
+      data: {
+        bracketType: "GROUPS_PLUS_KNOCKOUT",
+        advancingTeamsPerGroup: 1,
+        teams: [
+          { id: "reg-1", name: "Team 1" },
+          { id: "reg-2", name: "Team 2" },
+        ],
+        matches: [
+          {
+            id: "grp_A_1",
+            round: 1,
+            matchNumber: 1,
+            groupLetter: "A",
+            team1Id: "reg-1",
+            team2Id: "reg-2",
+            status: "PENDING",
+          },
+        ],
+        playoffRounds: [],
+        placementBrackets: [
+          {
+            key: "placement-1-4",
+            label: "1-4",
+            rangeStart: 1,
+            rangeEnd: 4,
+            playoffRounds: [
+              {
+                roundNumber: 1,
+                roundName: "1-4",
+                matches: [
+                  {
+                    id: "placement-1-4-r1-m1",
+                    round: 1,
+                    matchNumber: 1,
+                    status: "PENDING",
+                    team1Name: "A1",
+                    team1SourceSlot: "A1",
+                    team2Name: "B2",
+                    team2SourceSlot: "B2",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            key: "placement-5-8",
+            label: "5-8",
+            rangeStart: 5,
+            rangeEnd: 8,
+            playoffRounds: [
+              {
+                roundNumber: 1,
+                roundName: "5-8",
+                matches: [
+                  {
+                    id: "placement-5-8-r1-m1",
+                    round: 1,
+                    matchNumber: 1,
+                    status: "PENDING",
+                    team1Name: "A2",
+                    team1SourceSlot: "A2",
+                    team2Name: "B4",
+                    team2SourceSlot: "B4",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    } as any);
+    vi.mocked(groupService.getGroups).mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: "group-1",
+          tournamentId: "tournament-1",
+          groupLetter: "A",
+          teams: ["reg-1", "reg-2"],
+        },
+      ],
+    } as any);
+    vi.mocked(groupService.swapMatchTeams).mockResolvedValue({
+      success: true,
+      data: { bracketUpdated: true },
+    } as any);
+
+    render(
+      <MatchManagement
+        tournamentId="tournament-1"
+        isOrganizer
+        ageGroupFormat="GROUPS_PLUS_KNOCKOUT"
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Swap A1" }));
+    expect(screen.getByText(/Now click/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "5-8" }));
+    fireEvent.click(screen.getByRole("button", { name: "Swap B4" }));
+
+    await waitFor(() => {
+      expect(groupService.swapMatchTeams).toHaveBeenCalledWith(
+        "tournament-1",
+        {
+          sourceMatchId: "placement-1-4-r1-m1",
+          sourceSlot: "team1",
+          targetMatchId: "placement-5-8-r1-m1",
+          targetSlot: "team2",
+        },
+        undefined,
+      );
+    });
+  });
+
+  it("lets organizers swap teams between pending placement bracket range tabs", async () => {
+    vi.mocked(groupService.getMatches).mockResolvedValue({
+      success: true,
+      data: {
+        bracketType: "GROUPS_PLUS_KNOCKOUT",
+        advancingTeamsPerGroup: 1,
+        teams: [
+          { id: "reg-1", name: "Team 1" },
+          { id: "reg-2", name: "Team 2" },
+          { id: "reg-3", name: "Team 3" },
+          { id: "reg-4", name: "Team 4" },
+          { id: "reg-5", name: "Team 5" },
+          { id: "reg-6", name: "Team 6" },
+          { id: "reg-7", name: "Team 7" },
+          { id: "reg-8", name: "Team 8" },
+        ],
+        matches: [
+          {
+            id: "grp_A_1",
+            round: 1,
+            matchNumber: 1,
+            groupLetter: "A",
+            team1Id: "reg-1",
+            team2Id: "reg-2",
+            team1Score: 1,
+            team2Score: 0,
+            winnerId: "reg-1",
+            status: "COMPLETED",
+          },
+        ],
+        playoffRounds: [],
+        placementBrackets: [
+          {
+            key: "placement-1-4",
+            label: "1-4",
+            rangeStart: 1,
+            rangeEnd: 4,
+            playoffRounds: [
+              {
+                roundNumber: 1,
+                roundName: "1-4",
+                matches: [
+                  {
+                    id: "placement-1-4-r1-m1",
+                    round: 1,
+                    matchNumber: 1,
+                    status: "PENDING",
+                    team1Id: "reg-1",
+                    team2Id: "reg-2",
+                  },
+                  {
+                    id: "placement-1-4-r1-m2",
+                    round: 1,
+                    matchNumber: 2,
+                    status: "PENDING",
+                    team1Id: "reg-3",
+                    team2Id: "reg-4",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            key: "placement-5-8",
+            label: "5-8",
+            rangeStart: 5,
+            rangeEnd: 8,
+            playoffRounds: [
+              {
+                roundNumber: 1,
+                roundName: "5-8",
+                matches: [
+                  {
+                    id: "placement-5-8-r1-m1",
+                    round: 1,
+                    matchNumber: 1,
+                    status: "PENDING",
+                    team1Id: "reg-5",
+                    team2Id: "reg-6",
+                  },
+                  {
+                    id: "placement-5-8-r1-m2",
+                    round: 1,
+                    matchNumber: 2,
+                    status: "PENDING",
+                    team1Id: "reg-7",
+                    team2Id: "reg-8",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    } as any);
+    vi.mocked(groupService.getGroups).mockResolvedValue({
+      success: true,
+      data: [
+        {
+          id: "group-1",
+          tournamentId: "tournament-1",
+          groupLetter: "A",
+          teams: ["reg-1", "reg-2", "reg-3", "reg-4", "reg-5", "reg-6", "reg-7", "reg-8"],
+        },
+      ],
+    } as any);
+    vi.mocked(groupService.swapMatchTeams).mockResolvedValue({
+      success: true,
+      data: { bracketUpdated: true },
+    } as any);
+
+    render(
+      <MatchManagement
+        tournamentId="tournament-1"
+        isOrganizer
+        ageGroupFormat="GROUPS_PLUS_KNOCKOUT"
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "Swap Team 1" }));
+    expect(screen.getByText(/Now click/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: "5-8" }));
+    expect(screen.getByText(/Now click/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Swap Team 8" }));
+
+    await waitFor(() => {
+      expect(groupService.swapMatchTeams).toHaveBeenCalledWith(
+        "tournament-1",
+        {
+          sourceMatchId: "placement-1-4-r1-m1",
+          sourceSlot: "team1",
+          targetMatchId: "placement-5-8-r1-m2",
+          targetSlot: "team2",
+        },
+        undefined,
+      );
+    });
+  });
+
 });

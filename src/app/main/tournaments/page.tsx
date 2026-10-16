@@ -21,6 +21,7 @@ import { formatDistance } from "@/services/location.service";
 import { Tournament, TournamentStatus, GeolocationFilters } from "@/types";
 import { formatDate } from "@/utils/date";
 import { getTournamentPublicPath } from "@/utils/helpers";
+import { parsePaginatedResponse } from "@/utils/pagination";
 import { useDebounce, useInfiniteScroll } from "@/hooks";
 
 const PAGE_SIZE = 12;
@@ -108,14 +109,14 @@ export default function TournamentsPage() {
     return tournament.status;
   };
 
-  const fetchTournaments = useCallback(
-    async (page: number) => {
+  // Filters shared by the main (upcoming) list and the past-tournaments section.
+  const buildParams = useCallback(
+    (page: number) => {
       const params: Record<string, unknown> = {
         page,
         pageSize: PAGE_SIZE,
       };
       if (debouncedSearch) params.search = debouncedSearch;
-      if (status && status !== "COMPLETED") params.status = status;
       if (level) params.level = level;
       if (country) params.country = country;
       if (gameSystem) params.gameSystem = gameSystem;
@@ -140,6 +141,43 @@ export default function TournamentsPage() {
         params.userLongitude = geoFilters.userLongitude;
         if (geoFilters.maxDistance) params.maxDistance = geoFilters.maxDistance;
         if (geoFilters.sortByDistance) params.sortByDistance = true;
+      }
+      return params;
+    },
+    [
+      debouncedSearch,
+      geoFilters,
+      level,
+      country,
+      gameSystem,
+      dateOnlyFrom,
+      dateOnlyTo,
+      numberOfMatchesMin,
+      numberOfMatchesMax,
+      isPremium,
+      isFeatured,
+      hasAvailableSpots,
+      sortBy,
+      sortOrder,
+    ],
+  );
+
+  const fetchTournaments = useCallback(
+    async (page: number) => {
+      const params = buildParams(page);
+      // Past tournaments are filtered server-side. Without this the list
+      // (sorted by start date ASC) paged through every finished tournament
+      // before reaching the upcoming ones.
+      if (!status) {
+        params.period = "upcoming";
+      } else if (status === "COMPLETED") {
+        params.period = "past";
+        if (!sortBy) {
+          params.sortBy = "startDate";
+          params.sortOrder = "DESC";
+        }
+      } else {
+        params.status = status;
       }
 
       const response = await tournamentService.getTournaments(params);
@@ -168,38 +206,87 @@ export default function TournamentsPage() {
         totalPages = resData.totalPages || resData.meta?.totalPages || 1;
       }
 
-      const filteredTournamentData =
-        status === "COMPLETED"
-          ? tournamentData.filter(
-              (tournament) =>
-                getEffectiveTournamentStatus(tournament) === "COMPLETED",
-            )
-          : tournamentData;
-
       return {
-        items: filteredTournamentData,
+        items: tournamentData,
         hasMore: page < totalPages,
         totalPages,
       };
     },
-    [
-      debouncedSearch,
-      status,
-      geoFilters,
-      level,
-      country,
-      gameSystem,
-      dateOnlyFrom,
-      dateOnlyTo,
-      numberOfMatchesMin,
-      numberOfMatchesMax,
-      isPremium,
-      isFeatured,
-      hasAvailableSpots,
-      sortBy,
-      sortOrder,
-    ],
+    [buildParams, status, sortBy],
   );
+
+  // Past tournaments: total shown in the section header, items loaded only
+  // when the section is expanded (most recent first, "load more" paging).
+  const [pastTournaments, setPastTournaments] = useState<Tournament[]>([]);
+  const [pastTotal, setPastTotal] = useState(0);
+  const [pastPage, setPastPage] = useState(0);
+  const [pastTotalPages, setPastTotalPages] = useState(1);
+  const [isLoadingPast, setIsLoadingPast] = useState(false);
+  const [isCountingPast, setIsCountingPast] = useState(true);
+
+  const fetchPastPage = useCallback(
+    async (page: number, pageSize = PAGE_SIZE) => {
+      const params = buildParams(page);
+      params.pageSize = pageSize;
+      params.period = "past";
+      if (!sortBy) {
+        params.sortBy = "startDate";
+        params.sortOrder = "DESC";
+      }
+      const response = await tournamentService.getTournaments(params);
+      return parsePaginatedResponse<Tournament>(response);
+    },
+    [buildParams, sortBy],
+  );
+
+  // Reset past section and fetch only its count whenever filters change
+  useEffect(() => {
+    setPastTournaments([]);
+    setPastPage(0);
+    setPastTotalPages(1);
+    setPastTotal(0);
+    if (status) {
+      setIsCountingPast(false);
+      return;
+    }
+    let cancelled = false;
+    setIsCountingPast(true);
+    fetchPastPage(1, 1)
+      .then((res) => {
+        if (!cancelled) setPastTotal(res.total ?? res.items.length);
+      })
+      .catch(() => {
+        if (!cancelled) setPastTotal(0);
+      })
+      .finally(() => {
+        if (!cancelled) setIsCountingPast(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchPastPage, status]);
+
+  const loadMorePast = useCallback(async () => {
+    if (isLoadingPast) return;
+    setIsLoadingPast(true);
+    try {
+      const next = pastPage + 1;
+      const res = await fetchPastPage(next);
+      setPastTournaments((prev) => (next === 1 ? res.items : [...prev, ...res.items]));
+      setPastPage(next);
+      setPastTotalPages(res.totalPages);
+    } catch {
+      // keep what we have; the user can retry via "load more"
+    } finally {
+      setIsLoadingPast(false);
+    }
+  }, [fetchPastPage, isLoadingPast, pastPage]);
+
+  useEffect(() => {
+    if (showPastTournaments && pastPage === 0 && pastTotal > 0) {
+      loadMorePast();
+    }
+  }, [showPastTournaments, pastPage, pastTotal, loadMorePast]);
 
   const {
     items: tournaments,
@@ -297,24 +384,8 @@ export default function TournamentsPage() {
     setSortOrder("ASC");
   };
 
-  // FE-01: split active vs completed when no status filter is applied
-  const { activeTournaments, pastTournaments } = useMemo(() => {
-    if (status) {
-      // User has explicitly chosen a filter — don't split
-      return { activeTournaments: tournaments, pastTournaments: [] };
-    }
-    const active: Tournament[] = [];
-    const past: Tournament[] = [];
-    for (const t of tournaments) {
-      if (getEffectiveTournamentStatus(t) === 'COMPLETED') {
-        past.push(t);
-      } else {
-        active.push(t);
-      }
-    }
-    return { activeTournaments: active, pastTournaments: past };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tournaments, status]);
+  // The API already returns only upcoming tournaments when no status filter is set.
+  const activeTournaments = tournaments;
 
   const getStatusBadge = (tournamentStatus: TournamentStatus) => {
     const variants: Partial<
@@ -623,7 +694,7 @@ export default function TournamentsPage() {
         </div>
 
         {/* Loading state */}
-        {isLoading && tournaments.length === 0 ? (
+        {(isLoading || (!status && isCountingPast)) && tournaments.length === 0 ? (
           <div className="flex justify-center py-12">
             <Loading size="lg" />
           </div>
@@ -651,7 +722,7 @@ export default function TournamentsPage() {
               {t("common.retry")}
             </Button>
           </div>
-        ) : tournaments.length === 0 ? (
+        ) : tournaments.length === 0 && (status || pastTotal === 0) ? (
           /* Empty state */
           <div className="text-center py-12">
             <svg
@@ -686,6 +757,11 @@ export default function TournamentsPage() {
         ) : (
           /* Tournament grid with infinite scroll */
           <>
+            {activeTournaments.length === 0 && (
+              <p className="text-center text-gray-500 py-8">
+                {t("tournament.noUpcomingTournaments", "No upcoming tournaments right now. See past tournaments below.")}
+              </p>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {activeTournaments.map((tournament) => (
                 <Link
@@ -827,7 +903,7 @@ export default function TournamentsPage() {
             </div>
 
             {/* FE-01: Past / Completed tournaments collapsible section */}
-            {pastTournaments.length > 0 && (
+            {!status && pastTotal > 0 && (
               <div className="mt-10">
                 <button
                   onClick={() => setShowPastTournaments((v) => !v)}
@@ -842,7 +918,7 @@ export default function TournamentsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                   {t("tournament.pastTournaments", "Past Tournaments")}
-                  <Badge variant="default" className="ml-1">{pastTournaments.length}</Badge>
+                  <Badge variant="default" className="ml-1">{pastTotal}</Badge>
                 </button>
 
                 {showPastTournaments && (
@@ -903,6 +979,17 @@ export default function TournamentsPage() {
                         </Card>
                       </Link>
                     ))}
+                  </div>
+                )}
+                {showPastTournaments && (isLoadingPast || pastPage < pastTotalPages) && (
+                  <div className="mt-6 flex justify-center">
+                    {isLoadingPast ? (
+                      <Loading size="sm" />
+                    ) : (
+                      <Button variant="outline" onClick={loadMorePast}>
+                        {t("common.loadMore", "Load more")}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

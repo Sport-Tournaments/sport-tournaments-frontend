@@ -8,6 +8,7 @@ import Select from './Select';
 import LocationAutocomplete from './LocationAutocomplete';
 import Modal from './Modal';
 import { cn } from '@/utils/helpers';
+import { formatMatchDuration, getMatchPeriodOptions } from '@/utils/matchFormat';
 import type { TournamentFormat, TournamentLevel } from '@/types';
 
 // Game systems for football based on player count (field players + goalkeeper)
@@ -30,11 +31,6 @@ const GROUPS_COUNT_OPTIONS = Array.from({ length: 16 }, (_, i) => {
     label: value === 1 ? '1 Group' : `${value} Groups`,
   };
 });
-
-const MATCH_PERIOD_TYPE_OPTIONS = [
-  { value: 'ONE_HALF', label: '1 half' },
-  { value: 'TWO_HALVES', label: '2 halves' },
-];
 
 // Generate birth years from current year down to U23
 const currentYear = new Date().getFullYear();
@@ -178,6 +174,81 @@ export function AgeGroupsManager({
   const handleCancelDelete = useCallback(() => {
     setDeleteConfirmIndex(null);
   }, []);
+
+  const renderMatchPeriodFields = (ageGroup: AgeGroupFormData, index: number) => {
+    const periodType = ageGroup.matchPeriodType || 'TWO_HALVES';
+    const isSinglePeriod = periodType === 'ONE_HALF';
+    const totalLabel = formatMatchDuration(t, {
+      matchPeriodType: periodType,
+      halfDurationMinutes: ageGroup.halfDurationMinutes,
+      halfTimePauseMinutes: ageGroup.halfTimePauseMinutes,
+    });
+
+    return (
+      <>
+        <Select
+          label={t('tournaments.ageGroups.matchStructure', 'Match structure')}
+          options={getMatchPeriodOptions(t)}
+          value={periodType}
+          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+            handleUpdateAgeGroup(index, {
+              matchPeriodType: (e.target.value || 'TWO_HALVES') as 'ONE_HALF' | 'TWO_HALVES',
+              // A single period has no half-time break
+              ...(e.target.value === 'ONE_HALF' ? { halfTimePauseMinutes: undefined } : {}),
+            })
+          }
+          disabled={disabled}
+          helperText={
+            totalLabel !== '—'
+              ? t('tournaments.ageGroups.totalMatchTime', 'Total match time: {{value}}', { value: totalLabel })
+              : undefined
+          }
+        />
+
+        <Input
+          type="number"
+          label={
+            isSinglePeriod
+              ? t('tournaments.ageGroups.matchLength', 'Match length (minutes)')
+              : t('tournaments.ageGroups.halfLength', 'Length of each half (minutes)')
+          }
+          value={ageGroup.halfDurationMinutes ?? ''}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            handleUpdateAgeGroup(index, {
+              halfDurationMinutes: e.target.value ? parseInt(e.target.value) : undefined,
+            })
+          }
+          min={5}
+          max={60}
+          step={1}
+          disabled={disabled}
+          helperText={
+            isSinglePeriod
+              ? t('tournaments.ageGroups.matchLengthHelp', 'Whole match played without a break (common: 20-25).')
+              : t('tournaments.ageGroups.halfLengthHelp', 'Duration of ONE half, not the whole match (common: 15 → 2 × 15 min).')
+          }
+        />
+
+        {!isSinglePeriod && (
+          <Input
+            type="number"
+            label={t('tournaments.ageGroups.halfTimeBreak', 'Half-time break (minutes)')}
+            value={ageGroup.halfTimePauseMinutes ?? ''}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleUpdateAgeGroup(index, {
+                halfTimePauseMinutes: e.target.value ? parseInt(e.target.value) : undefined,
+              })
+            }
+            min={0}
+            max={60}
+            step={1}
+            disabled={disabled}
+            helperText={t('tournaments.ageGroups.halfTimeBreakHelp', 'Break between the two halves (e.g. 5 min). Leave empty if no break.')}
+          />
+        )}
+      </>
+    );
+  };
 
   const handleUpdateAgeGroup = useCallback((index: number, updates: Partial<AgeGroupFormData>) => {
     const newAgeGroups = ageGroups.map((ag, i) => {
@@ -515,49 +586,7 @@ export function AgeGroupsManager({
                           helperText={t('tournaments.ageGroups.fieldsCountHelp', 'Number of playing fields available (games running simultaneously)')}
                         />
 
-                        <Select
-                          label={t('tournaments.ageGroups.matchHalves', 'Match format')}
-                          options={MATCH_PERIOD_TYPE_OPTIONS}
-                          value={ageGroup.matchPeriodType || 'TWO_HALVES'}
-                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              matchPeriodType: (e.target.value || 'TWO_HALVES') as 'ONE_HALF' | 'TWO_HALVES',
-                            })
-                          }
-                          disabled={disabled}
-                        />
-
-                        <Input
-                          type="number"
-                          label={t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}
-                          value={ageGroup.halfDurationMinutes ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              halfDurationMinutes: e.target.value ? parseInt(e.target.value) : undefined,
-                            })
-                          }
-                          min={5}
-                          max={60}
-                          step={1}
-                          disabled={disabled}
-                          helperText={t('tournaments.ageGroups.halfDurationHelp', 'For 2 halves, this is each half duration (common: 15). For 1 half, use 20-25.')}
-                        />
-
-                        <Input
-                          type="number"
-                          label={t('tournaments.ageGroups.halfTimePause', 'Half-time pause (minutes)')}
-                          value={ageGroup.halfTimePauseMinutes ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              halfTimePauseMinutes: e.target.value ? parseInt(e.target.value) : undefined,
-                            })
-                          }
-                          min={0}
-                          max={60}
-                          step={1}
-                          disabled={disabled}
-                          helperText={t('tournaments.ageGroups.halfTimePauseHelp', 'Break between the two halves of a match (e.g. 5 min). Leave empty if no break.')}
-                        />
+                        {renderMatchPeriodFields(ageGroup, index)}
 
                         <Input
                           type="number"
@@ -624,49 +653,7 @@ export function AgeGroupsManager({
                           helperText={t('tournaments.ageGroups.fieldsCountHelp', 'Number of playing fields available (games running simultaneously)')}
                         />
 
-                        <Select
-                          label={t('tournaments.ageGroups.matchHalves', 'Match format')}
-                          options={MATCH_PERIOD_TYPE_OPTIONS}
-                          value={ageGroup.matchPeriodType || 'TWO_HALVES'}
-                          onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              matchPeriodType: (e.target.value || 'TWO_HALVES') as 'ONE_HALF' | 'TWO_HALVES',
-                            })
-                          }
-                          disabled={disabled}
-                        />
-
-                        <Input
-                          type="number"
-                          label={t('tournaments.ageGroups.halfDuration', 'Duration per half (minutes)')}
-                          value={ageGroup.halfDurationMinutes ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              halfDurationMinutes: e.target.value ? parseInt(e.target.value) : undefined,
-                            })
-                          }
-                          min={5}
-                          max={60}
-                          step={1}
-                          disabled={disabled}
-                          helperText={t('tournaments.ageGroups.halfDurationHelp', 'For 2 halves, this is each half duration (common: 15). For 1 half, use 20-25.')}
-                        />
-
-                        <Input
-                          type="number"
-                          label={t('tournaments.ageGroups.halfTimePause', 'Half-time pause (minutes)')}
-                          value={ageGroup.halfTimePauseMinutes ?? ''}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                            handleUpdateAgeGroup(index, {
-                              halfTimePauseMinutes: e.target.value ? parseInt(e.target.value) : undefined,
-                            })
-                          }
-                          min={0}
-                          max={60}
-                          step={1}
-                          disabled={disabled}
-                          helperText={t('tournaments.ageGroups.halfTimePauseHelp', 'Break between the two halves of a match (e.g. 5 min). Leave empty if no break.')}
-                        />
+                        {renderMatchPeriodFields(ageGroup, index)}
 
                         <Input
                           type="number"

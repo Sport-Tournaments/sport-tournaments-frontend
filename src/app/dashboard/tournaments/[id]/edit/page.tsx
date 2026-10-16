@@ -32,6 +32,7 @@ import { Tournament } from "@/types";
 import type { LocationSuggestion } from "@/types";
 import { formatDateForInput } from "@/utils/date";
 import { slugify } from "@/utils/helpers";
+import { useAuthStore } from "@/store";
 
 // Define value arrays for runtime use
 const BASE_TOURNAMENT_STATUSES = [
@@ -60,6 +61,8 @@ const tournamentSchema = z.object({
   location: z.string().min(3, "Location is required"),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
+  placeId: z.string().optional(),
+  venueName: z.string().optional(),
   whatsappGroupLink: z.string().url("Invalid URL").optional().or(z.literal("")),
   rules: z.string().optional(),
   contactEmail: z.string().email("Invalid email").optional().or(z.literal("")),
@@ -110,6 +113,9 @@ export default function EditTournamentPage() {
   const [ageGroups, setAgeGroups] = useState<AgeGroupFormData[]>([]);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === "ADMIN";
+  const [isFeatured, setIsFeatured] = useState(false);
 
   const {
     register,
@@ -211,6 +217,8 @@ export default function EditTournamentPage() {
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
     setValue("location", location.formattedAddress);
+    setValue("placeId", location.placeId || "");
+    setValue("venueName", location.venueName || "");
     if (location.latitude && location.longitude) {
       setValue("latitude", location.latitude);
       setValue("longitude", location.longitude);
@@ -224,6 +232,8 @@ export default function EditTournamentPage() {
       const location = await getCurrentLocation();
       setValue("latitude", location.latitude);
       setValue("longitude", location.longitude);
+      setValue("placeId", "");
+      setValue("venueName", "");
       // Update the location field to show coordinates (user can override with autocomplete)
       setValue(
         "location",
@@ -285,6 +295,7 @@ export default function EditTournamentPage() {
             }))
           : [];
       setAgeGroups(mappedAgeGroups);
+      setIsFeatured(!!data.isFeatured);
       initialAgeGroupsRef.current = JSON.stringify(mappedAgeGroups);
       initialHasRegulationsRef.current = !!data.regulationsDocument;
       reset({
@@ -305,6 +316,8 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
+        placeId: data.placeId || "",
+        venueName: data.venueName || "",
         whatsappGroupLink: data.whatsappGroupLink || "",
         rules: data.rules || "",
         contactEmail: data.contactEmail || "",
@@ -360,6 +373,9 @@ export default function EditTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
+        // Empty strings clear a previously picked venue
+        placeId: data.placeId || "",
+        venueName: data.venueName || "",
         ...(data.whatsappGroupLink?.trim() && {
           whatsappGroupLink: data.whatsappGroupLink.trim(),
         }),
@@ -380,8 +396,18 @@ export default function EditTournamentPage() {
         updateData as any,
       );
 
-      // Update status via dedicated endpoints when changed
-      if (tournament && data.status !== tournament.status) {
+      // Admins set status/featured directly (no lifecycle restrictions, e.g.
+      // re-opening a completed tournament); owners go through the lifecycle endpoints.
+      if (
+        isAdmin &&
+        tournament &&
+        (data.status !== tournament.status || isFeatured !== !!tournament.isFeatured)
+      ) {
+        await tournamentService.adminUpdateTournament(params.id as string, {
+          ...(data.status !== tournament.status && { status: data.status as any }),
+          ...(isFeatured !== !!tournament.isFeatured && { isFeatured }),
+        });
+      } else if (tournament && data.status !== tournament.status) {
         if (data.status === "PUBLISHED") {
           await tournamentService.publishTournament(params.id as string);
         } else if (data.status === "COMPLETED") {
@@ -467,9 +493,11 @@ export default function EditTournamentPage() {
   };
 
   const availableStatuses =
-    tournament?.status === "ONGOING"
+    isAdmin || tournament?.status === "ONGOING"
       ? TOURNAMENT_STATUSES
       : BASE_TOURNAMENT_STATUSES;
+  const isEditingAsAdmin =
+    isAdmin && !!tournament && !!user && user.id !== tournament.organizerId;
 
   const statusOptions = availableStatuses.map((status) => ({
     value: status,
@@ -497,6 +525,23 @@ export default function EditTournamentPage() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
+        {isEditingAsAdmin && (
+          <Alert variant="info">
+            {t(
+              "admin.tournamentEdit.editingAsAdmin",
+              "You are editing this tournament as an administrator. Owner: {{owner}}",
+              {
+                owner:
+                  tournament.organizer?.email ||
+                  [tournament.organizer?.firstName, tournament.organizer?.lastName]
+                    .filter(Boolean)
+                    .join(" ") ||
+                  tournament.organizerId,
+              },
+            )}
+          </Alert>
+        )}
+
         {/* Back Button */}
         <button
           onClick={() => {
@@ -595,6 +640,21 @@ export default function EditTournamentPage() {
                 {...register("status")}
               />
 
+              {isAdmin && (
+                <div className="flex items-center gap-3 pt-2">
+                  <input
+                    type="checkbox"
+                    id="isFeatured"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="isFeatured" className="text-sm font-medium text-gray-700">
+                    {t("admin.tournamentEdit.featured", "Featured (admin)")}
+                  </label>
+                </div>
+              )}
+
               {/* Private Tournament Toggle */}
               <div className="flex items-center gap-3 pt-2">
                 <input
@@ -649,12 +709,16 @@ export default function EditTournamentPage() {
                 <div className="flex-1">
                   <LocationAutocomplete
                     label={t("tournament.location")}
-                    placeholder="Search for city or venue..."
+                    placeholder={t("tournament.locationSearchPlaceholder", "Search address, stadium or sports complex...")}
+                    helperText={t("tournament.locationSearchHelp", "You can pick a venue (stadium, sports base, school) or a plain address.")}
                     displayMode="address"
                     value={watchedLocation || ""}
-                    onChange={(value) =>
-                      setValue("location", value, { shouldValidate: true })
-                    }
+                    onChange={(value) => {
+                      setValue("location", value, { shouldValidate: true });
+                      // Typed text no longer matches the picked venue
+                      setValue("placeId", "", { shouldDirty: true });
+                      setValue("venueName", "", { shouldDirty: true });
+                    }}
                     onSelect={handleLocationSelect}
                     error={errors.location?.message}
                     required

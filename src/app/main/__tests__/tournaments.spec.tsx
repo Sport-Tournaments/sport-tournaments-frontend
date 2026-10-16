@@ -40,6 +40,7 @@ vi.mock('react-i18next', () => ({
 vi.mock('@/services', () => ({
   tournamentService: {
     getTournaments: vi.fn(),
+    getTournamentCountries: vi.fn().mockResolvedValue({ data: [{ country: 'Romania', count: 3 }] }),
   },
 }));
 
@@ -133,8 +134,9 @@ vi.mock('@/components/ui', () => ({
       <input data-testid="search-input" placeholder={placeholder} value={value} onChange={onChange} />
     </div>
   ),
-  Select: ({ options, value, onChange }: { options: { value: string; label: string }[]; value?: string; onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void }) => (
-    <select data-testid="status-filter" value={value} onChange={onChange}>
+  Select: ({ options, value, onChange, label }: { options: { value: string; label: string }[]; value?: string; label?: string; onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void }) => (
+    // The status filter is the only unlabeled select; labeled ones (e.g. country) get their own test id
+    <select data-testid={label ? `select-${label}` : 'status-filter'} value={value} onChange={onChange}>
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
       ))}

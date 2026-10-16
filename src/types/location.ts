@@ -9,6 +9,8 @@ export interface LocationSuggestion {
   latitude: number;
   longitude: number;
   placeId?: string;
+  venueName?: string;
+  isPointOfInterest?: boolean;
 }
 
 export interface LocationAutocompleteResponse {

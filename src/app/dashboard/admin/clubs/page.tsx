@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store';
 import { clubService } from '@/services';
 import type { Club } from '@/types';
 import { useInfiniteScroll } from '@/hooks';
+import { parsePaginatedResponse } from '@/utils/pagination';
 
 const PAGE_SIZE = 12;
 
@@ -32,25 +33,8 @@ export default function AdminClubsPage() {
     if (search) params.search = search;
     
     const response = await clubService.getClubs(params);
-    const resData = response.data as any;
-    
-    // Handle different response structures
-    let clubData: Club[] = [];
-    let totalPages = 1;
-    
-    if (Array.isArray(resData)) {
-      clubData = resData;
-    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-      clubData = resData.data.items;
-      totalPages = resData.data.totalPages || 1;
-    } else if (resData?.items && Array.isArray(resData.items)) {
-      clubData = resData.items;
-      totalPages = resData.totalPages || 1;
-    } else if (resData?.data && Array.isArray(resData.data)) {
-      clubData = resData.data;
-      totalPages = resData.totalPages || 1;
-    }
-    
+    const { items: clubData, totalPages } = parsePaginatedResponse<Club>(response);
+
     return {
       items: clubData,
       hasMore: page < totalPages,

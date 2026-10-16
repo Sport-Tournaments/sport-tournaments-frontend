@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { MatchTeamLogo } from './TeamLogo';
 import type { BracketMatch } from '@/types';
 
 interface StandingRow {
@@ -489,6 +490,7 @@ export default function StandingsTable({
                       title="Advancing spot"
                     />
                   )}
+                    <MatchTeamLogo teamId={row.teamId} name={row.teamName} size="sm" />
                     {row.teamName}
                   </button>
                 </td>

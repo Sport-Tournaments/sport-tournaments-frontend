@@ -301,8 +301,9 @@ export default function LocationAutocomplete({
                 ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
                 : `${suggestion.city}, ${suggestion.country}`;
               const displayText = displayMode === 'address'
-                ? suggestion.formattedAddress
+                ? suggestion.venueName || suggestion.formattedAddress
                 : cityLine;
+              const subText = suggestion.venueName ? suggestion.formattedAddress : cityLine;
               
               return (
                 <li
@@ -316,9 +317,16 @@ export default function LocationAutocomplete({
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleSelect(suggestion)}
                 >
-                  <div className="font-medium">{displayText}</div>
-                  {displayMode === 'address' && suggestion.city && (
-                    <div className="text-xs text-gray-500 mt-0.5">{cityLine}</div>
+                  <div className="font-medium flex items-center gap-1.5">
+                    {displayMode === 'address' && suggestion.venueName && (
+                      <svg className="w-3.5 h-3.5 shrink-0 text-indigo-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                    <span className="truncate">{displayText}</span>
+                  </div>
+                  {displayMode === 'address' && (suggestion.venueName || suggestion.city) && (
+                    <div className="text-xs text-gray-500 mt-0.5">{subText}</div>
                   )}
                 </li>
               );

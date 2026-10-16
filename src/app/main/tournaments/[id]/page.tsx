@@ -1,14 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement } from '@/components/ui';
-import { tournamentService, registrationService, clubService, fileService, groupService } from '@/services';
-import { Tournament, TournamentStatus, Registration, Club, AgeGroup, Group } from '@/types';
-import { formatDate, formatDateTime } from '@/utils/date';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement, TeamLogo } from '@/components/ui';
+import { tournamentService, registrationService, clubService, fileService } from '@/services';
+import { Tournament, TournamentStatus, Registration, Club, AgeGroup } from '@/types';
+import { formatDate } from '@/utils/date';
+import { formatMatchDuration as formatMatchTiming } from '@/utils/matchFormat';
+import {
+  DirectionsButtons,
+  PublicGroupsPanel,
+  TournamentKeyFacts,
+  getAgeGroupTabId,
+  getDefaultTournamentTabs,
+} from '@/components/tournament';
 import { useAuthStore } from '@/store';
 import { RegistrationWizard } from '@/components/registration';
 
@@ -100,8 +108,8 @@ export default function TournamentDetailPage() {
   const [downloadingRegulations, setDownloadingRegulations] = useState(false);
   const [hasValidInvite, setHasValidInvite] = useState(false);
   const [validatingInvite, setValidatingInvite] = useState(false);
-  const [groupsMap, setGroupsMap] = useState<Record<string, any[]>>({});
-  const [loadingGroups, setLoadingGroups] = useState(false);
+  const requestedAgeGroupTab = searchParams.get('ageGroup');
+  const requestedInnerTab = searchParams.get('tab');
 
   const isUuid = (value: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -135,35 +143,6 @@ export default function TournamentDetailPage() {
     }
   }, [id]);
 
-  const fetchGroups = async (tournamentId: string, ageGroups?: AgeGroup[]) => {
-    setLoadingGroups(true);
-    try {
-      if (ageGroups && ageGroups.length > 0) {
-        const results = await Promise.all(
-          ageGroups.map(async (ag) => {
-            if (!ag.id) return null;
-            const res = await groupService.getGroups(tournamentId, ag.id);
-            const data = (res as any)?.data ?? res ?? [];
-            return { key: ag.id, groups: Array.isArray(data) ? data : [] };
-          })
-        );
-        const map: Record<string, any[]> = {};
-        for (const r of results) {
-          if (r) map[r.key] = r.groups;
-        }
-        setGroupsMap(map);
-      } else {
-        const res = await groupService.getGroups(tournamentId);
-        const data = (res as any)?.data ?? res ?? [];
-        setGroupsMap({ root: Array.isArray(data) ? data : [] });
-      }
-    } catch (err) {
-      console.error('Failed to fetch groups:', err);
-    } finally {
-      setLoadingGroups(false);
-    }
-  };
-
   useEffect(() => {
     if (tournament?.id && isAuthenticated) {
       fetchMyRegistrations(tournament.id);
@@ -171,12 +150,6 @@ export default function TournamentDetailPage() {
       setMyRegistrations([]);
     }
   }, [tournament?.id, isAuthenticated]);
-
-  useEffect(() => {
-    if (tournament?.id) {
-      fetchGroups(tournament.id, tournament.ageGroups);
-    }
-  }, [tournament?.id]);
 
   // Validate invitation code for private tournaments
   useEffect(() => {
@@ -374,31 +347,17 @@ export default function TournamentDetailPage() {
     return `U${currentYear - birthYear}`;
   };
 
-  const getMatchHalvesLabel = (value?: AgeGroup['matchPeriodType']) => {
-    if (value === 'ONE_HALF') return t('tournaments.ageGroups.oneHalf', '1 half');
-    if (value === 'TWO_HALVES') return t('tournaments.ageGroups.twoHalves', '2 halves');
-    return '—';
-  };
+  const formatMatchDuration = (ag: AgeGroup): string => formatMatchTiming(t, ag);
 
-  const getHalfDurationLabel = (value?: number) => {
-    if (!value) return '—';
-    return `${value} ${t('common.minutes', 'min')}`;
-  };
-
-  const formatMatchDuration = (ag: AgeGroup): string => {
-    if (!ag.halfDurationMinutes) return '—';
-    const periods = ag.matchPeriodType === 'TWO_HALVES' ? 2 : 1;
-    const playTime = periods * ag.halfDurationMinutes;
-    const halfTimePause = (periods > 1 && ag.halfTimePauseMinutes) ? ag.halfTimePauseMinutes : 0;
-    const totalMinutes = playTime + halfTimePause;
-    const periodLabel = periods === 2
-      ? t('tournaments.ageGroups.twoHalves', '2 halves')
-      : t('tournaments.ageGroups.oneHalf', '1 half');
-    let label = `${periodLabel} × ${ag.halfDurationMinutes} min`;
-    if (halfTimePause > 0) label += ` + ${halfTimePause} min ${t('tournaments.ageGroups.halfTimePause', 'half-time')}`;
-    label += ` (${totalMinutes} min ${t('common.total', 'total')})`;
-    return label;
-  };
+  const defaultTabs = useMemo(
+    () =>
+      tournament
+        ? getDefaultTournamentTabs(tournament, { requestedAgeGroupTab, requestedInnerTab })
+        : { ageGroupTab: undefined, innerTab: 'overview' as const },
+    // Only recompute when the tournament changes, not on every tab click (URL sync)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tournament?.id, tournament?.status, tournament?.ageGroups],
+  );
 
   if (loading) {
     return (
@@ -630,7 +589,10 @@ export default function TournamentDetailPage() {
                         )}
 
                         {ag.locationAddress && (
-                          <span className="col-span-2">{t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}</span>
+                          <span className="col-span-2">
+                            {t('tournaments.ageGroups.locationAddress', 'Location')}: {ag.locationAddress}{' '}
+                            <DirectionsButtons compact address={ag.locationAddress} />
+                          </span>
                         )}
                         {ag.participationFee !== undefined && ag.participationFee !== null && (
                           <span>{t('tournaments.ageGroups.participationFee', 'Fee')}: €{ag.participationFee}</span>
@@ -840,19 +802,7 @@ export default function TournamentDetailPage() {
                     key={registration.id}
                     className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg"
                   >
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      {registration.club?.logo ? (
-                        <img
-                          src={registration.club.logo}
-                          alt={registration.club.name}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-primary font-semibold">
-                          {registration.club?.name?.charAt(0) || '?'}
-                        </span>
-                      )}
-                    </div>
+                    <TeamLogo src={registration.club?.logo} name={registration.club?.name} size="lg" />
                     <div>
                       <p className="font-medium">{registration.club?.name || 'Unknown'}</p>
                       {registration.team?.name && (
@@ -872,65 +822,21 @@ export default function TournamentDetailPage() {
     };
   };
 
-  const buildGroupsTab = (ageGroup?: AgeGroup) => {
-    const groupKey = ageGroup?.id || 'root';
-    const groupsList: any[] = groupsMap[groupKey] || [];
-
-    return {
-      id: 'groups',
-      label: t('tournament.tabs.groups'),
-      content: (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('tournament.groups')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loadingGroups ? (
-              <div className="flex justify-center py-8">
-                <Loading size="md" />
-              </div>
-            ) : groupsList.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {groupsList.map((group: any) => {
-                  const teamDetails: any[] = Array.isArray(group.teamDetails) ? group.teamDetails : [];
-                  return (
-                    <div key={group.id} className="border border-gray-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">
-                        {t('groups.group')} {group.groupLetter}
-                      </h4>
-                      <div className="space-y-2">
-                        {teamDetails.map((teamDetail: any, idx: number) => (
-                          <div key={teamDetail?.id || idx} className="flex items-center gap-2 text-sm text-gray-700">
-                            <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-500 shrink-0">
-                              {idx + 1}
-                            </span>
-                            {teamDetail?.club?.logo && (
-                              <img
-                                src={teamDetail.club.logo}
-                                alt={teamDetail.club.name}
-                                className="w-5 h-5 object-contain shrink-0"
-                              />
-                            )}
-                            <span className="truncate">{teamDetail?.team?.name || teamDetail?.club?.name || `Team ${idx + 1}`}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-center text-gray-500 py-8">
-                {(tournament.status === 'PUBLISHED' || tournament.status === 'ONGOING')
-                  ? t('tournament.groupsNotDrawn')
-                  : t('tournament.noGroups')}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      ),
-    };
-  };
+  const buildGroupsTab = (ageGroup?: AgeGroup) => ({
+    id: 'groups',
+    label: t('tournament.tabs.groups'),
+    content: (
+      <PublicGroupsPanel
+        tournamentId={tournament.id}
+        ageGroupId={ageGroup?.id}
+        emptyMessage={
+          tournament.status === 'PUBLISHED' || tournament.status === 'ONGOING'
+            ? t('tournament.groupsNotDrawn')
+            : t('tournament.noGroups')
+        }
+      />
+    ),
+  });
 
   const buildMatchesTab = (ageGroup?: AgeGroup) => ({
     id: 'matches',
@@ -969,19 +875,26 @@ export default function TournamentDetailPage() {
   ];
 
   const tabs = buildInnerTabs();
-  const ageGroupTabs = tournament.ageGroups && tournament.ageGroups.length > 0
-    ? tournament.ageGroups.map((ageGroup, index) => ({
-        id: `age-group-${ageGroup.id ?? index}`,
-        label: getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel),
-        content: (
-          <Tabs
-            tabs={buildInnerTabs(ageGroup)}
-            defaultTab="overview"
-            variant="pills-gray"
-          />
-        ),
-      }))
+  const hasAgeGroups = !!tournament.ageGroups && tournament.ageGroups.length > 0;
+  const ageGroupTabs = hasAgeGroups
+    ? tournament.ageGroups!.map((ageGroup, index) => {
+        const tabId = getAgeGroupTabId(ageGroup, index);
+        return {
+          id: tabId,
+          label: getAgeGroupLabel(ageGroup.birthYear, ageGroup.displayLabel),
+          content: (
+            <Tabs
+              tabs={buildInnerTabs(ageGroup)}
+              // The in-progress inner tab (e.g. Matches) applies to the age group opened by default
+              defaultTab={tabId === defaultTabs.ageGroupTab ? defaultTabs.innerTab : requestedInnerTab || 'overview'}
+              variant="pills-gray"
+              queryParam="tab"
+            />
+          ),
+        };
+      })
     : tabs;
+  const outerDefaultTab = hasAgeGroups ? defaultTabs.ageGroupTab : defaultTabs.innerTab;
 
   return (
     <MainLayout>
@@ -996,21 +909,21 @@ export default function TournamentDetailPage() {
         {/* Header */}
         <div className="relative">
           {tournament.bannerImage && (
-            <div className="relative h-64 rounded-xl overflow-hidden mb-6">
+            <div className="relative h-40 sm:h-64 rounded-xl overflow-hidden mb-6">
               <img
                 src={tournament.bannerImage}
                 alt={tournament.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_420px] gap-6">
             <div className="space-y-6">
               <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">
                   {tournament.name}
                 </h1>
                 <Badge variant={getStatusBadge(tournament.status)}>
@@ -1030,27 +943,19 @@ export default function TournamentDetailPage() {
                   </Link>
                 </div>
               )}
-
-              {/* Quick info */}
-              <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
-
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {tournament.location || t('common.online')}
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {currentTeamsDisplay} / {maxTeamsDisplay} {t('common.teams')}
-                </div>
-              </div>
               </div>
 
-              <Tabs tabs={ageGroupTabs} defaultTab={ageGroupTabs[0]?.id} />
+              <TournamentKeyFacts
+                tournament={tournament}
+                registeredTeams={currentTeamsDisplay}
+                maxTeams={maxTeamsDisplay}
+              />
+
+              <Tabs
+                tabs={ageGroupTabs}
+                defaultTab={outerDefaultTab ?? ageGroupTabs[0]?.id}
+                queryParam={hasAgeGroups ? 'ageGroup' : 'tab'}
+              />
             </div>
 
             {/* Sidebar */}
@@ -1071,6 +976,21 @@ export default function TournamentDetailPage() {
                       <p className="text-sm text-gray-600">{t('tournament.noLocation', 'No location data available')}</p>
                     </div>
                   )}
+                  {(tournament.venueName || tournament.location) && (
+                    <p className="mt-3 text-sm text-gray-700">
+                      {tournament.venueName && (
+                        <span className="block font-medium text-gray-900">{tournament.venueName}</span>
+                      )}
+                      {tournament.location}
+                    </p>
+                  )}
+                  <DirectionsButtons
+                    className="mt-3"
+                    latitude={hasValidLocation ? tournamentLatitude : undefined}
+                    longitude={hasValidLocation ? tournamentLongitude : undefined}
+                    address={tournament.location}
+                    placeId={tournament.placeId}
+                  />
                 </CardContent>
               </Card>
 

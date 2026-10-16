@@ -343,6 +343,17 @@
     "freeEntry": "Intrare gratuită",
     "perTeam": "pe echipă",
     "ageGroups": {
+      "periodSingle": "O singură repriză (fără pauză)",
+      "periodTwoHalves": "Două reprize",
+      "breakShort": "pauză",
+      "matchStructure": "Structura meciului",
+      "totalMatchTime": "Durata totală a meciului: {{value}}",
+      "matchLength": "Durata meciului (minute)",
+      "halfLength": "Durata unei reprize (minute)",
+      "matchLengthHelp": "Meciul se joacă integral, fără pauză (de obicei 20-25).",
+      "halfLengthHelp": "Durata UNEI reprize, nu a întregului meci (de obicei 15 → 2 × 15 min).",
+      "halfTimeBreak": "Pauza dintre reprize (minute)",
+      "halfTimeBreakHelp": "Pauza dintre cele două reprize (ex. 5 min). Lasă gol dacă nu există pauză.",
       "title": "Categorii de vârstă",
       "description": "Definește setări specifice pentru fiecare categorie de vârstă. Fiecare categorie poate avea propriile date, taxe și format de joc.",
       "add": "Adaugă categorie",
@@ -598,6 +609,10 @@
     "registered": "Înregistrat"
   },
   "admin": {
+    "tournamentEdit": {
+      "featured": "Promovat (admin)",
+      "editingAsAdmin": "Editezi acest turneu ca administrator. Proprietar: {{owner}}"
+    },
     "title": "Panou Admin",
     "dashboard": "Panou de control",
     "users": "Utilizatori",
@@ -913,6 +928,10 @@
     }
   },
   "tournament": {
+    "showDirections": "Arată traseul",
+    "openInWaze": "Deschide în Waze",
+    "locationSearchPlaceholder": "Caută adresă, stadion sau bază sportivă...",
+    "locationSearchHelp": "Poți alege o locație (stadion, bază sportivă, școală) sau o adresă.",
     "title": "Turnee",
     "subtitle": "Descoperă și alătură-te turneelor de fotbal",
     "name": "Numele turneului",
@@ -1051,6 +1070,7 @@
       "matches": "Meciuri"
     },
     "filters": {
+      "allCountries": "Toate țările",
       "title": "Filtre",
       "more": "Mai multe filtre",
       "hide": "Ascunde filtre",

@@ -41,6 +41,24 @@ export async function getClubById(id: string): Promise<ApiResponse<Club>> {
   return apiGet<ApiResponse<Club>>(`${CLUBS_BASE}/${id}`);
 }
 
+export interface ClubPublicProfile {
+  teams: { id: string; name: string; ageCategory?: string; birthyear?: number }[];
+  tournaments: {
+    id: string;
+    name: string;
+    urlSlug?: string;
+    status: string;
+    startDate?: string;
+    endDate?: string;
+    location?: string;
+  }[];
+}
+
+// Public club profile: teams and public tournaments played
+export async function getClubPublicProfile(id: string): Promise<ApiResponse<ClubPublicProfile>> {
+  return apiGet<ApiResponse<ClubPublicProfile>>(`${CLUBS_BASE}/${id}/public-profile`);
+}
+
 // Create a new club
 export async function createClub(data: CreateClubDto): Promise<ApiResponse<Club>> {
   return apiPost<ApiResponse<Club>>(CLUBS_BASE, data);
@@ -110,6 +128,7 @@ export const clubService = {
   getMyClubs,
   searchClubs,
   getClubById,
+  getClubPublicProfile,
   createClub,
   updateClub,
   adminUpdateClub,

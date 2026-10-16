@@ -1,5 +1,6 @@
 {
   "common": {
+    "loadMore": "Load more",
     "appName": "Football Tournament Platform",
     "loading": "Loading...",
     "error": "An error occurred",
@@ -784,6 +785,7 @@
     }
   },
   "tournament": {
+    "noUpcomingTournaments": "No upcoming tournaments right now. See past tournaments below.",
     "showDirections": "Show directions",
     "openInWaze": "Open in Waze",
     "locationSearchPlaceholder": "Search address, stadium or sports complex...",

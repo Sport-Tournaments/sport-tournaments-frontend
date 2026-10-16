@@ -1,5 +1,6 @@
 {
   "common": {
+    "loadMore": "Încarcă mai multe",
     "appName": "Platforma de Turnee de Fotbal",
     "loading": "Se încarcă...",
     "error": "A apărut o eroare",
@@ -928,6 +929,7 @@
     }
   },
   "tournament": {
+    "noUpcomingTournaments": "Momentan nu sunt turnee viitoare. Vezi mai jos turneele trecute.",
     "showDirections": "Arată traseul",
     "openInWaze": "Deschide în Waze",
     "locationSearchPlaceholder": "Caută adresă, stadion sau bază sportivă...",

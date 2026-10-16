@@ -7,10 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardContent, Button, Badge, Loading, Input, Select, Alert } from '@/components/ui';
 import { useAuthStore } from '@/store';
-import { tournamentService } from '@/services';
+import { adminService, tournamentService } from '@/services';
 import type { Tournament, TournamentStatus } from '@/types';
 import { formatDate } from '@/utils/date';
 import { useInfiniteScroll } from '@/hooks';
+import { parsePaginatedResponse } from '@/utils/pagination';
 
 const PAGE_SIZE = 10;
 
@@ -30,30 +31,14 @@ export default function AdminTournamentsPage() {
   }, [user, router]);
 
   const fetchTournaments = useCallback(async (page: number) => {
-    const params: any = { page, pageSize: PAGE_SIZE };
+    // Admin endpoint: includes private/unpublished tournaments, searches name, location, organizer email
+    const params: any = { page, limit: PAGE_SIZE };
     if (statusFilter !== 'all') params.status = statusFilter;
     if (search) params.search = search;
-    
-    const response = await tournamentService.getTournaments(params);
-    const resData = response.data as any;
-    
-    // Handle different response structures
-    let tournamentData: Tournament[] = [];
-    let totalPages = 1;
-    
-    if (Array.isArray(resData)) {
-      tournamentData = resData;
-    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-      tournamentData = resData.data.items;
-      totalPages = resData.data.totalPages || 1;
-    } else if (resData?.items && Array.isArray(resData.items)) {
-      tournamentData = resData.items;
-      totalPages = resData.totalPages || 1;
-    } else if (resData?.data && Array.isArray(resData.data)) {
-      tournamentData = resData.data;
-      totalPages = resData.totalPages || 1;
-    }
-    
+
+    const response = await adminService.getTournaments(params);
+    const { items: tournamentData, totalPages } = parsePaginatedResponse<Tournament>(response);
+
     return {
       items: tournamentData,
       hasMore: page < totalPages,
@@ -88,6 +73,16 @@ export default function AdminTournamentsPage() {
       reset();
     } catch (err: any) {
       setError('Failed to delete tournament');
+    }
+  };
+
+  const handleToggleFeatured = async (tournament: Tournament) => {
+    try {
+      await adminService.featureTournament(tournament.id, !tournament.isFeatured);
+      setSuccess(tournament.isFeatured ? 'Tournament unfeatured' : 'Tournament featured');
+      reset();
+    } catch {
+      setError('Failed to update featured status');
     }
   };
 
@@ -202,7 +197,7 @@ export default function AdminTournamentsPage() {
                           </div>
                         )}
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
                             <Link
                               href={`/tournaments/${tournament.id}`}
                               className="font-semibold text-lg text-gray-900 hover:text-primary"
@@ -212,6 +207,8 @@ export default function AdminTournamentsPage() {
                             <Badge variant={getStatusBadge(tournament.status)}>
                               {t(`tournament.status.${normalizeStatus(tournament.status)}`)}
                             </Badge>
+                            {tournament.isFeatured && <Badge variant="warning">Featured</Badge>}
+                            {tournament.isPrivate && <Badge variant="default">Private</Badge>}
                           </div>
                           <p className="text-sm text-gray-500">
                             {tournament.location}{tournament.country ? `, ${tournament.country}` : ''}
@@ -232,6 +229,9 @@ export default function AdminTournamentsPage() {
                         <Link href={`/dashboard/tournaments/${tournament.id}/edit`}>
                           <Button variant="outline" size="sm">Edit</Button>
                         </Link>
+                        <Button variant="outline" size="sm" onClick={() => handleToggleFeatured(tournament)}>
+                          {tournament.isFeatured ? 'Unfeature' : 'Feature'}
+                        </Button>
                         <Button
                           variant="danger"
                           size="sm"

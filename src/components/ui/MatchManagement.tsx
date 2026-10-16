@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { TeamLogosProvider, MatchTeamLogo } from './TeamLogo';
 import { useTranslation } from 'react-i18next';
 import { groupService } from '@/services';
 import { formatDateTime } from '@/utils/date';
@@ -24,6 +25,7 @@ interface TeamInfo {
   id: string;
   name: string;
   clubName?: string;
+  logo?: string;
 }
 
 export interface MatchManagementProps {
@@ -594,6 +596,7 @@ export default function MatchManagement({
       )}
 
       {/* Bracket View — format-aware */}
+      <TeamLogosProvider teams={teams.values()}>
       {(() => {
         const bracketType = matchData?.bracketType;
         // Build a teamNames map for standings/schedule components
@@ -1099,6 +1102,7 @@ export default function MatchManagement({
           </div>
         );
       })()}
+      </TeamLogosProvider>
     </div>
   );
 }
@@ -1910,6 +1914,7 @@ function TeamRow({
               : 'bg-gray-200'
           }`}
         />
+        <MatchTeamLogo teamId={teamId} name={teamId ? teamName : undefined} size="md" />
         <span
           className={`text-sm font-medium truncate ${
             isWinner ? 'text-gray-900' : teamId ? 'text-gray-700' : 'text-gray-400 italic'

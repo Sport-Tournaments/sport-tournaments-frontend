@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { MainLayout } from "@/components/layout";
@@ -48,6 +48,40 @@ export default function TournamentsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [showPastTournaments, setShowPastTournaments] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
+  const [availableCountries, setAvailableCountries] = useState<
+    { country: string; count: number }[]
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    tournamentService
+      .getTournamentCountries()
+      .then((res) => {
+        const data = (res as any)?.data ?? res;
+        if (!cancelled && Array.isArray(data)) setAvailableCountries(data);
+      })
+      .catch(() => {
+        // Filter still works with "All countries" only
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const countryOptions = useMemo(() => {
+    const options = [
+      { value: "", label: t("tournament.filters.allCountries", "All countries") },
+      ...availableCountries.map((c) => ({
+        value: c.country,
+        label: `${c.country} (${c.count})`,
+      })),
+    ];
+    // Keep a selected value visible even if it is no longer in the list
+    if (country && !availableCountries.some((c) => c.country === country)) {
+      options.push({ value: country, label: country });
+    }
+    return options;
+  }, [availableCountries, country, t]);
 
   const dateOnlyFrom = startDateFromInput
     ? startDateFromInput.split("T")[0]
@@ -564,10 +598,10 @@ export default function TournamentsPage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <Input
+            <Select
               containerClassName="w-full sm:w-48"
               label={t("common.country")}
-              placeholder={t("common.country")}
+              options={countryOptions}
               value={country}
               onChange={(e) => setCountry(e.target.value)}
             />

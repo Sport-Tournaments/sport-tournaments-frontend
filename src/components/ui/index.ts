@@ -35,6 +35,7 @@ export { default as Dropdown } from './Dropdown';
 export type { DropdownProps, DropdownItemType } from './Dropdown';
 
 export { default as Tabs } from './Tabs';
+export { default as TeamLogo, TeamLogosProvider, MatchTeamLogo, getTeamInitials } from './TeamLogo';
 export type { TabsProps, Tab } from './Tabs';
 
 export { default as Toast, ToastContainer } from './Toast';

@@ -154,7 +154,7 @@ export interface MatchesResponse {
   bracketType?: string;
   playoffRounds?: PlayoffRound[];
   placementBrackets?: PlacementBracket[];
-  teams: { id: string; name: string; clubName?: string }[];
+  teams: { id: string; name: string; clubName?: string; logo?: string }[];
   advancingTeamsPerGroup?: number;
 }
 

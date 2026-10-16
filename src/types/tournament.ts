@@ -93,6 +93,8 @@ export interface Tournament {
   location: string;
   latitude?: number;
   longitude?: number;
+  placeId?: string;
+  venueName?: string;
   level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;
@@ -169,6 +171,8 @@ export interface CreateTournamentDto {
   location: string;
   latitude?: number;
   longitude?: number;
+  placeId?: string;
+  venueName?: string;
   level?: TournamentLevel;
   gameSystem?: string;
   numberOfMatches?: number;

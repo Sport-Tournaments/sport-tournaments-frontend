@@ -1,6 +1,15 @@
 import api from './api';
 import { User, Tournament, PaginatedResponse, QueryParams, PlatformStatistics } from '@/types';
 
+export interface AdminActivityItem {
+  type: 'user' | 'tournament' | 'registration';
+  id: string;
+  title: string;
+  subtitle?: string;
+  status?: string;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   totalUsers: number;
   totalTournaments: number;
@@ -8,8 +17,47 @@ export interface DashboardStats {
   totalRegistrations: number;
   pendingRegistrations: number;
   activeTournaments: number;
+  ongoingTournaments?: number;
   recentUsers: number;
+  newUsersThisWeek?: number;
+  recentTournaments?: number;
   revenue: number;
+  tournamentStatuses?: { status: string; count: number }[];
+  topCountries?: { country: string; count: number }[];
+  registrationTrend?: { month: string; count: number }[];
+  recentActivity?: AdminActivityItem[];
+}
+
+/** Maps GET /admin/statistics ({ overview, distributions, trends, ... }) to DashboardStats. */
+export function normalizeDashboardStats(payload: any): DashboardStats {
+  const body = payload?.data?.overview ? payload.data : payload;
+  const o = body?.overview ?? body ?? {};
+  const num = (v: unknown) => Number(v) || 0;
+  return {
+    totalUsers: num(o.totalUsers),
+    totalTournaments: num(o.totalTournaments),
+    totalClubs: num(o.totalClubs),
+    totalRegistrations: num(o.totalRegistrations),
+    pendingRegistrations: num(o.pendingRegistrations),
+    activeTournaments: num(o.activeTournaments),
+    ongoingTournaments: num(o.ongoingTournaments),
+    recentUsers: num(o.recentUsers),
+    newUsersThisWeek: num(o.newUsersThisWeek),
+    recentTournaments: num(o.recentTournaments),
+    revenue: num(o.totalRevenue ?? o.revenue),
+    tournamentStatuses: (body?.distributions?.tournamentStatuses ?? []).map((r: any) => ({
+      status: String(r.status),
+      count: num(r.count),
+    })),
+    topCountries: (body?.topCountries ?? [])
+      .filter((r: any) => r.country)
+      .map((r: any) => ({ country: String(r.country), count: num(r.count) })),
+    registrationTrend: (body?.trends?.registrations ?? []).map((r: any) => ({
+      month: String(r.month),
+      count: num(r.count),
+    })),
+    recentActivity: Array.isArray(body?.recentActivity) ? body.recentActivity : [],
+  };
 }
 
 const ADMIN_BASE = '/v1/admin';
@@ -23,8 +71,8 @@ export const adminService = {
 
   // Dashboard (alias for backward compatibility)
   getDashboardStats: async (): Promise<DashboardStats> => {
-    const response = await api.get<DashboardStats>(`${ADMIN_BASE}/statistics`);
-    return response.data;
+    const response = await api.get(`${ADMIN_BASE}/statistics`);
+    return normalizeDashboardStats(response.data);
   },
 
   // Users

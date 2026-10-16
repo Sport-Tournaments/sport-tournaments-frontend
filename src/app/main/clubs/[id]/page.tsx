@@ -7,8 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Tabs, Loading, Alert, Avatar, Badge, ClubColorBadge, ClubColorBanner, Modal } from '@/components/ui';
 import { clubService } from '@/services';
-import { Club, Team } from '@/types';
+import type { ClubPublicProfile } from '@/services/club.service';
+import { Club } from '@/types';
+import { DirectionsButtons } from '@/components/tournament';
 import { useAuthStore } from '@/store';
+import { formatDate } from '@/utils/date';
+import { getTournamentPublicPath } from '@/utils/helpers';
 
 export default function ClubDetailPage() {
   const { id } = useParams();
@@ -18,7 +22,8 @@ export default function ClubDetailPage() {
   const isPreviewMode = searchParams.get('preview') === 'true';
   const [loading, setLoading] = useState(true);
   const [club, setClub] = useState<Club | null>(null);
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<ClubPublicProfile['teams']>([]);
+  const [tournaments, setTournaments] = useState<ClubPublicProfile['tournaments']>([]);
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; alt: string } | null>(null);
 
@@ -31,13 +36,13 @@ export default function ClubDetailPage() {
   const fetchClub = async () => {
     setLoading(true);
     try {
-      const response = await clubService.getClubById(id as string);
+      const [response, profile] = await Promise.all([
+        clubService.getClubById(id as string),
+        clubService.getClubPublicProfile(id as string).catch(() => null),
+      ]);
       setClub(response.data);
-
-      // Fetch teams for this club (placeholder - service method doesn't exist yet)
-      // const teamsResponse = await clubService.getClubTeams(id as string);
-      // setTeams(teamsResponse.data || []);
-      setTeams([]);
+      setTeams(profile?.data?.teams ?? []);
+      setTournaments(profile?.data?.tournaments ?? []);
     } catch (err) {
       console.error('Failed to fetch club:', err);
       setError('Failed to load club details');
@@ -143,7 +148,10 @@ export default function ClubDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <span>{club.address}</span>
+                    <span>
+                      {club.address}{' '}
+                      <DirectionsButtons compact address={club.address} />
+                    </span>
                   </div>
                 )}
                 {club.foundedYear && (
@@ -191,15 +199,11 @@ export default function ClubDetailPage() {
                     className="p-4 bg-white border border-gray-200 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
-                      <Avatar
-                        src={team.club?.logo || club.logo}
-                        alt={team.name}
-                        size="md"
-                      />
-                      <div>
-                        <p className="font-medium">{team.name}</p>
+                      <Avatar src={club.logo} alt={team.name} size="md" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{team.name}</p>
                         <p className="text-sm text-gray-500">
-                          {team.ageCategory} • {team.players?.length || 0} {t('common.players')}
+                          {[team.ageCategory, team.birthyear].filter(Boolean).join(' • ')}
                         </p>
                       </div>
                     </div>
@@ -213,14 +217,40 @@ export default function ClubDetailPage() {
     },
     {
       id: 'tournaments',
-      label: t('club.tabs.tournaments'),
+      label: `${t('club.tabs.tournaments')} (${tournaments.length})`,
       content: (
         <Card>
           <CardHeader>
             <CardTitle>{t('club.participatedTournaments')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center text-gray-500 py-8">{t('club.noTournamentsParticipated')}</p>
+            {tournaments.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">{t('club.noTournamentsParticipated')}</p>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {tournaments.map((tournament) => (
+                  <li key={tournament.id}>
+                    <Link
+                      href={getTournamentPublicPath(tournament)}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-3 hover:bg-gray-50 rounded-md px-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{tournament.name}</p>
+                        {tournament.location && (
+                          <p className="text-sm text-gray-500 truncate">{tournament.location}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-500 shrink-0">
+                        {tournament.startDate && <span>{formatDate(tournament.startDate)}</span>}
+                        <Badge variant={tournament.status === 'ONGOING' ? 'success' : 'default'}>
+                          {t(`tournament.status.${tournament.status}`)}
+                        </Badge>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       ),
@@ -264,7 +294,7 @@ export default function ClubDetailPage() {
                 )}
                 <div className="flex-1 text-center sm:text-left pb-2">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mb-2">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 drop-shadow-lg">
+                    <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 drop-shadow-lg break-words">
                       {club.name}
                     </h1>
                     {club.verified && (
@@ -283,14 +313,14 @@ export default function ClubDetailPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {club.city}, {club.country}
+                        {[club.city, club.country].filter(Boolean).join(', ')}
                       </div>
                     )}
                     <div className="flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      {club.memberCount || 0} {t('common.members')}
+                      {tournaments.length} {t('club.tabs.tournaments')}
                     </div>
                     <div className="flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,14 +385,14 @@ export default function ClubDetailPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      {club.city}, {club.country}
+                      {[club.city, club.country].filter(Boolean).join(', ')}
                     </div>
                   )}
                   <div className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    {club.memberCount || 0} {t('common.members')}
+                    {tournaments.length} {t('club.tabs.tournaments')}
                   </div>
                   <div className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

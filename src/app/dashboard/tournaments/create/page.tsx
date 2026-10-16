@@ -46,6 +46,8 @@ const tournamentSchema = z.object({
   location: z.string().min(2, "Location is required"),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
+  placeId: z.string().optional(),
+  venueName: z.string().optional(),
   whatsappGroupLink: z.string().url("Invalid URL").optional().or(z.literal("")),
   rules: z.string().optional(),
   isPrivate: z.boolean().default(false),
@@ -260,6 +262,8 @@ export default function CreateTournamentPage() {
   // Handle location selection from autocomplete
   const handleLocationSelect = (location: LocationSuggestion) => {
     setValue("location", location.formattedAddress);
+    setValue("placeId", location.placeId || "");
+    setValue("venueName", location.venueName || "");
     if (location.latitude && location.longitude) {
       setValue("latitude", location.latitude);
       setValue("longitude", location.longitude);
@@ -273,6 +277,8 @@ export default function CreateTournamentPage() {
       const location = await getCurrentLocation();
       setValue("latitude", location.latitude);
       setValue("longitude", location.longitude);
+      setValue("placeId", "");
+      setValue("venueName", "");
       // Update the location field to show coordinates (user can override with autocomplete)
       setValue(
         "location",
@@ -339,6 +345,8 @@ export default function CreateTournamentPage() {
         location: data.location,
         latitude: data.latitude,
         longitude: data.longitude,
+        ...(data.placeId && { placeId: data.placeId }),
+        ...(data.venueName && { venueName: data.venueName }),
         ...(data.whatsappGroupLink?.trim() && {
           whatsappGroupLink: data.whatsappGroupLink.trim(),
         }),
@@ -540,10 +548,16 @@ export default function CreateTournamentPage() {
                 <div className="flex-1">
                   <LocationAutocomplete
                     label={t("tournament.location")}
-                    placeholder="Search for city or venue..."
+                    placeholder={t("tournament.locationSearchPlaceholder", "Search address, stadium or sports complex...")}
+                    helperText={t("tournament.locationSearchHelp", "You can pick a venue (stadium, sports base, school) or a plain address.")}
                     displayMode="address"
                     value={watch("location") || ""}
-                    onChange={(val) => setValue("location", val, { shouldValidate: true })}
+                    onChange={(val) => {
+                      setValue("location", val, { shouldValidate: true });
+                      // Typed text no longer matches the picked venue
+                      setValue("placeId", "");
+                      setValue("venueName", "");
+                    }}
                     onSelect={handleLocationSelect}
                     error={errors.location?.message}
                     required

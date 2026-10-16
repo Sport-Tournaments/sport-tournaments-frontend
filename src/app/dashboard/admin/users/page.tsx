@@ -10,6 +10,7 @@ import { adminService } from '@/services';
 import type { User, UserRole } from '@/types';
 import { formatDateTime } from '@/utils/date';
 import { useInfiniteScroll } from '@/hooks';
+import { parsePaginatedResponse } from '@/utils/pagination';
 
 const PAGE_SIZE = 10;
 
@@ -36,25 +37,8 @@ export default function AdminUsersPage() {
     if (search) params.search = search;
     
     const response = await adminService.getUsers(params);
-    const resData = response.data as any;
-    
-    // Handle different response structures
-    let userData: User[] = [];
-    let totalPages = 1;
-    
-    if (Array.isArray(resData)) {
-      userData = resData;
-    } else if (resData?.data?.items && Array.isArray(resData.data.items)) {
-      userData = resData.data.items;
-      totalPages = resData.data.totalPages || 1;
-    } else if (resData?.items && Array.isArray(resData.items)) {
-      userData = resData.items;
-      totalPages = resData.totalPages || 1;
-    } else if (resData?.data && Array.isArray(resData.data)) {
-      userData = resData.data;
-      totalPages = resData.totalPages || 1;
-    }
-    
+    const { items: userData, totalPages } = parsePaginatedResponse<User>(response);
+
     return {
       items: userData,
       hasMore: page < totalPages,

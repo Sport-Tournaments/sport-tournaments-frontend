@@ -48,6 +48,15 @@ export async function getUpcomingTournaments(
   return apiGet<ApiResponse<Tournament[]>>(`${TOURNAMENTS_BASE}/upcoming?limit=${limit}`);
 }
 
+// Countries that have public tournaments (for the country filter)
+export async function getTournamentCountries(): Promise<
+  ApiResponse<{ country: string; count: number }[]>
+> {
+  return apiGet<ApiResponse<{ country: string; count: number }[]>>(
+    `${TOURNAMENTS_BASE}/countries`,
+  );
+}
+
 // Get tournaments created by current user
 export async function getMyTournaments(): Promise<ApiResponse<Tournament[]>> {
   return apiGet<ApiResponse<Tournament[]>>(`${TOURNAMENTS_BASE}/my-tournaments`);
@@ -183,6 +192,7 @@ export async function setAgeGroupRegistrationClosed(
 }
 
 export const tournamentService = {
+  getTournamentCountries,
   getTournaments,
   searchTournaments,
   getFeaturedTournaments,

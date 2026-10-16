@@ -309,6 +309,17 @@
     "freeEntry": "Free Entry",
     "perTeam": "per team",
     "ageGroups": {
+      "periodSingle": "Single period (no break)",
+      "periodTwoHalves": "Two halves",
+      "breakShort": "break",
+      "matchStructure": "Match structure",
+      "totalMatchTime": "Total match time: {{value}}",
+      "matchLength": "Match length (minutes)",
+      "halfLength": "Length of each half (minutes)",
+      "matchLengthHelp": "Whole match played without a break (common: 20-25).",
+      "halfLengthHelp": "Duration of ONE half, not the whole match (common: 15 → 2 × 15 min).",
+      "halfTimeBreak": "Half-time break (minutes)",
+      "halfTimeBreakHelp": "Break between the two halves (e.g. 5 min). Leave empty if no break.",
       "title": "Age Categories",
       "description": "Define specific settings for each age category. Each category can have its own dates, fees, and game format.",
       "add": "Add Category",
@@ -567,6 +578,10 @@
     "registered": "Registered"
   },
   "admin": {
+    "tournamentEdit": {
+      "featured": "Featured (admin)",
+      "editingAsAdmin": "You are editing this tournament as an administrator. Owner: {{owner}}"
+    },
     "title": "Admin Panel",
     "dashboard": "Dashboard",
     "users": "Users",
@@ -769,6 +784,10 @@
     }
   },
   "tournament": {
+    "showDirections": "Show directions",
+    "openInWaze": "Open in Waze",
+    "locationSearchPlaceholder": "Search address, stadium or sports complex...",
+    "locationSearchHelp": "You can pick a venue (stadium, sports base, school) or a plain address.",
     "title": "Tournaments",
     "subtitle": "Discover and join football tournaments worldwide",
     "create": "Create Tournament",
@@ -906,6 +925,7 @@
       "CANCELLED": "Cancelled"
     },
     "filters": {
+      "allCountries": "All countries",
       "title": "Filters",
       "more": "More filters",
       "hide": "Hide filters",

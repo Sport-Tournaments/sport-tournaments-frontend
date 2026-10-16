@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { MatchTeamLogo } from './TeamLogo';
 import type { BracketMatch } from '@/types';
 import { formatDateTime } from '@/utils/date';
 import { sortMatchesForDisplay, type MatchSortMode } from './matchSorting';
@@ -384,11 +385,17 @@ export default function LeagueMatchSchedule({
                     <div key={match.id} className={containerClass}>
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between gap-3">
-                          <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t1}</span>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <MatchTeamLogo teamId={match.team1Id} name={t1} size="sm" />
+                            <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t1}</span>
+                          </span>
                           <span className={scoreClass}>{hasScore ? match.team1Score : '—'}</span>
                         </div>
                         <div className="flex items-center justify-between gap-3">
-                          <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t2}</span>
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <MatchTeamLogo teamId={match.team2Id} name={t2} size="sm" />
+                            <span className="min-w-0 truncate text-sm font-medium text-gray-900">{t2}</span>
+                          </span>
                           <span className={scoreClass}>{hasScore ? match.team2Score : '—'}</span>
                         </div>
                         <div className="flex flex-col items-start gap-1 text-xs text-gray-500">

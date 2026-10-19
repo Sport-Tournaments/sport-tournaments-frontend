@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardContent, Button, Badge, Loading, ViewModeToggle, ViewMode } from '@/components/ui';
+import { useAuthStore } from '@/store';
 import { tournamentService } from '@/services';
 import { Tournament, TournamentStatus } from '@/types';
 import { formatDate } from '@/utils/date';
@@ -13,6 +14,8 @@ import { useInfiniteScroll } from '@/hooks';
 const PAGE_SIZE = 10;
 
 export default function DashboardTournamentsPage() {
+  // Admins see and manage every tournament (the API returns all of them).
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN');
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
@@ -128,7 +131,7 @@ export default function DashboardTournamentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {t('nav.myTournaments')}
+              {isAdmin ? t('nav.allTournaments') : t('nav.myTournaments')}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('dashboard.manageTournaments')}

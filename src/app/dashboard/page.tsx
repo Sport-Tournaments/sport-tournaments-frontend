@@ -121,7 +121,7 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          <Link href="/dashboard/registrations" className="block">
+          <Link href="/dashboard/registrations?status=APPROVED" className="block">
             <Card variant="hover" className="h-full">
               <CardContent className="p-6">
               <div className="flex items-center gap-4">
@@ -139,7 +139,7 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          <Link href="/dashboard/registrations" className="block">
+          <Link href="/dashboard/registrations?status=PENDING" className="block">
             <Card variant="hover" className="h-full">
               <CardContent className="p-6">
               <div className="flex items-center gap-4">

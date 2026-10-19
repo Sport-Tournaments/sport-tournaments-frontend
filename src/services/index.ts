@@ -23,6 +23,8 @@ export { userService, adminService as legacyAdminService } from './user.service'
 
 export { adminService } from './admin.service';
 
+export { default as crmService } from './crm.service';
+
 export { default as invitationService } from './invitation.service';
 export * from './invitation.service';
 

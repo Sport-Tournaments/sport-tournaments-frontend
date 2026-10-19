@@ -24,7 +24,7 @@ export interface UploadFileDto {
 
 // Admin types
 export interface UpdateUserRoleDto {
-  role: 'ADMIN' | 'ORGANIZER' | 'PARTICIPANT' | 'USER';
+  role: 'ADMIN' | 'MANAGER' | 'ORGANIZER' | 'PARTICIPANT' | 'USER';
 }
 
 export interface UpdateUserStatusDto {

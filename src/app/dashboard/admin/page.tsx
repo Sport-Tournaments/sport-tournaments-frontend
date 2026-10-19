@@ -72,6 +72,7 @@ const QUICK_ACTIONS = [
   { href: '/dashboard/admin/tournaments', title: 'Manage Tournaments', description: 'Edit, feature and moderate tournaments' },
   { href: '/dashboard/admin/users', title: 'Manage Users', description: 'View and manage all users' },
   { href: '/dashboard/admin/clubs', title: 'Manage Clubs', description: 'Verify and manage clubs' },
+  { href: '/dashboard/admin/crm', title: 'CRM', description: 'Outreach pipeline for clubs and organizers' },
   { href: '/dashboard/admin/settings', title: 'System Settings', description: 'Configure platform settings' },
 ];
 
@@ -98,7 +99,8 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
-      router.push('/dashboard');
+      // Managers only have the CRM part of the admin area.
+      router.push(user.role === 'MANAGER' ? '/dashboard/admin/crm' : '/dashboard');
       return;
     }
     fetchStats();

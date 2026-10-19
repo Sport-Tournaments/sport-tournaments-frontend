@@ -90,6 +90,7 @@ export default function AdminUsersPage() {
   const getRoleBadge = (role: UserRole) => {
     const variants: Record<UserRole, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
       ADMIN: 'danger',
+      MANAGER: 'warning',
       ORGANIZER: 'info',
       PARTICIPANT: 'success',
       USER: 'default',
@@ -100,6 +101,7 @@ export default function AdminUsersPage() {
   const roleOptions = [
     { value: 'all', label: 'All Roles' },
     { value: 'ADMIN', label: 'Admin' },
+    { value: 'MANAGER', label: 'Manager (CRM)' },
     { value: 'ORGANIZER', label: 'Organizer' },
     { value: 'PARTICIPANT', label: 'Participant' },
     { value: 'USER', label: 'User' },

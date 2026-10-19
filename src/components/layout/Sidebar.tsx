@@ -114,6 +114,16 @@ export default function Sidebar() {
       ),
       roles: ['ADMIN' as UserRole],
     },
+    {
+      name: t('nav.crm', 'CRM'),
+      href: '/dashboard/admin/crm',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      roles: ['ADMIN' as UserRole, 'MANAGER' as UserRole],
+    },
   ];
 
   const filteredNavigation = navigation.filter((item) => {
@@ -167,7 +177,15 @@ export default function Sidebar() {
                   {filteredNavigation.map((item) => {
                     const isActive =
                       pathname === item.href ||
-                      (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'));
+                      (item.href !== '/dashboard' &&
+                        pathname.startsWith(item.href + '/') &&
+                        // A more specific item (e.g. CRM under Admin) owns its subtree.
+                        !filteredNavigation.some(
+                          (other) =>
+                            other.href.length > item.href.length &&
+                            other.href.startsWith(item.href + '/') &&
+                            (pathname === other.href || pathname.startsWith(other.href + '/'))
+                        ));
                     return (
                       <li key={item.href}>
                         <Link

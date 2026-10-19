@@ -79,6 +79,8 @@ export interface LeadFilters {
   /** User id, or 'me'. */
   assignedToId?: string;
   unassigned?: boolean;
+  /** true: only leads with a phone number; false: only without. */
+  hasPhone?: boolean;
   source?: string;
   tag?: string;
   country?: string;

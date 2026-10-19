@@ -1,21 +1,34 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, Button, Badge, Loading, Modal, ViewModeToggle, ViewMode } from '@/components/ui';
+import { Alert, Card, CardContent, Button, Badge, Loading, Modal, ViewModeToggle, ViewMode } from '@/components/ui';
 import { getTournamentPublicPath } from '@/utils/helpers';
 import { registrationService } from '@/services';
 import type { Registration, RegistrationStatus } from '@/types';
 import { formatDateTime } from '@/utils/date';
 import { useInfiniteScroll } from '@/hooks';
+import { useAuthStore } from '@/store';
 
 const PAGE_SIZE = 10;
 
 export default function RegistrationsPage() {
   const { t } = useTranslation();
+  // Admins see and manage every registration (the API returns all of them).
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN');
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | 'all'>('all');
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  // Dashboard cards link here with ?status=APPROVED / ?status=PENDING.
+  useEffect(() => {
+    const status = new URLSearchParams(window.location.search).get('status');
+    if (status && ['PENDING', 'PENDING_PAYMENT', 'APPROVED', 'REJECTED', 'WITHDRAWN'].includes(status)) {
+      setStatusFilter(status as RegistrationStatus);
+    }
+  }, []);
   const [summaryCounts, setSummaryCounts] = useState({
     total: 0,
     approved: 0,
@@ -120,6 +133,34 @@ export default function RegistrationsPage() {
     }
   };
 
+  const handleApprove = async (registrationId: string) => {
+    setReviewingId(registrationId);
+    setReviewError(null);
+    try {
+      await registrationService.approveRegistration(registrationId);
+      reset();
+    } catch (err: any) {
+      setReviewError(err?.message || 'Failed to approve registration');
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const handleReject = async (registrationId: string) => {
+    const rejectionReason = window.prompt('Reason for rejecting this registration:');
+    if (!rejectionReason?.trim()) return;
+    setReviewingId(registrationId);
+    setReviewError(null);
+    try {
+      await registrationService.rejectRegistration(registrationId, { rejectionReason: rejectionReason.trim() });
+      reset();
+    } catch (err: any) {
+      setReviewError(err?.message || 'Failed to reject registration');
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
   const tabs = [
     { id: 'all', label: t('common.all') },
     { id: 'PENDING', label: t('registration.status.PENDING') },
@@ -131,10 +172,11 @@ export default function RegistrationsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {reviewError && <Alert variant="error" onClose={() => setReviewError(null)}>{reviewError}</Alert>}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {t('registration.myRegistrations')}
+              {isAdmin ? t('nav.allRegistrations') : t('registration.myRegistrations')}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               {t('dashboard.manageRegistrations')}
@@ -292,6 +334,26 @@ export default function RegistrationsPage() {
                             {t('common.view')}
                           </Button>
                         </Link>
+                        {isAdmin && registration.status === 'PENDING' && (
+                          <>
+                            <Button
+                              variant="success"
+                              size="sm"
+                              isLoading={reviewingId === registration.id}
+                              onClick={() => handleApprove(registration.id)}
+                            >
+                              {t('registration.approve', 'Approve')}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={reviewingId === registration.id}
+                              onClick={() => handleReject(registration.id)}
+                            >
+                              {t('registration.reject', 'Reject')}
+                            </Button>
+                          </>
+                        )}
                         {(registration.status === 'PENDING' || registration.status === 'PENDING_PAYMENT') && (
                           <Button
                             variant="danger"

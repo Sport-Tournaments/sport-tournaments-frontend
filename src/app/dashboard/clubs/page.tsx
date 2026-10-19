@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardContent, Button, Badge, Loading, ViewModeToggle, ViewMode } from '@/components/ui';
+import { useAuthStore } from '@/store';
 import { clubService } from '@/services';
 import { Club } from '@/types';
 import { useInfiniteScroll } from '@/hooks';
@@ -12,6 +13,8 @@ import { useInfiniteScroll } from '@/hooks';
 const PAGE_SIZE = 12;
 
 export default function DashboardClubsPage() {
+  // Admins see and manage every club (the API returns all of them).
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN');
   const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
@@ -65,7 +68,7 @@ export default function DashboardClubsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {t('nav.myClubs')}
+              {isAdmin ? t('nav.allClubs') : t('nav.myClubs')}
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               Manage your clubs and players

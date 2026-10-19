@@ -116,7 +116,7 @@ export default function LeadsTable({
         <CardContent className="p-3 sm:p-4 space-y-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
-              placeholder="Search name, organiser, contact, location…"
+              placeholder="Search name, organiser, contact, location, phone…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && update({ search: search || undefined })}
@@ -126,7 +126,7 @@ export default function LeadsTable({
               Search
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             <Select
               aria-label="Status"
               options={[{ value: '', label: 'All stages' }, ...LEAD_STATUSES]}
@@ -169,6 +169,18 @@ export default function LeadsTable({
               ]}
               value={filters.followUp ?? ''}
               onChange={(e) => update({ followUp: (e.target.value || undefined) as LeadFilters['followUp'] })}
+            />
+            <Select
+              aria-label="Phone"
+              options={[
+                { value: '', label: 'Any phone' },
+                { value: 'true', label: 'Has phone' },
+                { value: 'false', label: 'No phone' },
+              ]}
+              value={filters.hasPhone === undefined ? '' : String(filters.hasPhone)}
+              onChange={(e) =>
+                update({ hasPhone: e.target.value === '' ? undefined : e.target.value === 'true' })
+              }
             />
             <Select
               aria-label="Tag"

@@ -170,6 +170,9 @@
     "payments": "Payments",
     "admin": "Admin Panel",
     "crm": "CRM",
+    "allTournaments": "All Tournaments",
+    "allClubs": "All Clubs",
+    "allRegistrations": "All Registrations",
     "help": "Help",
     "about": "About"
   },

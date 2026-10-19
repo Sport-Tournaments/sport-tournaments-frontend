@@ -9,6 +9,7 @@ import { crmService } from '@/services';
 import type { CrmUser, Lead, LeadActivity, LeadInput, LeadPriority, LeadStatus, ManualLeadActivityType } from '@/types/crm';
 import { cn } from '@/utils/helpers';
 import LeadFormModal from '@/components/crm/LeadFormModal';
+import ContactPhones from '@/components/crm/ContactPhones';
 import { useCrmAccess } from '@/components/crm/useCrmAccess';
 import { FollowUpLabel, LeadPriorityBadge, LeadStatusBadge } from '@/components/crm/LeadBadges';
 import {
@@ -498,11 +499,7 @@ export default function LeadDetailPage() {
                   />
                   <Field
                     label="Phone"
-                    value={lead.contactPhone && (
-                      <a href={`tel:${lead.contactPhone}`} className="text-blue-600 hover:underline">
-                        {lead.contactPhone}
-                      </a>
-                    )}
+                    value={lead.contactPhone && <ContactPhones value={lead.contactPhone} />}
                   />
                   <Field label="Website" value={lead.website && <ExternalLink href={lead.website} />} />
                 </dl>

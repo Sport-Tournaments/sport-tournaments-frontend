@@ -6,6 +6,7 @@ import { Card, CardContent, Button, Input, Select, Loading, Pagination } from '@
 import { crmService } from '@/services';
 import type { CrmUser, Lead, LeadFilters, LeadPriority, LeadStatus } from '@/types/crm';
 import { FollowUpLabel, LeadPriorityBadge, LeadStatusBadge } from './LeadBadges';
+import ContactPhones from './ContactPhones';
 import { LEAD_PRIORITIES, LEAD_STATUSES, LEAD_TYPES, formatDate, typeLabel, userName } from './crmMeta';
 
 const PAGE_SIZE = 25;
@@ -300,12 +301,17 @@ export default function LeadsTable({
                       <td className="px-4 py-3"><LeadStatusBadge status={lead.status} /></td>
                       <td className="px-4 py-3"><LeadPriorityBadge priority={lead.priority} /></td>
                       <td className="px-4 py-3 text-gray-700">
-                        <div>{lead.contactName || <span className="text-gray-400">—</span>}</div>
+                        {lead.contactName ? (
+                          <div>{lead.contactName}</div>
+                        ) : (
+                          !lead.contactEmail && !lead.contactPhone && <span className="text-gray-400">—</span>
+                        )}
                         {lead.contactEmail && (
-                          <a href={`mailto:${lead.contactEmail}`} className="text-xs text-blue-600 hover:underline">
+                          <a href={`mailto:${lead.contactEmail}`} className="block text-xs text-blue-600 hover:underline">
                             {lead.contactEmail}
                           </a>
                         )}
+                        <ContactPhones value={lead.contactPhone} size="xs" />
                       </td>
                       <td className="px-4 py-3 text-gray-700">
                         {lead.assignedTo ? userName(lead.assignedTo) : <span className="text-gray-400">Unassigned</span>}

@@ -102,3 +102,36 @@ export function downloadBlob(blob: Blob, filename: string) {
 export function canUseCrm(role?: string | null): boolean {
   return role === 'ADMIN' || role === 'MANAGER';
 }
+
+/** Country code assumed for national-format numbers (e.g. "0722 123 456"). */
+const DEFAULT_COUNTRY_CODE = '40';
+
+/** Split a phone field that may hold several numbers ("+40… / +40…"). */
+export function splitPhones(value?: string | null): string[] {
+  if (!value) return [];
+  return value
+    .split(/[/;,]|\s+or\s+/i)
+    .map((p) => p.trim())
+    .filter((p) => /\d{6,}/.test(p.replace(/\D/g, '')));
+}
+
+/** E.164 digits without '+', or null when the number can't be normalised. */
+export function internationalDigits(phone: string): string | null {
+  const trimmed = phone.trim();
+  const digits = trimmed.replace(/\D/g, '');
+  if (!digits) return null;
+  if (trimmed.startsWith('+')) return digits;
+  if (digits.startsWith('00')) return digits.slice(2);
+  if (digits.startsWith('0')) return DEFAULT_COUNTRY_CODE + digits.slice(1);
+  return digits;
+}
+
+export function telHref(phone: string): string {
+  const digits = internationalDigits(phone);
+  return digits ? `tel:+${digits}` : `tel:${phone.replace(/[^\d+]/g, '')}`;
+}
+
+export function whatsappHref(phone: string): string | null {
+  const digits = internationalDigits(phone);
+  return digits ? `https://wa.me/${digits}` : null;
+}

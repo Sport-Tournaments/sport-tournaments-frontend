@@ -24,8 +24,10 @@ export async function getClubs(
 }
 
 // Get clubs owned by current user
-export async function getMyClubs(): Promise<ApiResponse<Club[]>> {
-  return apiGet<ApiResponse<Club[]>>(`${CLUBS_BASE}/my-clubs`);
+// Optionally only clubs with a team of the given birth year
+export async function getMyClubs(birthYear?: number): Promise<ApiResponse<Club[]>> {
+  const query = birthYear ? `?birthYear=${birthYear}` : '';
+  return apiGet<ApiResponse<Club[]>>(`${CLUBS_BASE}/my-clubs${query}`);
 }
 
 // Search clubs by name or city

@@ -75,12 +75,30 @@ export function RegistrationWizard({
     }
   }, [isOpen]);
 
-  // Fetch clubs on mount
+  const hasAgeGroups = !!tournament.ageGroups && tournament.ageGroups.length > 0;
+  const selectedBirthYear = tournament.ageGroups?.find((ag) => ag.id === selectedAgeGroupId)?.birthYear;
+  // Only teams born in the selected age category qualify
+  const eligibleTeams = selectedBirthYear
+    ? teams.filter((team) => team.birthyear === selectedBirthYear)
+    : teams;
+
+  // Fetch clubs that have a team for the selected age category
   useEffect(() => {
-    if (isOpen && clubs.length === 0) {
-      fetchClubs();
+    if (!isOpen) return;
+    if (hasAgeGroups && !selectedBirthYear) {
+      setClubs([]);
+      setSelectedClub(null);
+      return;
     }
-  }, [isOpen]);
+    fetchClubs(selectedBirthYear);
+  }, [isOpen, hasAgeGroups, selectedBirthYear]);
+
+  // Drop a team selection that no longer qualifies for the age category
+  useEffect(() => {
+    if (selectedTeamId && !eligibleTeams.some((team) => team.id === selectedTeamId)) {
+      setSelectedTeamId('');
+    }
+  }, [selectedTeamId, eligibleTeams]);
 
   useEffect(() => {
     if (isOpen && initialAgeGroupId) {
@@ -168,11 +186,13 @@ export function RegistrationWizard({
     }
   }, [isOpen]);
 
-  const fetchClubs = async () => {
+  const fetchClubs = async (birthYear?: number) => {
     setLoadingClubs(true);
     try {
-      const response = await clubService.getMyClubs();
-      setClubs(response.data || []);
+      const response = await clubService.getMyClubs(birthYear);
+      const fetched = response.data || [];
+      setClubs(fetched);
+      setSelectedClub((prev) => (prev && fetched.some((club) => club.id === prev.id) ? prev : null));
     } catch (err) {
       console.error('Failed to fetch clubs:', err);
       setError(t('registration.wizard.fetchClubsError', 'Failed to load your clubs'));
@@ -203,6 +223,7 @@ export function RegistrationWizard({
       const response = await teamService.createTeam({
         clubId: selectedClub.id,
         name: newTeamName.trim(),
+        birthyear: selectedBirthYear,
       });
 
       if (response.data) {
@@ -382,13 +403,19 @@ export function RegistrationWizard({
               </div>
             )}
 
-            {loadingClubs ? (
+            {hasAgeGroups && !selectedBirthYear ? (
+              <Alert variant="info">
+                {t('registration.wizard.selectAgeGroupFirst', 'Select an age category to see your eligible clubs.')}
+              </Alert>
+            ) : loadingClubs ? (
               <div className="flex justify-center py-8">
                 <Loading size="lg" />
               </div>
             ) : clubs.length === 0 ? (
               <Alert variant="warning">
-                {t('registration.wizard.noClubs', 'You are not associated with any clubs. Please join or create a club first.')}
+                {selectedBirthYear
+                  ? t('registration.wizard.noEligibleClubs', 'None of your clubs has a team for this age category.')
+                  : t('registration.wizard.noClubs', 'You are not associated with any clubs. Please join or create a club first.')}
               </Alert>
             ) : (
               <>
@@ -445,7 +472,7 @@ export function RegistrationWizard({
                           placeholder={t('registration.wizard.teamPlaceholder', 'Select a team')}
                           value={selectedTeamId}
                           onChange={(e) => setSelectedTeamId(e.target.value)}
-                          options={teams.map((team) => ({
+                          options={eligibleTeams.map((team) => ({
                             value: team.id,
                             label: team.name,
                           }))}

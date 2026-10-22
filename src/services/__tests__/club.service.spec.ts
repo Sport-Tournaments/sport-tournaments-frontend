@@ -79,6 +79,14 @@ describe('Club Service', () => {
       expect(mockApiGet).toHaveBeenCalledWith('/v1/clubs/my-clubs');
     });
 
+    it('should filter by birth year when provided', async () => {
+      mockApiGet.mockResolvedValue({ success: true, data: [] });
+
+      await clubService.getMyClubs(2015);
+
+      expect(mockApiGet).toHaveBeenCalledWith('/v1/clubs/my-clubs?birthYear=2015');
+    });
+
     it('should return array of clubs', async () => {
       const clubs = [{ id: '1', name: 'My Club' }];
       mockApiGet.mockResolvedValue({ success: true, data: clubs });

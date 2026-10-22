@@ -488,6 +488,8 @@
       "selectClubDesc": "Selectează clubul pe care vrei să îl înscrii la acest turneu și completează detaliile echipei.",
       "ageGroup": "Categorie de vârstă",
       "noClubs": "Nu ești asociat cu niciun club. Te rugăm să te alături sau să creezi un club.",
+      "noEligibleClubs": "Niciunul dintre cluburile tale nu are o echipă pentru această categorie de vârstă.",
+      "selectAgeGroupFirst": "Selectează o categorie de vârstă pentru a vedea cluburile eligibile.",
       "yourClub": "Clubul tău",
       "additionalInfo": "Informații suplimentare (Opțional)",
       "coachName": "Numele antrenorului",

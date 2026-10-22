@@ -457,6 +457,8 @@
       "selectClubDesc": "Select the club you want to register for this tournament and provide team details.",
       "ageGroup": "Age Category",
       "noClubs": "You are not associated with any clubs. Please join or create a club first.",
+      "noEligibleClubs": "None of your clubs has a team for this age category.",
+      "selectAgeGroupFirst": "Select an age category to see your eligible clubs.",
       "yourClub": "Your Club",
       "additionalInfo": "Additional Information (Optional)",
       "coachName": "Coach Name",

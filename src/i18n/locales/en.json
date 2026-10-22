@@ -361,6 +361,8 @@
     }
   },
   "clubs": {
+    "logoUploadError": "Club saved, but the logo could not be uploaded. Please try again.",
+    "logoTooLarge": "Logo must be 5MB or smaller.",
     "title": "Clubs",
     "searchPlaceholder": "Search clubs...",
     "name": "Club Name",

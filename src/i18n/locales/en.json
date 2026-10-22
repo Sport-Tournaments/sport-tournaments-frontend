@@ -793,6 +793,7 @@
     }
   },
   "tournament": {
+    "pitches": "Pitches",
     "noUpcomingTournaments": "No upcoming tournaments right now. See past tournaments below.",
     "showDirections": "Show directions",
     "openInWaze": "Open in Waze",
@@ -1585,6 +1586,13 @@
         "description": "We regularly review and update our GDPR compliance practices to ensure we meet all regulatory requirements. Any significant changes will be communicated through our Privacy Policy updates."
       }
     }
+  },
+  "pitches": {
+    "unassigned": "No pitch assigned",
+    "notScheduled": "Not scheduled",
+    "group": "Group",
+    "knockout": "Knockout",
+    "round": "Round"
   },
   "matches": {
     "title": "Match Management",

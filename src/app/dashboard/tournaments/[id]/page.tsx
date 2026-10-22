@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Users } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement, EditGroupsModal } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, Alert, Loading, Tabs, InvitationCodeManager, Modal, MatchManagement, EditGroupsModal, PitchSchedule } from '@/components/ui';
 import { tournamentService, registrationService, fileService, groupService, potDrawService } from '@/services';
 import { useInfiniteScroll } from '@/hooks';
 import type { Tournament, Registration, TournamentStatus, RegistrationStatus, AgeGroup, RegistrationStatisticsByAgeGroup, AgeGroupRegistrationStatistics } from '@/types';
@@ -1197,6 +1197,17 @@ export default function TournamentDetailPage() {
             </Card>
           );
         })(),
+      },
+      {
+        id: 'pitches',
+        label: t('tournament.pitches', 'Pitches'),
+        content: (
+          <Card>
+            <CardContent className="p-4 sm:p-6">
+              <PitchSchedule tournamentId={tournament.id} ageGroupId={ageGroupId} />
+            </CardContent>
+          </Card>
+        ),
       },
     ];
   };

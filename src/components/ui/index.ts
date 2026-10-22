@@ -87,5 +87,7 @@ export type { StandingsTableProps } from './StandingsTable';
 
 export { default as LeagueMatchSchedule } from './LeagueMatchSchedule';
 export type { LeagueMatchScheduleProps } from './LeagueMatchSchedule';
+export { default as PitchSchedule } from './PitchSchedule';
+export type { PitchScheduleProps } from './PitchSchedule';
 
 export { default as DoubleEliminationBracket } from './DoubleEliminationBracket';

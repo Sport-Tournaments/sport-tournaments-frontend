@@ -937,6 +937,7 @@
     }
   },
   "tournament": {
+    "pitches": "Terenuri",
     "noUpcomingTournaments": "Momentan nu sunt turnee viitoare. Vezi mai jos turneele trecute.",
     "showDirections": "Arată traseul",
     "openInWaze": "Deschide în Waze",
@@ -1785,6 +1786,13 @@
         "description": "Revizuim și actualizăm în mod regulat practicile noastre de conformitate GDPR pentru a ne asigura că îndeplinim toate cerințele de reglementare. Orice modificări semnificative vor fi comunicate prin actualizările Politicii de confidențialitate."
       }
     }
+  },
+  "pitches": {
+    "unassigned": "Fără teren alocat",
+    "notScheduled": "Neprogramat",
+    "group": "Grupa",
+    "knockout": "Eliminatorii",
+    "round": "Runda"
   },
   "matches": {
     "title": "Gestionare Meciuri",

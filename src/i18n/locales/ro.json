@@ -395,6 +395,8 @@
     }
   },
   "clubs": {
+    "logoUploadError": "Clubul a fost salvat, dar sigla nu a putut fi încărcată. Te rugăm să încerci din nou.",
+    "logoTooLarge": "Sigla trebuie să aibă cel mult 5MB.",
     "title": "Cluburi",
     "name": "Numele clubului",
     "shortName": "Nume scurt",

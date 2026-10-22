@@ -54,6 +54,7 @@ export default function EditClubPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [locationQuery, setLocationQuery] = useState('');
   const errorRef = useRef<HTMLDivElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const initialLocationRef = useRef('');
   const pendingNavigationRef = useRef<null | (() => void)>(null);
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
@@ -234,7 +235,9 @@ export default function EditClubPage() {
           await clubService.uploadLogo(params.id as string, logoFile);
         } catch (err) {
           console.error('Failed to upload logo:', err);
-          // Don't block club update if logo upload fails
+          // Club details are saved; stay on the page so the user can retry the logo
+          setError(t('clubs.logoUploadError', 'Club saved, but the logo could not be uploaded. Please try again.'));
+          return;
         }
       }
       
@@ -357,10 +360,27 @@ export default function EditClubPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {/* trigger file upload */}}
+                    onClick={() => logoInputRef.current?.click()}
                   >
                     {t('common.replace', 'Replace')}
                   </Button>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      // Reset so picking the same file again still fires onChange
+                      e.target.value = '';
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) {
+                        setError(t('clubs.logoTooLarge', 'Logo must be 5MB or smaller.'));
+                        return;
+                      }
+                      setLogoFile(file);
+                    }}
+                  />
                 </div>
               ) : (
                 <FileUpload

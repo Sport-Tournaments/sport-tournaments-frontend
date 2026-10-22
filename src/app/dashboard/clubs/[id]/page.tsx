@@ -6,8 +6,19 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Alert, Loading, Tabs, Modal, ClubColorBadge, ClubColorStripes, ClubColorBanner } from '@/components/ui';
-import { clubService, teamService } from '@/services';
+import { clubService, teamService, registrationService } from '@/services';
 import { Club, Team } from '@/types';
+import type { Registration, RegistrationStatus } from '@/types';
+import { getTournamentPublicPath } from '@/utils/helpers';
+import { formatDateTime } from '@/utils/date';
+
+const REGISTRATION_STATUS_VARIANTS: Record<RegistrationStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+  PENDING: 'warning',
+  PENDING_PAYMENT: 'info',
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  WITHDRAWN: 'default',
+};
 
 export default function ClubDetailPage() {
   const { t } = useTranslation();
@@ -15,6 +26,8 @@ export default function ClubDetailPage() {
   const router = useRouter();
   const [club, setClub] = useState<Club | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [registrationsError, setRegistrationsError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<{ url: string; alt: string } | null>(null);
@@ -25,10 +38,19 @@ export default function ClubDetailPage() {
 
   const fetchData = async () => {
     try {
-      const [clubData, teamsData] = await Promise.all([
+      const [clubData, teamsData, registrationsData] = await Promise.all([
         clubService.getClubById(params.id as string),
         teamService.getTeamsByClub(params.id as string),
+        // A failed registrations load shouldn't block the club page
+        registrationService.getMyRegistrations({ clubId: params.id as string }).catch(() => null),
       ]);
+      if (registrationsData) {
+        const list = (registrationsData as any)?.data ?? registrationsData;
+        setRegistrations(Array.isArray(list) ? list : []);
+        setRegistrationsError(false);
+      } else {
+        setRegistrationsError(true);
+      }
       const responseData = (clubData as any)?.data || clubData;
       setClub(responseData);
       const teamsList = (teamsData as any)?.data ?? teamsData;
@@ -214,8 +236,48 @@ export default function ClubDetailPage() {
     },
     {
       id: 'registrations',
-      label: 'Registrations',
-      content: (
+      label: `Registrations (${registrations.length})`,
+      content: registrationsError ? (
+        <Alert variant="error">Failed to load registrations</Alert>
+      ) : registrations.length > 0 ? (
+        <Card>
+          <CardContent className="p-0">
+            <ul className="divide-y divide-gray-100">
+              {registrations.map((registration) => (
+                <li key={registration.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <Link
+                        href={registration.tournament ? getTournamentPublicPath(registration.tournament) : `/main/tournaments/${registration.tournamentId}`}
+                        className="font-semibold text-gray-900 hover:text-primary"
+                      >
+                        {registration.tournament?.name || 'Tournament'}
+                      </Link>
+                      {registration.ageGroup && (
+                        <Badge variant="default">
+                          {registration.ageGroup.displayLabel || registration.ageGroup.ageCategory || registration.ageGroup.birthYear}
+                        </Badge>
+                      )}
+                      <Badge variant={REGISTRATION_STATUS_VARIANTS[registration.status] || 'default'}>
+                        {t(`registration.status.${registration.status}`)}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Team: {registration.team?.name || 'Not specified'}
+                      <span className="text-gray-400"> • Registered: {formatDateTime(registration.createdAt)}</span>
+                    </p>
+                  </div>
+                  <Link href={`/dashboard/registrations/${registration.id}`} className="shrink-0">
+                    <Button variant="outline" size="sm">
+                      {t('common.view')}
+                    </Button>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : (
         <Card>
           <CardContent className="text-center py-12">
             <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,7 +286,7 @@ export default function ClubDetailPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               Tournament Registrations
             </h3>
-            <p className="text-gray-500 mb-4">View and manage tournament registrations for this club</p>
+            <p className="text-gray-500 mb-4">This club hasn&apos;t registered for any tournaments yet</p>
             <Link href="/main/tournaments">
               <Button variant="primary">Browse Tournaments</Button>
             </Link>

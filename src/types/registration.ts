@@ -109,6 +109,7 @@ export interface RegistrationFilters {
   status?: RegistrationStatus;
   paymentStatus?: PaymentStatus;
   search?: string;
+  clubId?: string;
 }
 
 export interface RegistrationStatistics {

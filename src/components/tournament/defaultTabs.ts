@@ -1,8 +1,8 @@
 import type { AgeGroup, Tournament } from '@/types';
 
-export type InnerTabId = 'overview' | 'teams' | 'groups' | 'matches';
+export type InnerTabId = 'overview' | 'teams' | 'groups' | 'matches' | 'pitches';
 
-export const INNER_TAB_IDS: InnerTabId[] = ['overview', 'teams', 'groups', 'matches'];
+export const INNER_TAB_IDS: InnerTabId[] = ['overview', 'teams', 'groups', 'matches', 'pitches'];
 
 export function getAgeGroupTabId(ageGroup: AgeGroup, index: number): string {
   return `age-group-${ageGroup.id ?? index}`;

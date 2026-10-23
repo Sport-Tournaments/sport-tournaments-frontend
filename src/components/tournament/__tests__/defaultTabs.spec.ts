@@ -66,6 +66,15 @@ describe('getDefaultTournamentTabs', () => {
     ).toEqual({ ageGroupTab: 'age-group-u10', innerTab: 'overview' });
   });
 
+  it('honours a requested pitches tab', () => {
+    expect(
+      getDefaultTournamentTabs(
+        { status: 'ONGOING', ageGroups },
+        { today, requestedAgeGroupTab: 'age-group-u10', requestedInnerTab: 'pitches' },
+      ),
+    ).toEqual({ ageGroupTab: 'age-group-u10', innerTab: 'pitches' });
+  });
+
   it('handles tournaments without age groups', () => {
     expect(getDefaultTournamentTabs({ status: 'ONGOING', ageGroups: [] }, { today })).toEqual({
       ageGroupTab: undefined,

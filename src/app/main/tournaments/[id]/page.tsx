@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { MainLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement, TeamLogo } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, Tabs, Loading, Alert, Modal, TournamentMap, MatchManagement, TeamLogo, PitchSchedule } from '@/components/ui';
 import { tournamentService, registrationService, clubService, fileService } from '@/services';
 import { Tournament, TournamentStatus, Registration, Club, AgeGroup } from '@/types';
 import { formatDate } from '@/utils/date';
@@ -863,6 +863,21 @@ export default function TournamentDetailPage() {
     ),
   });
 
+  const buildPitchesTab = (ageGroup?: AgeGroup) => ({
+    id: 'pitches',
+    label: t('tournament.pitches', 'Pitches'),
+    content: (
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('tournament.pitches', 'Pitches')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PitchSchedule tournamentId={tournament.id} ageGroupId={ageGroup?.id} />
+        </CardContent>
+      </Card>
+    ),
+  });
+
   const buildInnerTabs = (ageGroup?: AgeGroup) => [
     {
       id: 'overview',
@@ -872,6 +887,7 @@ export default function TournamentDetailPage() {
     buildTeamsTab(ageGroup),
     buildGroupsTab(ageGroup),
     buildMatchesTab(ageGroup),
+    buildPitchesTab(ageGroup),
   ];
 
   const tabs = buildInnerTabs();

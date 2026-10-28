@@ -986,6 +986,7 @@ export default function TournamentDetailPage() {
                     <TournamentMap
                       tournaments={mapTournaments}
                       defaultZoom={12}
+                      deferUntilClick
                     />
                   ) : (
                     <div className="bg-gray-100 rounded-lg p-6 text-center">

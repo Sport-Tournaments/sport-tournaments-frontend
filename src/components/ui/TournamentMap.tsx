@@ -10,6 +10,7 @@ interface TournamentMapProps {
   className?: string;
   defaultCenter?: [number, number];
   defaultZoom?: number;
+  deferUntilClick?: boolean;
 }
 
 // Dynamically import the entire map component with ssr disabled
@@ -32,7 +33,8 @@ export function TournamentMap({
   tournaments, 
   className,
   defaultCenter = [45.9432, 24.9668], // Romania center
-  defaultZoom = 6
+  defaultZoom = 6,
+  deferUntilClick = false,
 }: TournamentMapProps) {
   const { t } = useTranslation();
 
@@ -47,12 +49,6 @@ export function TournamentMap({
     longitude: typeof tournament.longitude === 'string' ? parseFloat(tournament.longitude) : tournament.longitude,
   })), [tournaments]);
 
-  // Generate a unique key for the map to force remount when tournaments change
-  const mapKey = useMemo(() => {
-    const ids = tournamentsWithCoords.map(t => t.id).sort().join('-');
-    return `tournament-map-${ids || 'empty'}`;
-  }, [tournamentsWithCoords]);
-
   if (tournamentsWithCoords.length === 0) {
     return (
       <div className={`bg-gray-100 rounded-lg p-8 text-center ${className}`}>
@@ -66,12 +62,14 @@ export function TournamentMap({
   }
 
   return (
-    <div className={className} key={mapKey}>
-      <GoogleMap 
-        key={mapKey}
+    <div className={className}>
+      {/* No `key` on purpose: remounting creates a new google.maps.Map, and every
+          new Map is a billable load. GoogleMap updates its markers in place. */}
+      <GoogleMap
         tournaments={tournamentsWithCoords}
         defaultCenter={defaultCenter}
         defaultZoom={defaultZoom}
+        deferUntilClick={deferUntilClick}
       />
 
       {/* Tournament count */}

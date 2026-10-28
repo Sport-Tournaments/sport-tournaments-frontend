@@ -19,7 +19,7 @@ import type {
 } from '@/types';
 import StandingsTable from './StandingsTable';
 import LeagueMatchSchedule from './LeagueMatchSchedule';
-import DoubleEliminationBracket, { type MatchTeamSwapSlot } from './DoubleEliminationBracket';
+import DoubleEliminationBracket, { type MatchTeamSwapSlot, type PenaltyShootout } from './DoubleEliminationBracket';
 
 interface TeamInfo {
   id: string;
@@ -223,7 +223,7 @@ export default function MatchManagement({
     leg1Team2Score: number | null,
     leg2Team1Score: number | null,
     leg2Team2Score: number | null,
-    advancingTeamId?: string
+    penalties?: PenaltyShootout,
   ) => {
     try {
       setSavingMatchId(matchId);
@@ -235,13 +235,16 @@ export default function MatchManagement({
       await groupService.updateMatchScore(tournamentId, matchId, isSingleMatch ? {
         team1Score: leg1Team1Score ?? undefined,
         team2Score: leg1Team2Score ?? undefined,
-        advancingTeamId,
+        ...(penalties !== undefined && {
+          hasPenalties: penalties !== null,
+          penaltyTeam1Score: penalties?.team1,
+          penaltyTeam2Score: penalties?.team2,
+        }),
       } : {
         leg1Team1Score,
         leg1Team2Score,
         leg2Team1Score,
         leg2Team2Score,
-        advancingTeamId,
       }, ageGroupId);
       setSuccessMessage(
         t('matches.scoreUpdated', 'Match score updated successfully!')
@@ -1118,7 +1121,7 @@ type PlacementBracketTabsProps = {
     leg1t2: number | null,
     leg2t1: number | null,
     leg2t2: number | null,
-    advancingTeamId?: string,
+    penalties?: PenaltyShootout,
   ) => void;
   onSchedule: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;

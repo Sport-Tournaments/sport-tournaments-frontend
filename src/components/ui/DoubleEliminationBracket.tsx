@@ -53,6 +53,9 @@ export type MatchTeamSwapSlot = {
   label: string;
 };
 
+/** Penalty shootout of a tied single match; null clears a previous shootout. */
+export type PenaltyShootout = { team1: number; team2: number } | null;
+
 export interface DoubleEliminationBracketProps {
   playoffRounds: PlayoffRound[];
   teamNames?: Map<string, string> | Record<string, string>;
@@ -62,7 +65,7 @@ export interface DoubleEliminationBracketProps {
   /** Whether matches use two-legged ties (DE only). Defaults to false = single-score modal. */
   twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null, penalties?: PenaltyShootout) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;
   onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
@@ -108,7 +111,7 @@ interface MatchNodeData extends Record<string, unknown> {
   isOrganizer?: boolean;
   twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null, penalties?: PenaltyShootout) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;
   selectedSwapSlot?: MatchTeamSwapSlot | null;
@@ -202,7 +205,10 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
   const existingHH   = match.scheduledAt ? String(new Date(match.scheduledAt).getHours()).padStart(2, '0') : _todayHH;
   const existingMM   = match.scheduledAt ? String(new Date(match.scheduledAt).getMinutes()).padStart(2, '0') : '00';
 
-  const [scoreModal,   setScoreModal]   = useState({ open: false, leg1t1: '', leg1t2: '', leg2t1: '', leg2t2: '' });
+  const [scoreModal,   setScoreModal]   = useState({ open: false, leg1t1: '', leg1t2: '', leg2t1: '', leg2t2: '', hasPenalties: false, pen1: '', pen2: '' });
+  const modalTied = scoreModal.leg1t1 !== '' && scoreModal.leg1t2 !== '' && Number(scoreModal.leg1t1) === Number(scoreModal.leg1t2);
+  const usePenalties = !twoLegged && modalTied && scoreModal.hasPenalties;
+  const penaltiesInvalid = usePenalties && (scoreModal.pen1 === '' || scoreModal.pen2 === '' || Number(scoreModal.pen1) === Number(scoreModal.pen2));
   const [detailsModal, setDetailsModal] = useState({ open: false, date: existingDate, hh: existingHH, mm: existingMM, fieldName: match.fieldName ?? '' });
 
   const handleScoreSave = () => {
@@ -218,14 +224,19 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
         leg2Empty ? null : Number(scoreModal.leg2t2 || 0),
       );
     } else {
-      // Single-match: use leg1t1/leg1t2 as direct team scores; pass null for legs
+      // Single-match: use leg1t1/leg1t2 as direct team scores; pass null for legs.
+      // A tie is decided by penalties; a non-tie clears any earlier shootout.
       const empty = scoreModal.leg1t1 === '' && scoreModal.leg1t2 === '';
+      const penalties: PenaltyShootout | undefined = usePenalties
+        ? { team1: Number(scoreModal.pen1), team2: Number(scoreModal.pen2) }
+        : match.hasPenalties ? null : undefined;
       if (onScoreUpdate) onScoreUpdate(
         match.id,
         empty ? null : Number(scoreModal.leg1t1 || 0),
         empty ? null : Number(scoreModal.leg1t2 || 0),
         null,
         null,
+        penalties,
       );
     }
     setScoreModal(s => ({ ...s, open: false }));
@@ -342,6 +353,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
           ) : hasScore && (
             <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT1Win ? 'text-white' : 'text-gray-800'}`}>
               {match.team1Score}
+              {match.hasPenalties && match.penaltyTeam1Score != null && (
+                <span className="ml-0.5 text-[10px] font-normal opacity-70">({match.penaltyTeam1Score})</span>
+              )}
             </span>
           )}
         </div>
@@ -396,6 +410,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
           ) : hasScore && (
             <span className={`text-sm font-bold tabular-nums flex-shrink-0 ${isT2Win ? 'text-white' : 'text-gray-800'}`}>
               {match.team2Score}
+              {match.hasPenalties && match.penaltyTeam2Score != null && (
+                <span className="ml-0.5 text-[10px] font-normal opacity-70">({match.penaltyTeam2Score})</span>
+              )}
             </span>
           )}
         </div>
@@ -423,6 +440,9 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
                   leg1t2: String(twoLegged ? (match.leg1Team2Score ?? '') : (match.team2Score ?? '')),
                   leg2t1: String(match.leg2Team1Score ?? ''),
                   leg2t2: String(match.leg2Team2Score ?? ''),
+                  hasPenalties: !!match.hasPenalties,
+                  pen1: String(match.penaltyTeam1Score ?? ''),
+                  pen2: String(match.penaltyTeam2Score ?? ''),
                 }); }}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold disabled:opacity-50 transition-colors ${
                   isCompleted
@@ -513,9 +533,39 @@ function MatchNode({ data }: NodeProps<MatchFlowNode>) {
                 </div>
               </div>
             )}
+            {!twoLegged && modalTied && (
+              <div className="mb-5 space-y-3">
+                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input type="checkbox" checked={scoreModal.hasPenalties}
+                    onChange={e => setScoreModal(s => ({ ...s, hasPenalties: e.target.checked }))}
+                    className="w-4 h-4 rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f]" />
+                  Decided by penalty shootout
+                </label>
+                {scoreModal.hasPenalties && (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t1Name} (pen.)</label>
+                      <input type="number" min="0" value={scoreModal.pen1}
+                        onChange={e => setScoreModal(s => ({ ...s, pen1: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                    <span className="text-gray-400 font-medium mt-5">-</span>
+                    <div className="flex-1">
+                      <label className="block text-xs text-gray-500 mb-1">{t2Name} (pen.)</label>
+                      <input type="number" min="0" value={scoreModal.pen2}
+                        onChange={e => setScoreModal(s => ({ ...s, pen2: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-sm focus:ring-2 focus:ring-[#1e3a5f] focus:border-[#1e3a5f]" placeholder="0" />
+                    </div>
+                  </div>
+                )}
+                {penaltiesInvalid && (
+                  <p className="text-xs text-red-600">Enter both penalty scores; they can&apos;t be equal.</p>
+                )}
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <button onClick={() => setScoreModal(s => ({ ...s, open: false }))} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
-              <button onClick={handleScoreSave} disabled={isSaving}
+              <button onClick={handleScoreSave} disabled={isSaving || penaltiesInvalid}
                 className="px-4 py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-medium hover:bg-[#152a45] disabled:opacity-50">
                 {isSaving ? 'Saving…' : 'Save Score'}
               </button>
@@ -588,7 +638,7 @@ interface BracketSectionProps {
   isOrganizer?: boolean;
   twoLegged?: boolean;
   onAdvance?: (matchId: string, teamId: string) => void;
-  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null) => void;
+  onScoreUpdate?: (matchId: string, leg1t1: number | null, leg1t2: number | null, leg2t1: number | null, leg2t2: number | null, penalties?: PenaltyShootout) => void;
   onSchedule?: (matchId: string, scheduledAt: string, fieldName?: string) => void;
   onSwapTeams?: (source: MatchTeamSwapSlot, target: MatchTeamSwapSlot) => Promise<void> | void;
   onSwapTeamSlot?: (slot: MatchTeamSwapSlot) => void;

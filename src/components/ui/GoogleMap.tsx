@@ -6,6 +6,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { Tournament } from '@/types';
 import { formatDate } from '@/utils/date';
 import { getTournamentPublicPath } from '@/utils/helpers';
+import { googleMapsUrl, isLikelyBot } from '@/utils/bot';
 
 interface GoogleMapProps {
   tournaments: Tournament[];
@@ -28,6 +29,11 @@ export default function GoogleMap({
   const { t } = useTranslation();
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activated, setActivated] = useState(!deferUntilClick);
+  // Decided after mount (needs navigator). Robots never load the billable Maps JS API.
+  const [isBot, setIsBot] = useState<boolean | null>(null);
+  useEffect(() => {
+    setIsBot(isLikelyBot());
+  }, []);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -43,7 +49,7 @@ export default function GoogleMap({
   }, [tournaments, defaultCenter]);
 
   useEffect(() => {
-    if (!apiKey || !activated || !mapContainerRef.current) return;
+    if (!apiKey || !activated || isBot !== false || !mapContainerRef.current) return;
 
     const loader = new Loader({
       apiKey,
@@ -128,7 +134,7 @@ export default function GoogleMap({
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
     };
-  }, [apiKey, activated, mapCenter, defaultZoom, tournaments, t]);
+  }, [apiKey, activated, isBot, mapCenter, defaultZoom, tournaments, t]);
 
   if (!apiKey) {
     return (
@@ -146,17 +152,53 @@ export default function GoogleMap({
     );
   }
 
+  const first = tournaments[0];
+  const mapsLink =
+    first && Number.isFinite(first.latitude) && Number.isFinite(first.longitude)
+      ? googleMapsUrl(first.latitude as number, first.longitude as number)
+      : null;
+
+  const openInGoogleMaps = mapsLink ? (
+    <a
+      href={mapsLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid="google-map-link"
+      className="text-sm font-medium text-blue-600 hover:underline"
+    >
+      {t('tournament.openInGoogleMaps', 'Open in Google Maps')}
+    </a>
+  ) : null;
+
+  // Robots (and the brief moment before we know) get a plain link, no Maps JS load.
+  if (isBot !== false) {
+    return (
+      <div
+        data-testid="google-map-bot-fallback"
+        className="flex items-center justify-center rounded-lg border border-gray-200 bg-gray-50"
+        style={{ height: '120px' }}
+      >
+        {openInGoogleMaps}
+      </div>
+    );
+  }
+
   if (!activated) {
     return (
-      <button
-        type="button"
-        data-testid="google-map-placeholder"
-        onClick={() => setActivated(true)}
-        className="flex w-full items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-sm font-medium text-blue-600 hover:bg-gray-100"
+      <div
+        className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50"
         style={{ height: '200px' }}
       >
-        {t('tournament.showMap', 'Show map')}
-      </button>
+        <button
+          type="button"
+          data-testid="google-map-placeholder"
+          onClick={() => setActivated(true)}
+          className="text-sm font-medium text-blue-600 hover:underline"
+        >
+          {t('tournament.showMap', 'Show map')}
+        </button>
+        {openInGoogleMaps}
+      </div>
     );
   }
 

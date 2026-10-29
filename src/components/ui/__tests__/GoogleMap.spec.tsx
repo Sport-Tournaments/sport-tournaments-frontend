@@ -48,4 +48,24 @@ describe('GoogleMap cost guards', () => {
     await waitFor(() => expect(LoaderCtor).toHaveBeenCalled());
     expect(LoaderCtor.mock.calls[0][0]).not.toHaveProperty('libraries');
   });
+  it('never loads Google Maps for robots, and shows a plain Google Maps link instead', async () => {
+    const spy = vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    );
+    render(<GoogleMap tournaments={tournaments} />);
+    await waitFor(() => expect(screen.getByTestId('google-map-bot-fallback')).toBeInTheDocument());
+    expect(loadMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('google-map-link')).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/search/?api=1&query=45.6,25.6',
+    );
+    spy.mockRestore();
+  });
+
+  it('click-to-load placeholder also offers an Open in Google Maps link for humans', async () => {
+    render(<GoogleMap tournaments={tournaments} deferUntilClick />);
+    await waitFor(() => expect(screen.getByTestId('google-map-placeholder')).toBeInTheDocument());
+    expect(screen.getByTestId('google-map-link')).toBeInTheDocument();
+    expect(loadMock).not.toHaveBeenCalled();
+  });
 });

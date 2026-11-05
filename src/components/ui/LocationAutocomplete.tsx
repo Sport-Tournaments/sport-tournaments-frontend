@@ -4,8 +4,23 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/utils/helpers';
 import { useDebounce } from '@/hooks';
-import { searchLocations } from '@/services/location.service';
-import type { LocationSuggestion } from '@/types';
+import {
+  searchLocations,
+  searchLocationPredictions,
+  getPlaceDetails,
+} from '@/services/location.service';
+import type { LocationPrediction, LocationSuggestion } from '@/types';
+
+type SuggestionItem = LocationSuggestion | LocationPrediction;
+
+const hasCoordinates = (item: SuggestionItem): item is LocationSuggestion =>
+  typeof (item as LocationSuggestion).latitude === 'number' &&
+  typeof (item as LocationSuggestion).longitude === 'number';
+
+const newSessionToken = () =>
+  typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export interface LocationAutocompleteProps {
   label?: string;
@@ -39,7 +54,7 @@ export default function LocationAutocomplete({
   limit,
 }: LocationAutocompleteProps) {
   const [inputValue, setInputValue] = useState(value);
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -48,6 +63,9 @@ export default function LocationAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const lastSelectedRef = useRef<string>(value);
+  // One Google Places session per search: every autocomplete call and the final
+  // details call share it, so Google bills the search as one session.
+  const sessionTokenRef = useRef<string | null>(null);
 
   const debouncedQuery = useDebounce(inputValue, 300);
 
@@ -79,19 +97,37 @@ export default function LocationAutocomplete({
 
       setIsLoading(true);
       try {
+        if (displayMode === 'address') {
+          // Predictions only; details are fetched for the one the user picks.
+          sessionTokenRef.current ??= newSessionToken();
+          const response = await searchLocationPredictions(
+            searchQuery,
+            sessionTokenRef.current,
+            Math.min(effectiveLimit, 5)
+          );
+          if (response.success) {
+            const seen = new Set<string>();
+            setSuggestions(
+              (response.data || []).filter((item) => {
+                const key = item.placeId || item.formattedAddress;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              })
+            );
+            setShowSuggestions(true);
+          }
+          return;
+        }
+
         const response = await searchLocations(searchQuery, effectiveLimit);
         if (response.success) {
-          // Remove duplicates based on display mode
+          // City mode: one entry per city
           const uniqueSuggestions = response.data.reduce((acc, current) => {
-            const key = displayMode === 'address'
-              ? (current.placeId || current.formattedAddress)
-              : `${current.city}-${current.region || ''}-${current.country}`;
-            const existing = acc.find(item => {
-              const existingKey = displayMode === 'address'
-                ? (item.placeId || item.formattedAddress)
-                : `${item.city}-${item.region || ''}-${item.country}`;
-              return existingKey === key;
-            });
+            const key = `${current.city}-${current.region || ''}-${current.country}`;
+            const existing = acc.find(
+              (item) => `${item.city}-${item.region || ''}-${item.country}` === key
+            );
             if (!existing) {
               acc.push(current);
             }
@@ -164,14 +200,33 @@ export default function LocationAutocomplete({
   );
 
   const handleSelect = useCallback(
-    (suggestion: LocationSuggestion) => {
+    async (item: SuggestionItem) => {
+      lastSelectedRef.current = item.formattedAddress;
+      setInputValue(item.formattedAddress);
+      onChange?.(item.formattedAddress);
+      setShowSuggestions(false);
+      setSuggestions([]);
+
+      let suggestion: LocationSuggestion | null = hasCoordinates(item) ? item : null;
+      if (!suggestion && item.placeId) {
+        setIsLoading(true);
+        try {
+          const response = await getPlaceDetails(item.placeId, sessionTokenRef.current ?? undefined);
+          suggestion = response.success ? response.data : null;
+        } catch (error) {
+          console.error('Error fetching place details:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+      sessionTokenRef.current = null;
+      if (!suggestion) return;
+
       lastSelectedRef.current = suggestion.formattedAddress;
       setInputValue(suggestion.formattedAddress);
       onChange?.(suggestion.formattedAddress);
       onSelect?.(suggestion);
       onCoordinatesChange?.(suggestion.latitude, suggestion.longitude);
-      setShowSuggestions(false);
-      setSuggestions([]);
     },
     [onChange, onSelect, onCoordinatesChange]
   );
@@ -297,17 +352,22 @@ export default function LocationAutocomplete({
             className="bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto"
           >
             {suggestions.map((suggestion, index) => {
-              const cityLine = suggestion.region
-                ? `${suggestion.city}, ${suggestion.region}, ${suggestion.country}`
-                : `${suggestion.city}, ${suggestion.country}`;
+              const place = hasCoordinates(suggestion) ? suggestion : null;
+              const prediction = place ? null : (suggestion as LocationPrediction);
+              const cityLine = place
+                ? place.region
+                  ? `${place.city}, ${place.region}, ${place.country}`
+                  : `${place.city}, ${place.country}`
+                : prediction?.secondaryText || '';
               const displayText = displayMode === 'address'
-                ? suggestion.venueName || suggestion.formattedAddress
+                ? suggestion.venueName || prediction?.mainText || suggestion.formattedAddress
                 : cityLine;
               const subText = suggestion.venueName ? suggestion.formattedAddress : cityLine;
-              
+              const showSubText = !!(suggestion.venueName || place?.city || prediction?.secondaryText);
+
               return (
                 <li
-                  key={suggestion.placeId || `${suggestion.latitude}-${suggestion.longitude}-${index}`}
+                  key={suggestion.placeId || `${place?.latitude}-${place?.longitude}-${index}`}
                   className={cn(
                     'px-4 py-2 cursor-pointer text-sm',
                     index === selectedIndex
@@ -325,7 +385,7 @@ export default function LocationAutocomplete({
                     )}
                     <span className="truncate">{displayText}</span>
                   </div>
-                  {displayMode === 'address' && (suggestion.venueName || suggestion.city) && (
+                  {displayMode === 'address' && showSubText && (
                     <div className="text-xs text-gray-500 mt-0.5">{subText}</div>
                   )}
                 </li>

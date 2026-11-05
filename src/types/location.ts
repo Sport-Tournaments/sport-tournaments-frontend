@@ -13,6 +13,16 @@ export interface LocationSuggestion {
   isPointOfInterest?: boolean;
 }
 
+/** Autocomplete prediction: no coordinates until its details are fetched. */
+export interface LocationPrediction {
+  placeId: string;
+  formattedAddress: string;
+  mainText?: string;
+  secondaryText?: string;
+  venueName?: string;
+  isPointOfInterest?: boolean;
+}
+
 export interface LocationAutocompleteResponse {
   success: boolean;
   data: LocationSuggestion[];

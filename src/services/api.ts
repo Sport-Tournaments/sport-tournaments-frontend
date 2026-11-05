@@ -205,6 +205,14 @@ const createHttpError = (
   return error;
 };
 
+// GA4 client id from the _ga cookie ("GA1.1.<id>.<ts>" -> "<id>.<ts>"), sent so the
+// backend's server-side conversion events are attributed to this visitor's session.
+export const getGaClientId = (): string | undefined => {
+  if (typeof document === 'undefined') return undefined;
+  const match = document.cookie.match(/(?:^|;\s*)_ga=GA\d\.\d+\.(\d+\.\d+)/);
+  return match?.[1];
+};
+
 const buildHeaders = (data: unknown, headers?: Record<string, string>) => {
   const requestHeaders: Record<string, string> = { ...(headers ?? {}) };
   const token = getTokenFromCookie('accessToken');
@@ -212,6 +220,13 @@ const buildHeaders = (data: unknown, headers?: Record<string, string>) => {
 
   if (token && !requestHeaders.Authorization) {
     requestHeaders.Authorization = `Bearer ${token}`;
+  }
+
+  // Only on requests that are preflighted anyway (auth or a body): conversions are
+  // all mutations, and a custom header on plain GETs would add a CORS preflight.
+  const gaClientId = getGaClientId();
+  if (gaClientId && (requestHeaders.Authorization || data !== undefined)) {
+    requestHeaders['X-GA-Client-Id'] = gaClientId;
   }
 
   if (isFormData) {

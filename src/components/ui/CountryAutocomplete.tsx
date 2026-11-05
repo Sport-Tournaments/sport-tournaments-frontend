@@ -2,8 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, forwardRef } from 'react';
 import { cn } from '@/utils/helpers';
-import { useDebounce } from '@/hooks';
-import { searchLocations } from '@/services/location.service';
+import { searchCountries } from '@/utils/countries';
 
 export interface CountryAutocompleteProps {
   label?: string;
@@ -36,7 +35,6 @@ const CountryAutocomplete = forwardRef<HTMLInputElement, CountryAutocompleteProp
   ) => {
     const [inputValue, setInputValue] = useState(value);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -45,45 +43,14 @@ const CountryAutocomplete = forwardRef<HTMLInputElement, CountryAutocompleteProp
     // Use the forwarded ref or internal ref
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || internalInputRef;
 
-    const debouncedQuery = useDebounce(inputValue, 300);
-
-    // Fetch suggestions when query changes
+    // Match against a local country list (no API calls)
     useEffect(() => {
-      async function fetchCountrySuggestions() {
-        if (!debouncedQuery || debouncedQuery.length < 3) {
-          setSuggestions([]);
-          return;
-        }
-
-        setIsLoading(true);
-        try {
-          const response = await searchLocations(debouncedQuery, 10);
-          if (response.success && response.data) {
-            // Extract unique countries from results
-            const countries = response.data
-              .map((loc) => loc.country)
-              .filter((country): country is string => !!country);
-            
-            // Get unique countries and filter by query
-            const uniqueCountries = [...new Set(countries)]
-              .filter((country) =>
-                country.toLowerCase().includes(debouncedQuery.toLowerCase())
-              )
-              .slice(0, 5);
-
-            setSuggestions(uniqueCountries);
-            setShowSuggestions(uniqueCountries.length > 0);
-          }
-        } catch (error) {
-          console.error('Error fetching country suggestions:', error);
-          setSuggestions([]);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-
-      fetchCountrySuggestions();
-    }, [debouncedQuery]);
+      const matches = searchCountries(inputValue);
+      // Hide the list once the input is exactly a selected country
+      const isExactMatch = matches.length === 1 && matches[0] === inputValue;
+      setSuggestions(isExactMatch ? [] : matches);
+      setShowSuggestions(matches.length > 0 && !isExactMatch && document.activeElement === inputRef.current);
+    }, [inputValue, inputRef]);
 
     // Sync external value changes
     useEffect(() => {
@@ -193,49 +160,22 @@ const CountryAutocomplete = forwardRef<HTMLInputElement, CountryAutocompleteProp
             )}
           />
 
-          {/* Loading indicator */}
-          {isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <svg
-                className="animate-spin h-4 w-4 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            </div>
-          )}
-
           {/* Globe icon */}
-          {!isLoading && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          )}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
         </div>
 
         {/* Suggestions dropdown */}

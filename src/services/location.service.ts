@@ -1,8 +1,10 @@
 import { apiGet } from './api';
 import type {
   LocationSuggestion,
+  LocationPrediction,
   LocationAutocompleteResponse,
   UserLocation,
+  ApiResponse,
 } from '@/types';
 
 const LOCATIONS_BASE = '/v1/locations';
@@ -18,6 +20,35 @@ export async function searchLocations(
   return apiGet<LocationAutocompleteResponse>(
     `${LOCATIONS_BASE}/autocomplete?query=${encodeURIComponent(query)}&limit=${limit}`
   );
+}
+
+// Autocomplete predictions only (no coordinates). Each one is a single billed
+// Autocomplete request; fetch the chosen one with getPlaceDetails. Reuse the same
+// sessionToken for the whole search and its details call so Google bills one session.
+export async function searchLocationPredictions(
+  query: string,
+  sessionToken: string,
+  limit = 5
+): Promise<ApiResponse<Array<LocationPrediction | LocationSuggestion>>> {
+  if (!query || query.trim().length < 3) {
+    return { success: true, data: [] };
+  }
+  const params = new URLSearchParams({
+    query,
+    limit: String(limit),
+    sessionToken,
+    details: 'false',
+  });
+  return apiGet(`${LOCATIONS_BASE}/autocomplete?${params.toString()}`);
+}
+
+export async function getPlaceDetails(
+  placeId: string,
+  sessionToken?: string
+): Promise<ApiResponse<LocationSuggestion | null>> {
+  const params = new URLSearchParams({ placeId });
+  if (sessionToken) params.set('sessionToken', sessionToken);
+  return apiGet(`${LOCATIONS_BASE}/place?${params.toString()}`);
 }
 
 // Get user's current location using browser geolocation API
@@ -106,6 +137,8 @@ export function formatDistance(distanceKm: number): string {
 
 export const locationService = {
   searchLocations,
+  searchLocationPredictions,
+  getPlaceDetails,
   getCurrentLocation,
   calculateDistance,
   formatDistance,
